@@ -157,6 +157,9 @@ export default function PdfUploader({ file, onFileChange }: PdfUploaderProps) {
         </div>
 
         {/* Page range input */}
+        <p className="mb-2 text-xs text-[#1E2761]/60">
+          작품 본문이 수록된 페이지 번호를 정확히 입력하세요. 해당 페이지만 추출하여 주석을 인식합니다.
+        </p>
         <div className="flex items-center gap-2">
           <label className="flex-shrink-0 text-xs font-medium text-[#1E2761]">
             페이지 범위
