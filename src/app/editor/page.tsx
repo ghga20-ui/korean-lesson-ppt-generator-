@@ -7,11 +7,9 @@ import { DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
 import { SUPPORTED_FONTS } from "@/lib/font-metrics";
 import { splitText, splitSlideAt, mergeSlides } from "@/lib/slide-splitter";
 import { matchAnnotationsToText, distributeAnnotationsToSlides } from "@/lib/annotation-matcher";
-import { extractFromPdf } from "@/lib/gemini";
 import AnnotationEditor from "@/components/AnnotationEditor";
 import ModeSelector from "@/components/ModeSelector";
 import PdfUploader from "@/components/PdfUploader";
-import ApiKeyInput from "@/components/ApiKeyInput";
 
 const GENRE_LABELS: Record<Genre, string> = {
   poetry: "운문 / 짧은 텍스트",
@@ -58,21 +56,10 @@ function EditorInner({ genre }: { genre: Genre }) {
   // Mode A/B/C state
   const [inputMode, setInputMode] = useState<InputMode>("C");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [apiKey, setApiKey] = useState("");
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionProgress, setExtractionProgress] = useState("");
   const [unmatchedAnnotations, setUnmatchedAnnotations] = useState<ExtractedAnnotation[]>([]);
   const [pendingUnmatched, setPendingUnmatched] = useState<ExtractedAnnotation | null>(null);
-
-  // Load API key from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem("gemini-api-key");
-    if (stored) setApiKey(stored);
-  }, []);
-
-  const handleApiKeyChange = useCallback((key: string) => {
-    setApiKey(key);
-  }, []);
 
   const handleSplit = useCallback(() => {
     if (!fullText.trim()) return;
@@ -82,19 +69,26 @@ function EditorInner({ genre }: { genre: Genre }) {
     setStep("annotate");
   }, [fullText, genre]);
 
-  // Mode C: Extract annotations from PDF, match to user text, split, distribute
+  // Mode C: Extract annotations from PDF via server API
   const handleExtractAnnotations = useCallback(async () => {
-    if (!pdfFile || !apiKey || !fullText.trim()) return;
+    if (!pdfFile || !fullText.trim()) return;
     setIsExtracting(true);
-    setExtractionProgress("시작하는 중...");
+    setExtractionProgress("추출 중...");
     setUnmatchedAnnotations([]);
 
     try {
-      const result = await extractFromPdf(pdfFile, apiKey, {
-        mode: "C",
-        genre,
-        userText: fullText,
-      }, setExtractionProgress);
+      const formData = new FormData();
+      formData.append("pdf", pdfFile);
+      formData.append("mode", "C");
+      formData.append("genre", genre);
+      formData.append("userText", fullText);
+
+      const response = await fetch("/api/extract", { method: "POST", body: formData });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: "추출 실패" }));
+        throw new Error(err.error);
+      }
+      const result = await response.json();
 
       // Match extracted annotations to full text
       const { matched, unmatched } = matchAnnotationsToText(fullText, result.annotations);
@@ -126,22 +120,28 @@ function EditorInner({ genre }: { genre: Genre }) {
       setIsExtracting(false);
       setExtractionProgress("");
     }
-  }, [pdfFile, apiKey, fullText, genre]);
+  }, [pdfFile, fullText, genre, pptSettings]);
 
-  // Mode A: Extract both text and annotations from PDF
+  // Mode A: Extract both text and annotations from PDF via server API
   const handleExtractAll = useCallback(async () => {
-    if (!pdfFile || !apiKey) return;
+    if (!pdfFile) return;
     setIsExtracting(true);
-    setExtractionProgress("시작하는 중...");
+    setExtractionProgress("추출 중...");
     setUnmatchedAnnotations([]);
 
     try {
-      const result = await extractFromPdf(pdfFile, apiKey, {
-        mode: "A",
-        genre,
-      }, setExtractionProgress);
+      const formData = new FormData();
+      formData.append("pdf", pdfFile);
+      formData.append("mode", "A");
+      formData.append("genre", genre);
 
-      // Set extracted text to textarea for user review
+      const response = await fetch("/api/extract", { method: "POST", body: formData });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: "추출 실패" }));
+        throw new Error(err.error);
+      }
+      const result = await response.json();
+
       setFullText(result.text);
 
       // Store extracted annotations temporarily — user reviews text first, then splits
@@ -173,7 +173,7 @@ function EditorInner({ genre }: { genre: Genre }) {
       setIsExtracting(false);
       setExtractionProgress("");
     }
-  }, [pdfFile, apiKey, genre]);
+  }, [pdfFile, genre, pptSettings]);
 
   const handleUpdateSlide = useCallback(
     (updatedSlide: SlideData) => {
@@ -390,7 +390,7 @@ function EditorInner({ genre }: { genre: Genre }) {
           <ModeSelector
             mode={inputMode}
             onChange={setInputMode}
-            hasApiKey={!!apiKey}
+            hasApiKey={true}
           />
 
           {/* Mode B: Text only */}
@@ -445,7 +445,6 @@ function EditorInner({ genre }: { genre: Genre }) {
                 <PdfUploader file={pdfFile} onFileChange={setPdfFile} />
               </div>
 
-              <ApiKeyInput apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-[#1E2761]/60">
@@ -463,7 +462,7 @@ function EditorInner({ genre }: { genre: Genre }) {
                   </button>
                   <button
                     onClick={handleExtractAnnotations}
-                    disabled={!fullText.trim() || !pdfFile || !apiKey || isExtracting}
+                    disabled={!fullText.trim() || !pdfFile || isExtracting}
                     className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:bg-[#1E2761]/90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {isExtracting ? "추출 중..." : "주석 추출 + 분할"}
@@ -483,7 +482,6 @@ function EditorInner({ genre }: { genre: Genre }) {
                 <PdfUploader file={pdfFile} onFileChange={setPdfFile} />
               </div>
 
-              <ApiKeyInput apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />
 
               {fullText && (
                 <>
@@ -516,7 +514,7 @@ function EditorInner({ genre }: { genre: Genre }) {
                 <div className="flex justify-end">
                   <button
                     onClick={handleExtractAll}
-                    disabled={!pdfFile || !apiKey || isExtracting}
+                    disabled={!pdfFile || isExtracting}
                     className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:bg-[#1E2761]/90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {isExtracting ? "추출 중..." : "텍스트 & 주석 추출"}
