@@ -374,7 +374,7 @@ function EditorInner({ genre }: { genre: Genre }) {
 
       {/* Step: Input */}
       {step === "input" && (
-        <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-6 py-10">
+        <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 overflow-y-auto px-6 py-10">
           <div>
             <h2 className="mb-2 text-2xl font-bold text-[#1E2761]">
               텍스트 입력
