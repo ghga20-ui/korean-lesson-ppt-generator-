@@ -46,8 +46,6 @@ function EditorInner({ genre }: { genre: Genre }) {
   const [slides, setSlides] = useState<SlideData[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [htmlPreview, setHtmlPreview] = useState<string | null>(null);
-  const [isGeneratingHtml, setIsGeneratingHtml] = useState(false);
   const [clipboardAnnotation, setClipboardAnnotation] = useState<Annotation | null>(null);
   const [pptSettings, setPptSettings] = useState<PptSettings>(
     genre === "poetry" ? { ...DEFAULT_POETRY_SETTINGS } : { ...DEFAULT_NOVEL_SETTINGS }
@@ -232,38 +230,6 @@ function EditorInner({ genre }: { genre: Genre }) {
       setIsGenerating(false);
     }
   }, [genre, fullText, slides]);
-
-  const handleHtmlPreview = useCallback(async () => {
-    setIsGeneratingHtml(true);
-    try {
-      const response = await fetch("/api/generate-html", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ genre, slides, settings: pptSettings }),
-      });
-      if (!response.ok) throw new Error("HTML 생성에 실패했습니다");
-      const html = await response.text();
-      setHtmlPreview(html);
-    } catch (error) {
-      alert(error instanceof Error ? error.message : "HTML 생성 중 오류가 발생했습니다");
-    } finally {
-      setIsGeneratingHtml(false);
-    }
-  }, [genre, slides]);
-
-  const handleHtmlDownload = useCallback(() => {
-    if (!htmlPreview) return;
-    const blob = new Blob([htmlPreview], { type: "text/html; charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `수업자료_${genre === "poetry" ? "운문" : "산문"}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast("HTML 파일이 다운로드되었습니다");
-  }, [htmlPreview, genre, showToast]);
 
   const handleCutAnnotation = useCallback((annotation: Annotation) => {
     setClipboardAnnotation(annotation);
@@ -663,13 +629,6 @@ function EditorInner({ genre }: { genre: Genre }) {
               >
                 {isGenerating ? "생성 중..." : "PPT 생성"}
               </button>
-              <button
-                onClick={handleHtmlPreview}
-                disabled={isGeneratingHtml}
-                className="w-full rounded-lg border-2 border-[#1E2761] px-3 py-2 text-xs font-semibold text-[#1E2761] transition-all hover:bg-[#1E2761]/5 disabled:opacity-40"
-              >
-                {isGeneratingHtml ? "생성 중..." : "HTML 미리보기"}
-              </button>
             </div>
           </aside>
 
@@ -779,36 +738,6 @@ function EditorInner({ genre }: { genre: Genre }) {
         </div>
       )}
 
-      {/* HTML Preview overlay */}
-      {htmlPreview && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-black/60">
-          <div className="flex items-center justify-between bg-[#1E2761] px-6 py-3">
-            <span className="text-sm font-semibold text-white">
-              HTML 프레젠테이션 미리보기
-            </span>
-            <div className="flex gap-3">
-              <button
-                onClick={handleHtmlDownload}
-                className="rounded-lg bg-white/20 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/30"
-              >
-                HTML 다운로드
-              </button>
-              <button
-                onClick={() => setHtmlPreview(null)}
-                className="rounded-lg bg-white/10 px-4 py-1.5 text-xs text-white/80 transition-colors hover:bg-white/20"
-              >
-                닫기
-              </button>
-            </div>
-          </div>
-          <iframe
-            srcDoc={htmlPreview}
-            className="flex-1 bg-white"
-            title="HTML 프레젠테이션 미리보기"
-            sandbox="allow-scripts"
-          />
-        </div>
-      )}
     </div>
   );
 }

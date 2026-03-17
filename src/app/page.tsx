@@ -37,7 +37,7 @@ export default function Home() {
           <span className="rounded-full bg-[#CADCFC]/40 px-3 py-1">PDF OCR 추출</span>
           <span className="rounded-full bg-[#CADCFC]/40 px-3 py-1">클릭 애니메이션</span>
           <span className="rounded-full bg-[#CADCFC]/40 px-3 py-1">주석 자동 배치</span>
-          <span className="rounded-full bg-[#CADCFC]/40 px-3 py-1">HTML 미리보기</span>
+          <span className="rounded-full bg-[#CADCFC]/40 px-3 py-1">BYOK 지원</span>
         </div>
 
         <p className="mb-6 text-sm font-medium text-[#1E2761]/60">
