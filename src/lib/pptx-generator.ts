@@ -51,8 +51,8 @@ const MAIN_TEXT_COLOR = "222222";
 /** Slide background colour (white). */
 const SLIDE_BG_COLOR = "FFFFFF";
 
-/** Vertical gap between main text area bottom and first annotation row (inches). */
-const ANNOTATION_Y_GAP = 0.03;
+/** Vertical gap between marker shape bottom and annotation text (inches). */
+const ANNOTATION_Y_GAP = -0.02;
 
 /**
  * Vertical offset applied to all marker shapes so they align with the
