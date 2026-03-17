@@ -7,7 +7,7 @@ interface PdfUploaderProps {
   onFileChange: (file: File | null) => void;
 }
 
-const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_SIZE = 30 * 1024 * 1024; // 30MB
 
 export default function PdfUploader({ file, onFileChange }: PdfUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -22,7 +22,7 @@ export default function PdfUploader({ file, onFileChange }: PdfUploaderProps) {
         return;
       }
       if (f.size > MAX_SIZE) {
-        setError("파일 크기가 20MB를 초과합니다.");
+        setError("파일 크기가 30MB를 초과합니다.");
         return;
       }
       onFileChange(f);
@@ -97,7 +97,7 @@ export default function PdfUploader({ file, onFileChange }: PdfUploaderProps) {
         <p className="text-sm text-[#1E2761]/60">
           PDF 파일을 드래그하거나 클릭하여 업로드
         </p>
-        <p className="text-xs text-[#1E2761]/40">최대 20MB</p>
+        <p className="text-xs text-[#1E2761]/40">최대 30MB</p>
       </div>
       <input
         ref={inputRef}

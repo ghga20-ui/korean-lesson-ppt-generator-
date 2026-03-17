@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Genre } from "@/lib/types";
 import { extractFromPdfServer } from "@/lib/gemini-server";
 
+export const config = {
+  api: { bodyParser: { sizeLimit: "35mb" } },
+};
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
