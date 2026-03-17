@@ -19,7 +19,10 @@ import { type FontMetrics, getFontMetrics } from "./font-metrics";
 const TEXT_LEFT_MARGIN = 0.5;
 
 /** Top margin for the main text area (inches). */
-const TEXT_TOP_MARGIN = 0.35;
+const TEXT_TOP_MARGIN = 0.5;
+
+/** Proportion of slide height reserved for the main text area. */
+const TEXT_AREA_HEIGHT_RATIO = 0.65;
 
 /** Marker color for annotation shapes (dark blue). */
 const MARKER_COLOR = "294C67";
@@ -49,7 +52,7 @@ const MAIN_TEXT_COLOR = "222222";
 const SLIDE_BG_COLOR = "FFFFFF";
 
 /** Vertical gap between main text area bottom and first annotation row (inches). */
-const ANNOTATION_Y_GAP = 0.01;
+const ANNOTATION_Y_GAP = 0.03;
 
 /**
  * Vertical offset applied to all marker shapes so they align with the
@@ -61,6 +64,9 @@ const SHAPE_Y_OFFSET = 0.04;
 /** Height of an annotation text box (inches). */
 const ANNOTATION_TEXT_HEIGHT = 0.6;
 
+/** Font family for all text. */
+const FONT_FAMILY = "한컴산뜻돋움";
+
 /** Font size for annotation text (pt). */
 const ANNOTATION_FONT_SIZE = 28;
 
@@ -71,7 +77,13 @@ const ANNOTATION_FONT_SIZE = 28;
  */
 const FONT_LINE_HEIGHT_RATIO = 1.3;
 
-// PPT_LINE_STEP_RATIO is now per-font: metrics.lineStepRatio
+/**
+ * Empirically calibrated line-step ratio for PowerPoint rendering.
+ * PowerPoint's actual line-to-line distance is slightly smaller than
+ * FONT_LINE_HEIGHT_RATIO predicts, causing cumulative Y drift on later lines.
+ * Tuned to eliminate per-line drift across 4+ lines of text.
+ */
+const PPT_LINE_STEP_RATIO = 1.22;
 
 // ---------------------------------------------------------------------------
 // Geometry helpers
@@ -104,37 +116,37 @@ interface AnimationGroup {
 }
 
 /**
- * Estimate character width in inches based on character type, font size,
- * and font-specific metrics.
+ * Estimate character width in inches based on character type and font size.
+ * Korean Hangul syllables fill a full em square (~1.0 × fontSize).
+ * Latin letters are proportional (~0.5-0.7 × fontSize).
  */
 export function getCharWidthInch(char: string, fontSize: number, metrics?: FontMetrics): number {
   const ptToInch = fontSize / 72;
-  const m = metrics || getFontMetrics("한컴산뜻돋움");
-
   // Korean Hangul syllables (AC00-D7AF), CJK ideographs, fullwidth forms
+  // 한컴산뜻돋움 Bold: advance width = 932/1000 em
   if (/[\uAC00-\uD7AF\u4E00-\u9FFF\u3400-\u4DBF\uFF00-\uFFEF]/.test(char)) {
-    return ptToInch * m.hangul;
+    return ptToInch * 0.932;
   }
   // Korean Jamo (ㄱ-ㅎ, ㅏ-ㅣ) and CJK symbols
   if (/[\u3131-\u318E\u3000-\u303F]/.test(char)) {
-    return ptToInch * m.hangul;
+    return ptToInch * 0.932;
   }
   // Uppercase Latin
-  if (/[A-Z]/.test(char)) return ptToInch * m.latinUpper;
+  if (/[A-Z]/.test(char)) return ptToInch * 0.7;
   // Lowercase Latin
-  if (/[a-z]/.test(char)) return ptToInch * m.latinLower;
+  if (/[a-z]/.test(char)) return ptToInch * 0.5;
   // Digits
-  if (/[0-9]/.test(char)) return ptToInch * m.digit;
-  // Space
-  if (char === " ") return ptToInch * m.space;
-  // Common punctuation (narrow)
-  if (/[.,;:!?'"]/.test(char)) return ptToInch * m.punctuation;
+  if (/[0-9]/.test(char)) return ptToInch * 0.6;
+  // Space — 한컴산뜻돋움 Bold: advance width = 264/1000 em
+  if (char === " ") return ptToInch * 0.264;
+  // Common punctuation (narrow) — 한컴산뜻돋움 Bold: ~297/1000 em
+  if (/[.,;:!?'"]/.test(char)) return ptToInch * 0.297;
   // Brackets and parentheses
-  if (/[()[\]{}]/.test(char)) return ptToInch * m.bracket;
+  if (/[()[\]{}]/.test(char)) return ptToInch * 0.35;
   // Korean punctuation (。、「」 etc.) — fullwidth
-  if (/[\u3001-\u3003\u300C-\u300F]/.test(char)) return ptToInch * m.fullwidth;
+  if (/[\u3001-\u3003\u300C-\u300F]/.test(char)) return ptToInch * 0.932;
   // Default
-  return ptToInch * m.latinLower;
+  return ptToInch * 0.5;
 }
 
 /**
@@ -158,7 +170,7 @@ export function countVisualLines(
       lineXAccum = 0;
       continue;
     }
-    const charW = getCharWidthInch(text[i], fontSize, metrics);
+    const charW = getCharWidthInch(text[i], fontSize);
     lineXAccum += charW;
     if (lineXAccum > textAreaWidthInch) {
       line++;
@@ -178,7 +190,6 @@ function getVisualLineForIndex(
   charIndex: number,
   fontSize: number,
   textAreaWidthInch: number,
-  metrics?: FontMetrics,
 ): number {
   let line = 0;
   let lineXAccum = 0;
@@ -190,7 +201,7 @@ function getVisualLineForIndex(
       lineXAccum = 0;
       continue;
     }
-    const charW = getCharWidthInch(text[i], fontSize, metrics);
+    const charW = getCharWidthInch(text[i], fontSize);
     lineXAccum += charW;
     if (lineXAccum > textAreaWidthInch && lineXAccum > charW) {
       line++;
@@ -215,7 +226,6 @@ function preprocessAnnotations(
   annotations: Annotation[],
   fontSize: number,
   textAreaWidthInch: number,
-  metrics?: FontMetrics,
 ): { text: string; annotations: Annotation[] } {
   if (annotations.length === 0) return { text, annotations };
 
@@ -233,16 +243,17 @@ function preprocessAnnotations(
       if (ann.startIndex >= currentText.length || ann.endIndex > currentText.length) continue;
 
       const startLine = getVisualLineForIndex(
-        currentText, ann.startIndex, fontSize, textAreaWidthInch, metrics,
+        currentText, ann.startIndex, fontSize, textAreaWidthInch,
       );
       const endLine = getVisualLineForIndex(
-        currentText, ann.endIndex - 1, fontSize, textAreaWidthInch, metrics,
+        currentText, ann.endIndex - 1, fontSize, textAreaWidthInch,
       );
 
       if (startLine !== endLine) {
+        // Check if annotation text can physically fit on one line
         let annWidth = 0;
         for (let i = ann.startIndex; i < ann.endIndex; i++) {
-          annWidth += getCharWidthInch(currentText[i], fontSize, metrics);
+          annWidth += getCharWidthInch(currentText[i], fontSize);
         }
         if (annWidth <= textAreaWidthInch) {
           needsInsertion = ann;
@@ -278,11 +289,12 @@ function estimateTextPosition(
   startIndex: number,
   endIndex: number,
   settings: PptSettings,
-  metrics?: FontMetrics,
 ): TextPosition {
-  const m = metrics || getFontMetrics(settings.fontFamily);
+  // lineStepInch = actual distance between line tops in PowerPoint.
+  // PowerPoint's spcPct multiplies against the font's natural line height
+  // (which includes ascent+descent), not just the nominal font size.
   const lineStepInch =
-    (settings.fontSize * m.lineStepRatio * settings.lineSpacing) / 72;
+    (settings.fontSize * PPT_LINE_STEP_RATIO * settings.lineSpacing) / 72;
   // lineHeightInch = shape sizing basis (without font metric scaling).
   const lineHeightInch = (settings.fontSize * settings.lineSpacing) / 72;
   const textAreaWidth = settings.slideWidth - TEXT_LEFT_MARGIN * 2;
@@ -310,7 +322,7 @@ function estimateTextPosition(
         line++;
         lineXAccum = 0;
       } else {
-        const charW = getCharWidthInch(slideText[i], settings.fontSize, m);
+        const charW = getCharWidthInch(slideText[i], settings.fontSize);
         lineXAccum += charW;
         // Soft-wrap: if accumulated width exceeds text area, move to next line
         if (lineXAccum > textAreaWidth) {
@@ -348,11 +360,9 @@ function getUnderlineSegments(
   startIndex: number,
   endIndex: number,
   settings: PptSettings,
-  metrics?: FontMetrics,
 ): UnderlineSegment[] {
-  const m = metrics || getFontMetrics(settings.fontFamily);
   const lineStepInch =
-    (settings.fontSize * m.lineStepRatio * settings.lineSpacing) / 72;
+    (settings.fontSize * PPT_LINE_STEP_RATIO * settings.lineSpacing) / 72;
   const charHeightInch = settings.fontSize / 72;
   const textAreaWidth = settings.slideWidth - TEXT_LEFT_MARGIN * 2;
 
@@ -369,7 +379,7 @@ function getUnderlineSegments(
       continue;
     }
 
-    const charW = getCharWidthInch(slideText[i], settings.fontSize, m);
+    const charW = getCharWidthInch(slideText[i], settings.fontSize);
     const newAccum = lineXAccum + charW;
 
     let charLine = line;
@@ -512,10 +522,10 @@ function getShapeGeometry(
 }
 
 /**
- * Get annotation color, stripping # prefix for pptxgenjs (which uses bare hex).
+ * Return the marker color for annotation shapes.
  */
-function getAnnotationColorHex(annotation: { color?: string }): string {
-  return (annotation.color || `#${MARKER_COLOR}`).replace("#", "");
+function getAnnotationColor(_index: number): string {
+  return MARKER_COLOR;
 }
 
 // ---------------------------------------------------------------------------
@@ -538,7 +548,6 @@ function buildSlide(
 ): number[] {
   const slide = pptx.addSlide();
   slide.background = { color: SLIDE_BG_COLOR };
-  const metrics = getFontMetrics(settings.fontFamily);
 
   const textAreaWidth = settings.slideWidth - TEXT_LEFT_MARGIN * 2;
   const textAreaHeight = settings.slideHeight * settings.textAreaHeightRatio;
@@ -551,7 +560,7 @@ function buildSlide(
       w: textAreaWidth,
       h: textAreaHeight,
       fontSize: settings.fontSize,
-      fontFace: settings.fontFamily,
+      fontFace: FONT_FAMILY,
       bold: true,
       color: MAIN_TEXT_COLOR,
       align: "left",
@@ -576,14 +585,13 @@ function buildSlide(
 
   for (let idx = 0; idx < sortedAnnotations.length; idx++) {
     const annotation = sortedAnnotations[idx];
-    const color = getAnnotationColorHex(annotation);
+    const color = getAnnotationColor(idx);
 
     const pos = estimateTextPosition(
       slideData.text,
       annotation.startIndex,
       annotation.endIndex,
       settings,
-      metrics,
     );
 
     let markerShapeCount = 0;
@@ -599,7 +607,6 @@ function buildSlide(
         annotation.startIndex,
         annotation.endIndex,
         settings,
-        metrics,
       );
 
       for (const seg of segments) {
@@ -620,21 +627,21 @@ function buildSlide(
     } else if (annotation.markerType === "bracket") {
       // Bracket: small 「 above start position, small 」 below end position
       const startPos = estimateTextPosition(
-        slideData.text, annotation.startIndex, annotation.startIndex + 1, settings, metrics,
+        slideData.text, annotation.startIndex, annotation.startIndex + 1, settings,
       );
       const endPos = estimateTextPosition(
-        slideData.text, annotation.endIndex - 1, annotation.endIndex, settings, metrics,
+        slideData.text, annotation.endIndex - 1, annotation.endIndex, settings,
       );
       const symbolSize = BRACKET_SYMBOL_FONT_SIZE / 72;
 
       // 「 above-left of the start position
       slide.addText("「", {
-        x: startPos.x - 0.18,
-        y: startPos.y + SHAPE_Y_OFFSET + 0.19,
+        x: startPos.x - 0.13,
+        y: startPos.y + SHAPE_Y_OFFSET + 0.18,
         w: symbolSize,
         h: symbolSize,
         fontSize: BRACKET_SYMBOL_FONT_SIZE,
-        fontFace: settings.fontFamily,
+        fontFace: FONT_FAMILY,
         bold: true,
         color,
         align: "center",
@@ -646,11 +653,11 @@ function buildSlide(
       // 」 below-right of the end position
       slide.addText("」", {
         x: endPos.x + endPos.w - 0.30,
-        y: endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.24,
+        y: endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.50,
         w: symbolSize,
         h: symbolSize,
         fontSize: BRACKET_SYMBOL_FONT_SIZE,
-        fontFace: settings.fontFamily,
+        fontFace: FONT_FAMILY,
         bold: true,
         color,
         align: "center",
@@ -660,7 +667,7 @@ function buildSlide(
       });
 
       markerShapeCount = 2; // 「 + 」
-      shapeBottomY = endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.24 + symbolSize * 0.65;
+      shapeBottomY = endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.14 + symbolSize * 0.65;
       shapeLeftX = startPos.x;
       shapeWidth = pos.w;
     } else if (annotation.markerType === "summary") {
@@ -676,7 +683,7 @@ function buildSlide(
         w: summaryBoxW,
         h: summaryBoxH,
         fill: { color: SUMMARY_BG_COLOR },
-        line: { color, width: 1.5 },
+        line: { color: SUMMARY_BORDER_COLOR, width: 1.5 },
         rectRadius: 0.08,
       });
       markerShapeCount = 1;
@@ -712,9 +719,9 @@ function buildSlide(
         w: textAreaWidth - 0.3,
         h: summaryBoxH - 0.1,
         fontSize: settings.annotationFontSize,
-        fontFace: settings.fontFamily,
+        fontFace: FONT_FAMILY,
         bold: true,
-        color: color,
+        color: SUMMARY_BORDER_COLOR,
         align: "left",
         valign: "middle",
         wrap: true,
@@ -727,42 +734,37 @@ function buildSlide(
     // Position annotation text consistently based on the TEXT LINE position,
     // not the shape bottom, so all marker types produce the same text Y.
     const lineStepInch =
-      (settings.fontSize * metrics.lineStepRatio * settings.lineSpacing) / 72;
+      (settings.fontSize * PPT_LINE_STEP_RATIO * settings.lineSpacing) / 72;
     const lineHeightInch = (settings.fontSize * settings.lineSpacing) / 72;
     const charHeightInch = settings.fontSize / 72;
     const totalLines = slideData.text.split("\n").length;
 
-    // Always anchor annotation text at the FIRST line of the target range.
-    // For multi-line targets the marker shapes span later lines, but the
-    // annotation text sits in the gap between line 1 and line 2.
-    const annotLine = Math.round((pos.y - TEXT_TOP_MARGIN) / lineStepInch);
-    const spanLines = Math.max(1, Math.round(pos.h / charHeightInch));
-    const isMultiLine = spanLines > 1;
+    // Determine which line the annotation sits on
+    let annotLine: number;
+    if (annotation.markerType === "underline") {
+      annotLine = Math.round(
+        (shapeBottomY - lineHeightInch - TEXT_TOP_MARGIN) / lineStepInch,
+      );
+    } else {
+      annotLine = Math.round((pos.y - TEXT_TOP_MARGIN) / lineStepInch);
+    }
     const isLastLine = annotLine >= totalLines - 1;
 
-    // Glyph bottom of the first line of the target (with per-line drift correction)
+    // Consistent glyph bottom reference (independent of shape padding)
     const glyphBottomY =
-      TEXT_TOP_MARGIN + annotLine * lineStepInch + charHeightInch + SHAPE_Y_OFFSET
-      - annotLine * 0.015;
-
-    // For single-line: respect shapeBottomY (e.g. circle/rect extend below glyph)
-    // For multi-line: use first line's glyph bottom + marker offset (0.31)
-    //   so annotation sits below the first line's marker, not on top of the text
-    const anchorY = isMultiLine ? glyphBottomY + 0.27 : Math.max(shapeBottomY, glyphBottomY);
+      TEXT_TOP_MARGIN + annotLine * lineStepInch + charHeightInch + SHAPE_Y_OFFSET;
 
     let annotTextY: number;
     if (isLastLine) {
-      annotTextY = anchorY + ANNOTATION_Y_GAP;
+      annotTextY = Math.max(shapeBottomY, glyphBottomY) + ANNOTATION_Y_GAP;
     } else {
-      const nextLineY = TEXT_TOP_MARGIN + (annotLine + 1) * lineStepInch
-        - (annotLine + 1) * 0.015;
+      const nextLineY = TEXT_TOP_MARGIN + (annotLine + 1) * lineStepInch;
       const visibleTextH = settings.annotationFontSize / 72;
-      // Position annotation text 30% from anchor (marker) toward next line,
-      // rather than dead center, so it sits closer to the marker shape.
-      const gapAnchorBias = anchorY + (nextLineY - anchorY) * 0.07;
+      const anchorY = Math.max(shapeBottomY, glyphBottomY);
+      const gapMidpoint = (anchorY + nextLineY) / 2;
       annotTextY = Math.max(
         anchorY + ANNOTATION_Y_GAP,
-        gapAnchorBias - visibleTextH / 2,
+        gapMidpoint - visibleTextH / 2,
       );
     }
 
@@ -787,7 +789,7 @@ function buildSlide(
       w: annotTextW,
       h: ANNOTATION_TEXT_HEIGHT,
       fontSize: settings.annotationFontSize,
-      fontFace: settings.fontFamily,
+      fontFace: FONT_FAMILY,
       bold: true,
       color,
       align: "left",
@@ -870,28 +872,28 @@ function buildTimingXml(groups: AnimationGroup[]): string {
   function appearNode(spid: number, nodeType: string): string {
     return (
       `<p:par>` +
-        `<p:cTn id="${++ctnId}" fill="hold">` +
-          `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
-          `<p:childTnLst>` +
-            `<p:par>` +
-              `<p:cTn id="${++ctnId}" presetID="1" presetClass="entr" presetSubtype="0" fill="hold" grpId="0" nodeType="${nodeType}">` +
-                `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
-                `<p:childTnLst>` +
-                  `<p:set>` +
-                    `<p:cBhvr>` +
-                      `<p:cTn id="${++ctnId}" dur="1" fill="hold">` +
-                        `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
-                      `</p:cTn>` +
-                      `<p:tgtEl><p:spTgt spid="${spid}"/></p:tgtEl>` +
-                      `<p:attrNameLst><p:attrName>style.visibility</p:attrName></p:attrNameLst>` +
-                    `</p:cBhvr>` +
-                    `<p:to><p:strVal val="visible"/></p:to>` +
-                  `</p:set>` +
-                `</p:childTnLst>` +
-              `</p:cTn>` +
-            `</p:par>` +
-          `</p:childTnLst>` +
-        `</p:cTn>` +
+      `<p:cTn id="${++ctnId}" fill="hold">` +
+      `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
+      `<p:childTnLst>` +
+      `<p:par>` +
+      `<p:cTn id="${++ctnId}" presetID="1" presetClass="entr" presetSubtype="0" fill="hold" grpId="0" nodeType="${nodeType}">` +
+      `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
+      `<p:childTnLst>` +
+      `<p:set>` +
+      `<p:cBhvr>` +
+      `<p:cTn id="${++ctnId}" dur="1" fill="hold">` +
+      `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
+      `</p:cTn>` +
+      `<p:tgtEl><p:spTgt spid="${spid}"/></p:tgtEl>` +
+      `<p:attrNameLst><p:attrName>style.visibility</p:attrName></p:attrNameLst>` +
+      `</p:cBhvr>` +
+      `<p:to><p:strVal val="visible"/></p:to>` +
+      `</p:set>` +
+      `</p:childTnLst>` +
+      `</p:cTn>` +
+      `</p:par>` +
+      `</p:childTnLst>` +
+      `</p:cTn>` +
       `</p:par>`
     );
   }
@@ -913,28 +915,28 @@ function buildTimingXml(groups: AnimationGroup[]): string {
 
     clickGroups.push(
       `<p:par>` +
-        `<p:cTn id="${++ctnId}" fill="hold">` +
-          `<p:stCondLst>` +
-            `<p:cond delay="indefinite"/>` +
-          `</p:stCondLst>` +
-          `<p:childTnLst>` +
-            markerNodes.join("") +
-          `</p:childTnLst>` +
-        `</p:cTn>` +
+      `<p:cTn id="${++ctnId}" fill="hold">` +
+      `<p:stCondLst>` +
+      `<p:cond delay="indefinite"/>` +
+      `</p:stCondLst>` +
+      `<p:childTnLst>` +
+      markerNodes.join("") +
+      `</p:childTnLst>` +
+      `</p:cTn>` +
       `</p:par>`,
     );
 
     // --- Click group 2: annotation text ---
     clickGroups.push(
       `<p:par>` +
-        `<p:cTn id="${++ctnId}" fill="hold">` +
-          `<p:stCondLst>` +
-            `<p:cond delay="indefinite"/>` +
-          `</p:stCondLst>` +
-          `<p:childTnLst>` +
-            appearNode(group.textId, "clickEffect") +
-          `</p:childTnLst>` +
-        `</p:cTn>` +
+      `<p:cTn id="${++ctnId}" fill="hold">` +
+      `<p:stCondLst>` +
+      `<p:cond delay="indefinite"/>` +
+      `</p:stCondLst>` +
+      `<p:childTnLst>` +
+      appearNode(group.textId, "clickEffect") +
+      `</p:childTnLst>` +
+      `</p:cTn>` +
       `</p:par>`,
     );
   }
@@ -950,26 +952,26 @@ function buildTimingXml(groups: AnimationGroup[]): string {
 
   return (
     `<p:timing>` +
-      `<p:tnLst>` +
-        `<p:par>` +
-          `<p:cTn id="${++ctnId}" dur="indefinite" restart="never" nodeType="tmRoot">` +
-            `<p:childTnLst>` +
-              `<p:seq concurrent="1" nextAc="seek">` +
-                `<p:cTn id="${++ctnId}" dur="indefinite" nodeType="mainSeq">` +
-                  `<p:childTnLst>` +
-                    clickGroups.join("") +
-                  `</p:childTnLst>` +
-                `</p:cTn>` +
-                `<p:prevCondLst><p:cond evt="onPrev" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:prevCondLst>` +
-                `<p:nextCondLst><p:cond evt="onNext" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:nextCondLst>` +
-              `</p:seq>` +
-            `</p:childTnLst>` +
-          `</p:cTn>` +
-        `</p:par>` +
-      `</p:tnLst>` +
-      `<p:bldLst>` +
-        bldEntries.join("") +
-      `</p:bldLst>` +
+    `<p:tnLst>` +
+    `<p:par>` +
+    `<p:cTn id="${++ctnId}" dur="indefinite" restart="never" nodeType="tmRoot">` +
+    `<p:childTnLst>` +
+    `<p:seq concurrent="1" nextAc="seek">` +
+    `<p:cTn id="${++ctnId}" dur="indefinite" nodeType="mainSeq">` +
+    `<p:childTnLst>` +
+    clickGroups.join("") +
+    `</p:childTnLst>` +
+    `</p:cTn>` +
+    `<p:prevCondLst><p:cond evt="onPrev" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:prevCondLst>` +
+    `<p:nextCondLst><p:cond evt="onNext" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:nextCondLst>` +
+    `</p:seq>` +
+    `</p:childTnLst>` +
+    `</p:cTn>` +
+    `</p:par>` +
+    `</p:tnLst>` +
+    `<p:bldLst>` +
+    bldEntries.join("") +
+    `</p:bldLst>` +
     `</p:timing>`
   );
 }
@@ -1042,18 +1044,16 @@ export async function generatePptxBuffer(
   pptx.defineLayout({ name: "CUSTOM_WIDE", width: s.slideWidth, height: s.slideHeight });
   pptx.layout = "CUSTOM_WIDE";
   pptx.author = "lit-ppt";
-  pptx.title = genre === "poetry" ? "수업 자료 (운문)" : "수업 자료 (산문)";
+  pptx.title = genre === "poetry" ? "문학 수업 PPT" : "문학 수업 PPT";
 
   // Pre-process: prevent annotations from being split across visual lines
   const textAreaWidth = s.slideWidth - TEXT_LEFT_MARGIN * 2;
-  const fontMetrics = getFontMetrics(s.fontFamily);
   const processedSlides = slides.map((slideData) => {
     const result = preprocessAnnotations(
       slideData.text,
       slideData.annotations,
       s.fontSize,
       textAreaWidth,
-      fontMetrics,
     );
     return { ...slideData, text: result.text, annotations: result.annotations };
   });
