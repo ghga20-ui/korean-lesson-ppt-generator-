@@ -492,6 +492,7 @@ function getShapeGeometry(
         w: pos.w + SHAPE_PADDING / 2,
         h: pos.h + 0.02,
       };
+    case "triangle":
       // Triangle tip extends above text
       return {
         x: pos.x - SHAPE_PADDING,
