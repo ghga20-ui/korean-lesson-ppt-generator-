@@ -52,7 +52,7 @@ const MAIN_TEXT_COLOR = "222222";
 const SLIDE_BG_COLOR = "FFFFFF";
 
 /** Vertical gap between marker shape bottom and annotation text (inches). */
-const ANNOTATION_Y_GAP = -0.02;
+const ANNOTATION_Y_GAP = 0.01;
 
 /**
  * Vertical offset applied to all marker shapes so they align with the
