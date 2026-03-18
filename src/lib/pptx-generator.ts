@@ -294,7 +294,7 @@ function estimateTextPosition(
     (settings.fontSize * PPT_LINE_STEP_RATIO * settings.lineSpacing) / 72;
   const lineHeightInch = (settings.fontSize * settings.lineSpacing) / 72;
   // 3% narrower than actual text box to account for PPT kinsoku (line-break rules)
-  const textAreaWidth = (settings.slideWidth - TEXT_LEFT_MARGIN * 2) * 0.94;
+  const textAreaWidth = (settings.slideWidth - TEXT_LEFT_MARGIN * 2) * 1.0;
 
   let line = 0;
   let lineXAccum = 0; // accumulated width in current line (inches)
@@ -361,7 +361,7 @@ function getUnderlineSegments(
   const lineStepInch =
     (settings.fontSize * PPT_LINE_STEP_RATIO * settings.lineSpacing) / 72;
   const charHeightInch = settings.fontSize / 72;
-  const textAreaWidth = (settings.slideWidth - TEXT_LEFT_MARGIN * 2) * 0.94;
+  const textAreaWidth = (settings.slideWidth - TEXT_LEFT_MARGIN * 2) * 1.0;
 
   let line = 0;
   let lineXAccum = 0;
