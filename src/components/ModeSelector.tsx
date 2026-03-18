@@ -27,7 +27,7 @@ export default function ModeSelector({ mode, onChange, hasApiKey }: ModeSelector
             onClick={() => onChange(m.value)}
             className={`relative flex-1 rounded-lg px-3 py-2 text-center text-sm transition-all ${
               isActive
-                ? "bg-[#1E2761] font-semibold text-white shadow-sm"
+                ? "bg-white font-semibold text-[#1E2761] shadow-sm ring-1 ring-[#CADCFC]/50"
                 : m.recommended
                   ? "border border-[#1E2761]/20 bg-white text-[#1E2761] hover:bg-[#CADCFC]/40"
                   : "text-[#1E2761]/70 hover:bg-[#CADCFC]/40"
@@ -41,7 +41,7 @@ export default function ModeSelector({ mode, onChange, hasApiKey }: ModeSelector
             </div>
             <div
               className={`text-xs ${
-                isActive ? "text-white/60" : "text-[#1E2761]/50"
+                isActive ? "text-[#1E2761]/60" : "text-[#1E2761]/50"
               }`}
             >
               {m.desc}

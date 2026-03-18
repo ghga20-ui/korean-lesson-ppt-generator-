@@ -33,11 +33,11 @@ export default function Home() {
         <p className="mb-4 text-base text-[#1E2761]/70">
           교과서 PDF에서 주석을 추출하여 수업용 PPT를 자동 생성합니다
         </p>
-        <div className="mb-12 flex flex-wrap items-center justify-center gap-2 text-xs text-[#1E2761]/50">
-          <span className="rounded-full bg-[#CADCFC]/40 px-3 py-1">PDF OCR 추출</span>
-          <span className="rounded-full bg-[#CADCFC]/40 px-3 py-1">클릭 애니메이션</span>
-          <span className="rounded-full bg-[#CADCFC]/40 px-3 py-1">주석 자동 배치</span>
-          <span className="rounded-full bg-[#CADCFC]/40 px-3 py-1">BYOK 지원</span>
+        <div className="mb-12 flex flex-wrap items-center justify-center gap-3 text-xs font-medium text-[#1E2761]/80">
+          <span className="flex items-center rounded-full bg-white px-4 py-1.5 shadow-sm ring-1 ring-[#CADCFC]/50">PDF OCR 추출</span>
+          <span className="flex items-center rounded-full bg-white px-4 py-1.5 shadow-sm ring-1 ring-[#CADCFC]/50">클릭 애니메이션</span>
+          <span className="flex items-center rounded-full bg-white px-4 py-1.5 shadow-sm ring-1 ring-[#CADCFC]/50">주석 자동 배치</span>
+          <span className="flex items-center rounded-full bg-white px-4 py-1.5 shadow-sm ring-1 ring-[#CADCFC]/50">BYOK 지원</span>
         </div>
 
         <p className="mb-6 text-sm font-medium text-[#1E2761]/60">
@@ -51,7 +51,7 @@ export default function Home() {
               <Link
                 key={mode.key}
                 href={mode.href}
-                className="group flex flex-col items-center gap-3 rounded-2xl border-2 border-[#CADCFC] bg-white px-8 py-10 shadow-sm transition-all hover:border-[#1E2761] hover:shadow-lg"
+                className="group flex flex-col items-center gap-3 rounded-2xl border border-[#CADCFC]/50 bg-white/80 px-8 py-10 shadow-sm backdrop-blur-sm transition-all hover:-translate-y-1 hover:border-[#1E2761]/30 hover:shadow-xl"
               >
                 <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#CADCFC]/50 transition-colors group-hover:bg-[#1E2761]">
                   <Icon className="h-7 w-7 text-[#1E2761] transition-colors group-hover:text-white" />

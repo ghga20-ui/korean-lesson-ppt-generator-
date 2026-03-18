@@ -1,0 +1,3 @@
+customtkinter
+PyPDF2
+pyinstaller

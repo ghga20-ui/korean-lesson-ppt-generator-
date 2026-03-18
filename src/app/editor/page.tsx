@@ -341,194 +341,194 @@ function EditorInner({ genre }: { genre: Genre }) {
       {/* Step: Input */}
       {step === "input" && (
         <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-10">
-          <div>
-            <h2 className="mb-2 text-2xl font-bold text-[#1E2761]">
-              텍스트 입력
-            </h2>
-            <p className="text-sm text-[#1E2761]/60">
-              {genre === "poetry"
-                ? "텍스트를 입력하세요. 연/단락 사이는 빈 줄로 구분합니다."
-                : "텍스트를 입력하세요. 적정 분량으로 자동 분할됩니다."}
-            </p>
-          </div>
+          <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-10">
+            <div>
+              <h2 className="mb-2 text-2xl font-bold text-[#1E2761]">
+                텍스트 입력
+              </h2>
+              <p className="text-sm text-[#1E2761]/60">
+                {genre === "poetry"
+                  ? "텍스트를 입력하세요. 연/단락 사이는 빈 줄로 구분합니다."
+                  : "텍스트를 입력하세요. 적정 분량으로 자동 분할됩니다."}
+              </p>
+            </div>
 
-          {/* Mode Selector */}
-          <ModeSelector
-            mode={inputMode}
-            onChange={setInputMode}
-            hasApiKey={true}
-          />
+            {/* Mode Selector */}
+            <ModeSelector
+              mode={inputMode}
+              onChange={setInputMode}
+              hasApiKey={true}
+            />
 
-          {/* Mode B: Text only */}
-          {inputMode === "B" && (
-            <>
-              <textarea
-                value={fullText}
-                onChange={(e) => setFullText(e.target.value)}
-                placeholder={
-                  genre === "poetry"
-                    ? "텍스트를 붙여넣으세요...\n\n연/단락 사이에 빈 줄을 넣어주세요."
-                    : "텍스트를 붙여넣으세요..."
-                }
-                className="min-h-[400px] w-full flex-1 resize-y rounded-xl border-2 border-[#CADCFC] bg-white p-5 text-base leading-relaxed text-[#1E2761] placeholder-[#1E2761]/50 outline-none transition-colors focus:border-[#1E2761]"
-              />
+            {/* Mode B: Text only */}
+            {inputMode === "B" && (
+              <>
+                <textarea
+                  value={fullText}
+                  onChange={(e) => setFullText(e.target.value)}
+                  placeholder={
+                    genre === "poetry"
+                      ? "교과서 본문을 붙여넣으세요...\n\n연/단락 사이에 빈 줄을 넣어주세요."
+                      : "교과서 본문을 붙여넣으세요..."
+                  }
+                  className="min-h-[400px] w-full flex-1 resize-y rounded-xl border border-[#CADCFC]/60 bg-white p-5 text-base leading-relaxed text-[#1E2761] placeholder-[#1E2761]/50 outline-none shadow-inner transition-all hover:border-[#CADCFC] focus:border-[#1E2761] focus:ring-1 focus:ring-[#1E2761]"
+                />
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[#1E2761]/60">
-                  {fullText.length > 0
-                    ? `${fullText.length}자 / ${fullText.split("\n").length}줄`
-                    : ""}
-                </span>
-                <button
-                  onClick={handleSplit}
-                  disabled={!fullText.trim()}
-                  className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:bg-[#1E2761]/90 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  슬라이드 분할
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* Mode C: Text + PDF annotations */}
-          {inputMode === "C" && (
-            <>
-              <textarea
-                value={fullText}
-                onChange={(e) => setFullText(e.target.value)}
-                placeholder={
-                  genre === "poetry"
-                    ? "텍스트를 붙여넣으세요...\n\n연/단락 사이에 빈 줄을 넣어주세요."
-                    : "텍스트를 붙여넣으세요..."
-                }
-                className="min-h-[300px] w-full resize-y rounded-xl border-2 border-[#CADCFC] bg-white p-5 text-base leading-relaxed text-[#1E2761] placeholder-[#1E2761]/50 outline-none transition-colors focus:border-[#1E2761]"
-              />
-
-              <div className="flex flex-col gap-3">
-                <label className="text-sm font-medium text-[#1E2761]">
-                  교사용 교과서 PDF 업로드
-                </label>
-                <PdfUploader file={pdfFile} onFileChange={setPdfFile} />
-              </div>
-
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[#1E2761]/60">
-                  {fullText.length > 0
-                    ? `${fullText.length}자 / ${fullText.split("\n").length}줄`
-                    : ""}
-                </span>
-                <div className="flex gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#1E2761]/60">
+                    {fullText.length > 0
+                      ? `${fullText.length}자 / ${fullText.split("\n").length}줄`
+                      : ""}
+                  </span>
                   <button
                     onClick={handleSplit}
                     disabled={!fullText.trim()}
-                    className="rounded-xl border-2 border-[#1E2761] px-6 py-3 text-base font-semibold text-[#1E2761] transition-all hover:bg-[#1E2761]/5 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#1E2761]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    주석 없이 분할
-                  </button>
-                  <button
-                    onClick={handleExtractAnnotations}
-                    disabled={!fullText.trim() || !pdfFile || isExtracting}
-                    className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:bg-[#1E2761]/90 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {isExtracting ? "추출 중..." : "주석 추출 + 분할"}
+                    슬라이드 분할
                   </button>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
 
-          {/* Mode A: Full PDF extraction */}
-          {inputMode === "A" && (
-            <>
-              <div className="flex flex-col gap-3">
-                <label className="text-sm font-medium text-[#1E2761]">
-                  교사용 교과서 PDF 업로드
-                </label>
-                <PdfUploader file={pdfFile} onFileChange={setPdfFile} />
-              </div>
+            {/* Mode C: Text + PDF annotations */}
+            {inputMode === "C" && (
+              <>
+                <textarea
+                  value={fullText}
+                  onChange={(e) => setFullText(e.target.value)}
+                  placeholder={
+                    genre === "poetry"
+                      ? "교과서 본문을 붙여넣으세요...\n\n연/단락 사이에 빈 줄을 넣어주세요."
+                      : "교과서 본문을 붙여넣으세요..."
+                  }
+                  className="min-h-[300px] w-full resize-y rounded-xl border border-[#CADCFC]/60 bg-white p-5 text-base leading-relaxed text-[#1E2761] placeholder-[#1E2761]/50 outline-none shadow-inner transition-all hover:border-[#CADCFC] focus:border-[#1E2761] focus:ring-1 focus:ring-[#1E2761]"
+                />
+
+                <div className="flex flex-col gap-3">
+                  <label className="text-sm font-medium text-[#1E2761]">
+                    교사용 교과서 PDF 업로드
+                  </label>
+                  <PdfUploader file={pdfFile} onFileChange={setPdfFile} />
+                </div>
 
 
-              {fullText && (
-                <>
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-[#1E2761]">
-                      추출된 텍스트 (확인/수정 후 분할하세요)
-                    </label>
-                    <textarea
-                      value={fullText}
-                      onChange={(e) => setFullText(e.target.value)}
-                      className="min-h-[300px] w-full resize-y rounded-xl border-2 border-[#CADCFC] bg-white p-5 text-base leading-relaxed text-[#1E2761] outline-none transition-colors focus:border-[#1E2761]"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-[#1E2761]/60">
-                      {`${fullText.length}자 / ${fullText.split("\n").length}줄`}
-                    </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#1E2761]/60">
+                    {fullText.length > 0
+                      ? `${fullText.length}자 / ${fullText.split("\n").length}줄`
+                      : ""}
+                  </span>
+                  <div className="flex gap-3">
                     <button
                       onClick={handleSplit}
                       disabled={!fullText.trim()}
-                      className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:bg-[#1E2761]/90 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="rounded-xl border border-[#1E2761]/40 px-6 py-3 text-base font-semibold text-[#1E2761] transition-all hover:-translate-y-0.5 hover:border-[#1E2761] hover:bg-[#1E2761]/5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      슬라이드 분할
+                      주석 없이 분할
+                    </button>
+                    <button
+                      onClick={handleExtractAnnotations}
+                      disabled={!fullText.trim() || !pdfFile || isExtracting}
+                      className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#1E2761]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {isExtracting ? "추출 중..." : "주석 추출 + 분할"}
                     </button>
                   </div>
-                </>
-              )}
-
-              {!fullText && (
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleExtractAll}
-                    disabled={!pdfFile || isExtracting}
-                    className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:bg-[#1E2761]/90 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {isExtracting ? "추출 중..." : "텍스트 & 주석 추출"}
-                  </button>
                 </div>
-              )}
-            </>
-          )}
+              </>
+            )}
 
-          {/* Extraction progress overlay */}
-          {isExtracting && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-              <div className="flex flex-col items-center gap-4 rounded-2xl bg-white px-10 py-8 shadow-xl">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#CADCFC] border-t-[#1E2761]" />
-                <p className="text-sm font-medium text-[#1E2761]">
-                  {extractionProgress || "처리 중..."}
-                </p>
-              </div>
-            </div>
-          )}
+            {/* Mode A: Full PDF extraction */}
+            {inputMode === "A" && (
+              <>
+                <div className="flex flex-col gap-3">
+                  <label className="text-sm font-medium text-[#1E2761]">
+                    교사용 교과서 PDF 업로드
+                  </label>
+                  <PdfUploader file={pdfFile} onFileChange={setPdfFile} />
+                </div>
 
-          {/* Unmatched annotations warning */}
-          {unmatchedAnnotations.length > 0 && (
-            <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
-              <p className="mb-2 text-sm font-semibold text-amber-800">
-                매칭되지 않은 주석 {unmatchedAnnotations.length}개
-              </p>
-              <p className="mb-3 text-xs text-amber-700">
-                원문에서 해당 텍스트를 찾지 못했습니다. 슬라이드 편집에서 수동으로 추가해주세요.
-              </p>
-              <div className="flex max-h-40 flex-col gap-1 overflow-y-auto">
-                {unmatchedAnnotations.map((ua, i) => (
-                  <div key={i} className="rounded bg-white px-3 py-2 text-xs text-amber-900">
-                    <span className="font-medium">&ldquo;{ua.targetText}&rdquo;</span>
-                    <span className="text-amber-600"> → {ua.content}</span>
+
+                {fullText && (
+                  <>
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-[#1E2761]">
+                        추출된 텍스트 (확인/수정 후 분할하세요)
+                      </label>
+                      <textarea
+                        value={fullText}
+                        onChange={(e) => setFullText(e.target.value)}
+                        className="min-h-[300px] w-full resize-y rounded-xl border border-[#CADCFC]/60 bg-white p-5 text-base leading-relaxed text-[#1E2761] outline-none shadow-inner transition-all hover:border-[#CADCFC] focus:border-[#1E2761] focus:ring-1 focus:ring-[#1E2761]"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[#1E2761]/60">
+                        {`${fullText.length}자 / ${fullText.split("\n").length}줄`}
+                      </span>
+                      <button
+                        onClick={handleSplit}
+                        disabled={!fullText.trim()}
+                        className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#1E2761]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        슬라이드 분할
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {!fullText && (
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleExtractAll}
+                      disabled={!pdfFile || isExtracting}
+                      className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#1E2761]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {isExtracting ? "추출 중..." : "텍스트 & 주석 추출"}
+                    </button>
                   </div>
-                ))}
+                )}
+              </>
+            )}
+
+            {/* Extraction progress overlay */}
+            {isExtracting && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+                <div className="flex flex-col items-center gap-4 rounded-2xl bg-white px-10 py-8 shadow-xl">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#CADCFC] border-t-[#1E2761]" />
+                  <p className="text-sm font-medium text-[#1E2761]">
+                    {extractionProgress || "처리 중..."}
+                  </p>
+                </div>
               </div>
-              <button
-                onClick={() => setUnmatchedAnnotations([])}
-                className="mt-3 text-xs text-amber-600 hover:text-amber-800"
-              >
-                닫기
-              </button>
-            </div>
-          )}
-        </div>
+            )}
+
+            {/* Unmatched annotations warning */}
+            {unmatchedAnnotations.length > 0 && (
+              <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
+                <p className="mb-2 text-sm font-semibold text-amber-800">
+                  매칭되지 않은 주석 {unmatchedAnnotations.length}개
+                </p>
+                <p className="mb-3 text-xs text-amber-700">
+                  원문에서 해당 텍스트를 찾지 못했습니다. 슬라이드 편집에서 수동으로 추가해주세요.
+                </p>
+                <div className="flex max-h-40 flex-col gap-1 overflow-y-auto">
+                  {unmatchedAnnotations.map((ua, i) => (
+                    <div key={i} className="rounded bg-white px-3 py-2 text-xs text-amber-900">
+                      <span className="font-medium">&ldquo;{ua.targetText}&rdquo;</span>
+                      <span className="text-amber-600"> → {ua.content}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setUnmatchedAnnotations([])}
+                  className="mt-3 text-xs text-amber-600 hover:text-amber-800"
+                >
+                  닫기
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -542,7 +542,7 @@ function EditorInner({ genre }: { genre: Genre }) {
                 슬라이드 ({slides.length})
               </h3>
             </div>
-            <nav className="flex-1 overflow-y-auto">
+            <nav className="flex-1 overflow-y-auto p-2">
               {slides.map((slide, index) => {
                 const firstLine =
                   slide.text.split("\n")[0]?.slice(0, 30) || "";
@@ -551,28 +551,25 @@ function EditorInner({ genre }: { genre: Genre }) {
                   <button
                     key={slide.id}
                     onClick={() => setCurrentSlideIndex(index)}
-                    className={`flex w-full flex-col gap-1 border-b border-[#CADCFC]/40 px-4 py-3 text-left transition-colors ${
-                      isActive
-                        ? "bg-[#1E2761] text-white"
-                        : "text-[#1E2761] hover:bg-[#CADCFC]/30"
-                    }`}
+                    className={`flex w-full flex-col gap-1 rounded-lg px-3 py-2.5 text-left mb-1 transition-all ${isActive
+                      ? "bg-white text-[#1E2761] shadow-sm ring-1 ring-[#CADCFC]/60 border-l-4 border-l-[#1E2761]"
+                      : "text-[#1E2761] hover:bg-[#CADCFC]/30"
+                      }`}
                   >
                     <span className="text-xs font-semibold">
                       슬라이드 {index + 1}
                     </span>
                     <span
-                      className={`truncate text-xs ${
-                        isActive ? "text-white/70" : "text-[#1E2761]/50"
-                      }`}
+                      className={`truncate text-xs ${isActive ? "text-[#1E2761]/70" : "text-[#1E2761]/50"
+                        }`}
                     >
                       {firstLine}
                       {firstLine.length >= 30 ? "..." : ""}
                     </span>
                     {slide.annotations.length > 0 && (
                       <span
-                        className={`text-xs ${
-                          isActive ? "text-[#CADCFC]" : "text-[#1E2761]/60"
-                        }`}
+                        className={`text-xs ${isActive ? "font-medium text-[#1E2761]" : "text-[#1E2761]/60"
+                          }`}
                       >
                         주석 {slide.annotations.length}개
                       </span>
@@ -625,7 +622,7 @@ function EditorInner({ genre }: { genre: Genre }) {
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating}
-                className="mb-2 w-full rounded-lg bg-[#1E2761] px-3 py-2 text-xs font-semibold text-white transition-all hover:bg-[#1E2761]/90 disabled:opacity-40"
+                className="mb-2 w-full rounded-lg bg-[#1E2761] px-3 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#1E2761]/95 hover:shadow-md disabled:opacity-40"
               >
                 {isGenerating ? "생성 중..." : "PPT 생성"}
               </button>
