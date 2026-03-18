@@ -464,7 +464,10 @@ function getShapeType(
 function getShapeGeometry(
   markerType: MarkerType,
   pos: TextPosition,
+  fontSize: number = 36,
 ): { x: number; y: number; w: number; h: number } {
+  // Scale Y offsets proportionally to font size (calibrated at 36pt)
+  const s = fontSize / 36;
   switch (markerType) {
     case "underline":
       // A line drawn under the text (h=0 for a horizontal line in pptxgenjs)
@@ -475,26 +478,23 @@ function getShapeGeometry(
         h: 0,
       };
     case "circle":
-      // Oval around the text with uniform SHAPE_PADDING.
       return {
         x: pos.x - SHAPE_PADDING - 0.01,
-        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.34,
+        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.34 * s,
         w: pos.w + SHAPE_PADDING * 2,
         h: pos.h + SHAPE_PADDING * 2,
       };
     case "rectangle":
-      // Rectangle tightly around the text.
       return {
         x: pos.x - SHAPE_PADDING / 4 - 0.01,
-        y: pos.y - 0.01 + SHAPE_Y_OFFSET + 0.34,
+        y: pos.y - 0.01 + SHAPE_Y_OFFSET + 0.34 * s,
         w: pos.w + SHAPE_PADDING / 2,
         h: pos.h + 0.02,
       };
     case "triangle":
-      // Triangle tip extends above text
       return {
         x: pos.x - SHAPE_PADDING,
-        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.22,
+        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.22 * s,
         w: pos.w + SHAPE_PADDING * 2,
         h: pos.h + SHAPE_PADDING * 2,
       };
@@ -630,14 +630,16 @@ function buildSlide(
       );
       const symbolSize = BRACKET_SYMBOL_FONT_SIZE / 72;
 
+      const brs = settings.fontSize / 36; // bracket scale factor
+
       // 「 above-left of the start position
       slide.addText("「", {
-        x: startPos.x - 0.13,
-        y: startPos.y + SHAPE_Y_OFFSET + 0.18,
+        x: startPos.x - 0.22,
+        y: startPos.y + SHAPE_Y_OFFSET + 0.22 * brs,
         w: symbolSize,
         h: symbolSize,
         fontSize: BRACKET_SYMBOL_FONT_SIZE,
-        fontFace: FONT_FAMILY,
+        fontFace: settings.fontFamily,
         bold: true,
         color,
         align: "center",
@@ -649,7 +651,7 @@ function buildSlide(
       // 」 below-right of the end position
       slide.addText("」", {
         x: endPos.x + endPos.w - 0.30,
-        y: endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.50,
+        y: endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.10 * brs,
         w: symbolSize,
         h: symbolSize,
         fontSize: BRACKET_SYMBOL_FONT_SIZE,
@@ -688,7 +690,7 @@ function buildSlide(
       shapeLeftX = summaryBoxX;
       shapeWidth = summaryBoxW;
     } else {
-      const geom = getShapeGeometry(annotation.markerType, pos);
+      const geom = getShapeGeometry(annotation.markerType, pos, settings.fontSize);
       const shapeType = getShapeType(annotation.markerType, pptx);
       slide.addShape(shapeType, {
         x: geom.x,
