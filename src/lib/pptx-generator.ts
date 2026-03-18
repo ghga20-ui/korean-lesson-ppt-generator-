@@ -480,25 +480,22 @@ function getShapeGeometry(
       // to align with text that renders below pos.y in PowerPoint.
       return {
         x: pos.x - SHAPE_PADDING - 0.01,
-        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.22,
+        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.18,
         w: pos.w + SHAPE_PADDING * 2,
         h: pos.h + SHAPE_PADDING * 2,
       };
     case "rectangle":
       // Rectangle tightly around the text.
-      // Same extra +0.15" downward as circle for consistent alignment.
       return {
         x: pos.x - SHAPE_PADDING / 4 - 0.01,
-        y: pos.y - 0.01 + SHAPE_Y_OFFSET + 0.22,
+        y: pos.y - 0.01 + SHAPE_Y_OFFSET + 0.18,
         w: pos.w + SHAPE_PADDING / 2,
         h: pos.h + 0.02,
       };
-    case "triangle":
-      // Triangle tip extends above text — needs less offset than circle/rect
-      // but still needs compensation after PPT_LINE_STEP_RATIO fix.
+      // Triangle tip extends above text
       return {
         x: pos.x - SHAPE_PADDING,
-        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.10,
+        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.02,
         w: pos.w + SHAPE_PADDING * 2,
         h: pos.h + SHAPE_PADDING * 2,
       };
