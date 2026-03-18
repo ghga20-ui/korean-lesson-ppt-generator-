@@ -21,7 +21,7 @@ function getMaxLinesPerSlide(settings: PptSettings): number {
  */
 function splitPoetry(text: string, settings: PptSettings): string[] {
   const maxLines = getMaxLinesPerSlide(settings);
-  const textAreaWidth = (settings.slideWidth - 1.0) * 0.97;
+  const textAreaWidth = (settings.slideWidth - 1.0) * 0.94;
   const metrics = getFontMetrics(settings.fontFamily);
   const stanzas = text.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
   const slides: string[] = [];
@@ -134,7 +134,7 @@ function splitWithForcedBreaks(
 
 function splitNovel(text: string, settings: PptSettings): string[] {
   const maxLines = getMaxLinesPerSlide(settings);
-  const textAreaWidth = (settings.slideWidth - 1.0) * 0.97;
+  const textAreaWidth = (settings.slideWidth - 1.0) * 0.94;
   const metrics = getFontMetrics(settings.fontFamily);
 
   const slides: string[] = [];
