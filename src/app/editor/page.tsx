@@ -4,7 +4,6 @@ import { Suspense, useState, useCallback, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { Genre, SlideData, InputMode, ExtractedAnnotation, Annotation, PptSettings } from "@/lib/types";
 import { DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
-import { SUPPORTED_FONTS } from "@/lib/font-metrics";
 import { splitText, splitSlideAt, mergeSlides } from "@/lib/slide-splitter";
 import { matchAnnotationsToText, distributeAnnotationsToSlides } from "@/lib/annotation-matcher";
 import AnnotationEditor from "@/components/AnnotationEditor";
@@ -660,45 +659,6 @@ function EditorInner({ genre }: { genre: Genre }) {
                   </button>
                 </div>
 
-                {/* Font/size/spacing settings */}
-                <div className="flex items-center gap-4 border-b border-[#CADCFC]/50 bg-[#CADCFC]/5 px-6 py-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-[#1E2761]/50">폰트</span>
-                    <select
-                      value={pptSettings.fontFamily}
-                      onChange={(e) => setPptSettings((s) => ({ ...s, fontFamily: e.target.value }))}
-                      className="rounded border border-[#CADCFC] px-2 py-0.5 text-xs text-[#1E2761] outline-none"
-                    >
-                      {SUPPORTED_FONTS.map((f) => (
-                        <option key={f} value={f}>{f}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] text-[#1E2761]/50">크기</span>
-                    <button
-                      onClick={() => setPptSettings((s) => ({ ...s, fontSize: Math.max(16, s.fontSize - 2) }))}
-                      className="rounded border border-[#CADCFC] px-1.5 py-0.5 text-xs text-[#1E2761] hover:bg-[#CADCFC]/20"
-                    >-</button>
-                    <span className="min-w-[32px] text-center text-xs font-medium text-[#1E2761]">{pptSettings.fontSize}pt</span>
-                    <button
-                      onClick={() => setPptSettings((s) => ({ ...s, fontSize: Math.min(48, s.fontSize + 2) }))}
-                      className="rounded border border-[#CADCFC] px-1.5 py-0.5 text-xs text-[#1E2761] hover:bg-[#CADCFC]/20"
-                    >+</button>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] text-[#1E2761]/50">줄간격</span>
-                    <button
-                      onClick={() => setPptSettings((s) => ({ ...s, lineSpacing: Math.max(1.2, Math.round((s.lineSpacing - 0.1) * 10) / 10) }))}
-                      className="rounded border border-[#CADCFC] px-1.5 py-0.5 text-xs text-[#1E2761] hover:bg-[#CADCFC]/20"
-                    >-</button>
-                    <span className="min-w-[28px] text-center text-xs font-medium text-[#1E2761]">{pptSettings.lineSpacing}</span>
-                    <button
-                      onClick={() => setPptSettings((s) => ({ ...s, lineSpacing: Math.min(3.0, Math.round((s.lineSpacing + 0.1) * 10) / 10) }))}
-                      className="rounded border border-[#CADCFC] px-1.5 py-0.5 text-xs text-[#1E2761] hover:bg-[#CADCFC]/20"
-                    >+</button>
-                  </div>
-                </div>
 
                 {/* Annotation editor */}
                 <div className="min-h-0 flex-1">
