@@ -29,8 +29,8 @@ export default function ModeSelector({ mode, onChange, hasApiKey }: ModeSelector
               isActive
                 ? "bg-white font-semibold text-[#1E2761] shadow-sm ring-1 ring-[#CADCFC]/50"
                 : m.recommended
-                  ? "border border-[#1E2761]/20 bg-white text-[#1E2761] hover:bg-[#CADCFC]/40"
-                  : "text-[#1E2761]/70 hover:bg-[#CADCFC]/40"
+                  ? "border border-[#1E2761]/20 text-[#1E2761] hover:bg-white/50"
+                  : "text-[#1E2761]/70 hover:bg-white/50"
             }`}
           >
             <div className="flex items-center justify-center gap-1">
