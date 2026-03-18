@@ -648,7 +648,7 @@ function buildSlide(
       // 」 below-right of the end position
       slide.addText("」", {
         x: endPos.x + endPos.w - 0.30,
-        y: endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.18 * brs,
+        y: endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.21 * brs,
         w: symbolSize,
         h: symbolSize,
         fontSize: BRACKET_SYMBOL_FONT_SIZE,
