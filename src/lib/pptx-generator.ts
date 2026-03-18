@@ -290,14 +290,11 @@ function estimateTextPosition(
   endIndex: number,
   settings: PptSettings,
 ): TextPosition {
-  // lineStepInch = actual distance between line tops in PowerPoint.
-  // PowerPoint's spcPct multiplies against the font's natural line height
-  // (which includes ascent+descent), not just the nominal font size.
   const lineStepInch =
     (settings.fontSize * PPT_LINE_STEP_RATIO * settings.lineSpacing) / 72;
-  // lineHeightInch = shape sizing basis (without font metric scaling).
   const lineHeightInch = (settings.fontSize * settings.lineSpacing) / 72;
-  const textAreaWidth = settings.slideWidth - TEXT_LEFT_MARGIN * 2;
+  // 3% narrower than actual text box to account for PPT kinsoku (line-break rules)
+  const textAreaWidth = (settings.slideWidth - TEXT_LEFT_MARGIN * 2) * 0.97;
 
   let line = 0;
   let lineXAccum = 0; // accumulated width in current line (inches)
@@ -334,7 +331,7 @@ function estimateTextPosition(
   }
 
   const x = TEXT_LEFT_MARGIN + startX;
-  const y = TEXT_TOP_MARGIN + startLine * lineStepInch;
+  const y = TEXT_TOP_MARGIN + startLine * lineStepInch - startLine * 0.015;
 
   // Width: from startX to endX (same line), or to end-of-line if multi-line
   let w: number;
@@ -364,7 +361,7 @@ function getUnderlineSegments(
   const lineStepInch =
     (settings.fontSize * PPT_LINE_STEP_RATIO * settings.lineSpacing) / 72;
   const charHeightInch = settings.fontSize / 72;
-  const textAreaWidth = settings.slideWidth - TEXT_LEFT_MARGIN * 2;
+  const textAreaWidth = (settings.slideWidth - TEXT_LEFT_MARGIN * 2) * 0.97;
 
   let line = 0;
   let lineXAccum = 0;
@@ -746,6 +743,8 @@ function buildSlide(
     } else {
       annotLine = Math.round((pos.y - TEXT_TOP_MARGIN) / lineStepInch);
     }
+    const spanLines = Math.max(1, Math.round((pos.h) / charHeightInch));
+    const isMultiLine = spanLines > 1;
     const isLastLine = annotLine >= totalLines - 1;
 
     // Consistent glyph bottom reference (independent of shape padding)
@@ -756,13 +755,15 @@ function buildSlide(
     if (isLastLine) {
       annotTextY = Math.max(shapeBottomY, glyphBottomY) + ANNOTATION_Y_GAP;
     } else {
-      const nextLineY = TEXT_TOP_MARGIN + (annotLine + 1) * lineStepInch;
+      const nextLineY = TEXT_TOP_MARGIN + (annotLine + 1) * lineStepInch
+        - (annotLine + 1) * 0.015;
       const visibleTextH = settings.annotationFontSize / 72;
-      const anchorY = Math.max(shapeBottomY, glyphBottomY);
-      const gapMidpoint = (anchorY + nextLineY) / 2;
+      const anchorY = isMultiLine ? glyphBottomY + 0.27 : Math.max(shapeBottomY, glyphBottomY);
+      // Position closer to marker (3% from anchor toward next line)
+      const gapBias = anchorY + (nextLineY - anchorY) * 0.03;
       annotTextY = Math.max(
         anchorY + ANNOTATION_Y_GAP,
-        gapMidpoint - visibleTextH / 2,
+        gapBias - visibleTextH / 2,
       );
     }
 
