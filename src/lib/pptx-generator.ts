@@ -122,31 +122,17 @@ interface AnimationGroup {
  */
 export function getCharWidthInch(char: string, fontSize: number, metrics?: FontMetrics): number {
   const ptToInch = fontSize / 72;
-  // Korean Hangul syllables (AC00-D7AF), CJK ideographs, fullwidth forms
-  // 한컴산뜻돋움 Bold: advance width = 932/1000 em
-  if (/[\uAC00-\uD7AF\u4E00-\u9FFF\u3400-\u4DBF\uFF00-\uFFEF]/.test(char)) {
-    return ptToInch * 0.932;
-  }
-  // Korean Jamo (ㄱ-ㅎ, ㅏ-ㅣ) and CJK symbols
-  if (/[\u3131-\u318E\u3000-\u303F]/.test(char)) {
-    return ptToInch * 0.932;
-  }
-  // Uppercase Latin
-  if (/[A-Z]/.test(char)) return ptToInch * 0.7;
-  // Lowercase Latin
-  if (/[a-z]/.test(char)) return ptToInch * 0.5;
-  // Digits
-  if (/[0-9]/.test(char)) return ptToInch * 0.6;
-  // Space — 한컴산뜻돋움 Bold: advance width = 264/1000 em
-  if (char === " ") return ptToInch * 0.264;
-  // Common punctuation (narrow) — 한컴산뜻돋움 Bold: ~297/1000 em
-  if (/[.,;:!?'"]/.test(char)) return ptToInch * 0.297;
-  // Brackets and parentheses
-  if (/[()[\]{}]/.test(char)) return ptToInch * 0.35;
-  // Korean punctuation (。、「」 etc.) — fullwidth
-  if (/[\u3001-\u3003\u300C-\u300F]/.test(char)) return ptToInch * 0.932;
-  // Default
-  return ptToInch * 0.5;
+  const m = metrics || getFontMetrics("한컴산뜻돋움");
+  if (/[\uAC00-\uD7AF\u4E00-\u9FFF\u3400-\u4DBF\uFF00-\uFFEF]/.test(char)) return ptToInch * m.hangul;
+  if (/[\u3131-\u318E\u3000-\u303F]/.test(char)) return ptToInch * m.hangul;
+  if (/[A-Z]/.test(char)) return ptToInch * m.latinUpper;
+  if (/[a-z]/.test(char)) return ptToInch * m.latinLower;
+  if (/[0-9]/.test(char)) return ptToInch * m.digit;
+  if (char === " ") return ptToInch * m.space;
+  if (/[.,;:!?'"]/.test(char)) return ptToInch * m.punctuation;
+  if (/[()[\]{}]/.test(char)) return ptToInch * m.bracket;
+  if (/[\u3001-\u3003\u300C-\u300F]/.test(char)) return ptToInch * m.fullwidth;
+  return ptToInch * m.latinLower;
 }
 
 /**
@@ -226,6 +212,7 @@ function preprocessAnnotations(
   annotations: Annotation[],
   fontSize: number,
   textAreaWidthInch: number,
+  metrics?: FontMetrics,
 ): { text: string; annotations: Annotation[] } {
   if (annotations.length === 0) return { text, annotations };
 
@@ -542,6 +529,7 @@ function buildSlide(
   const slide = pptx.addSlide();
   slide.background = { color: SLIDE_BG_COLOR };
 
+  const metrics = getFontMetrics(settings.fontFamily);
   const textAreaWidth = settings.slideWidth - TEXT_LEFT_MARGIN * 2;
   const textAreaHeight = settings.slideHeight * settings.textAreaHeightRatio;
 
@@ -553,7 +541,7 @@ function buildSlide(
       w: textAreaWidth,
       h: textAreaHeight,
       fontSize: settings.fontSize,
-      fontFace: FONT_FAMILY,
+      fontFace: settings.fontFamily,
       bold: true,
       color: MAIN_TEXT_COLOR,
       align: "left",
@@ -652,7 +640,7 @@ function buildSlide(
         w: symbolSize,
         h: symbolSize,
         fontSize: BRACKET_SYMBOL_FONT_SIZE,
-        fontFace: FONT_FAMILY,
+        fontFace: settings.fontFamily,
         bold: true,
         color,
         align: "center",
@@ -714,7 +702,7 @@ function buildSlide(
         w: textAreaWidth - 0.3,
         h: summaryBoxH - 0.1,
         fontSize: settings.annotationFontSize,
-        fontFace: FONT_FAMILY,
+        fontFace: settings.fontFamily,
         bold: true,
         color: SUMMARY_BORDER_COLOR,
         align: "left",
@@ -729,7 +717,7 @@ function buildSlide(
     // Position annotation text consistently based on the TEXT LINE position,
     // not the shape bottom, so all marker types produce the same text Y.
     const lineStepInch =
-      (settings.fontSize * PPT_LINE_STEP_RATIO * settings.lineSpacing) / 72;
+      (settings.fontSize * metrics.lineStepRatio * settings.lineSpacing) / 72;
     const lineHeightInch = (settings.fontSize * settings.lineSpacing) / 72;
     const charHeightInch = settings.fontSize / 72;
     const totalLines = slideData.text.split("\n").length;
@@ -788,7 +776,7 @@ function buildSlide(
       w: annotTextW,
       h: ANNOTATION_TEXT_HEIGHT,
       fontSize: settings.annotationFontSize,
-      fontFace: FONT_FAMILY,
+      fontFace: settings.fontFamily,
       bold: true,
       color,
       align: "left",
@@ -1053,6 +1041,7 @@ export async function generatePptxBuffer(
       slideData.annotations,
       s.fontSize,
       textAreaWidth,
+      getFontMetrics(s.fontFamily),
     );
     return { ...slideData, text: result.text, annotations: result.annotations };
   });
