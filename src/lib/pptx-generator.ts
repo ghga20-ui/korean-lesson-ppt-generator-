@@ -52,7 +52,7 @@ const MAIN_TEXT_COLOR = "222222";
 const SLIDE_BG_COLOR = "FFFFFF";
 
 /** Vertical gap between marker shape bottom and annotation text (inches). */
-const ANNOTATION_Y_GAP = -0.01;
+const ANNOTATION_Y_GAP = -0.03;
 
 /**
  * Vertical offset applied to all marker shapes so they align with the
@@ -648,7 +648,7 @@ function buildSlide(
       // 」 below-right of the end position
       slide.addText("」", {
         x: endPos.x + endPos.w - 0.30,
-        y: endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.14 * brs,
+        y: endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.18 * brs,
         w: symbolSize,
         h: symbolSize,
         fontSize: BRACKET_SYMBOL_FONT_SIZE,
