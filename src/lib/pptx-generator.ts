@@ -632,7 +632,7 @@ function buildSlide(
       // 「 above-left of the start position
       slide.addText("「", {
         x: startPos.x - 0.22,
-        y: startPos.y + SHAPE_Y_OFFSET + 0.25 * brs,
+        y: startPos.y + SHAPE_Y_OFFSET + 0.28 * brs,
         w: symbolSize,
         h: symbolSize,
         fontSize: BRACKET_SYMBOL_FONT_SIZE,
