@@ -476,11 +476,9 @@ function getShapeGeometry(
       };
     case "circle":
       // Oval around the text with uniform SHAPE_PADDING.
-      // Ellipse visual center = geometric center, needs extra downward offset
-      // to align with text that renders below pos.y in PowerPoint.
       return {
         x: pos.x - SHAPE_PADDING - 0.01,
-        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.18,
+        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.24,
         w: pos.w + SHAPE_PADDING * 2,
         h: pos.h + SHAPE_PADDING * 2,
       };
@@ -488,7 +486,7 @@ function getShapeGeometry(
       // Rectangle tightly around the text.
       return {
         x: pos.x - SHAPE_PADDING / 4 - 0.01,
-        y: pos.y - 0.01 + SHAPE_Y_OFFSET + 0.18,
+        y: pos.y - 0.01 + SHAPE_Y_OFFSET + 0.24,
         w: pos.w + SHAPE_PADDING / 2,
         h: pos.h + 0.02,
       };
@@ -496,7 +494,7 @@ function getShapeGeometry(
       // Triangle tip extends above text
       return {
         x: pos.x - SHAPE_PADDING,
-        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.02,
+        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.08,
         w: pos.w + SHAPE_PADDING * 2,
         h: pos.h + SHAPE_PADDING * 2,
       };
