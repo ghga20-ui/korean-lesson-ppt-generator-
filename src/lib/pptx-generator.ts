@@ -399,7 +399,7 @@ function getUnderlineSegments(
   for (const [lineNum, bounds] of sortedLines) {
     segments.push({
       x: TEXT_LEFT_MARGIN + bounds.left,
-      y: TEXT_TOP_MARGIN + lineNum * lineStepInch + charHeightInch + SHAPE_Y_OFFSET + 0.31 - lineNum * 0.015,
+      y: TEXT_TOP_MARGIN + lineNum * lineStepInch + charHeightInch + SHAPE_Y_OFFSET + 0.34 - lineNum * 0.015,
       w: Math.max(0.1, bounds.right - bounds.left),
     });
   }
@@ -408,7 +408,7 @@ function getUnderlineSegments(
   if (segments.length === 0) {
     segments.push({
       x: TEXT_LEFT_MARGIN,
-      y: TEXT_TOP_MARGIN + charHeightInch + SHAPE_Y_OFFSET + 0.31,
+      y: TEXT_TOP_MARGIN + charHeightInch + SHAPE_Y_OFFSET + 0.34,
       w: 0.5,
     });
   }
@@ -635,7 +635,7 @@ function buildSlide(
 
       // 」 below-right of the end position
       slide.addText("」", {
-        x: endPos.x + endPos.w - 0.30,
+        x: endPos.x + endPos.w - 0.22,
         y: endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.24 * brs,
         w: symbolSize,
         h: symbolSize,
