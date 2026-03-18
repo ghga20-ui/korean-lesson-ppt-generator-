@@ -632,7 +632,7 @@ function buildSlide(
       // 「 above-left of the start position
       slide.addText("「", {
         x: startPos.x - 0.22,
-        y: startPos.y + SHAPE_Y_OFFSET + 0.22 * brs,
+        y: startPos.y + SHAPE_Y_OFFSET + 0.25 * brs,
         w: symbolSize,
         h: symbolSize,
         fontSize: BRACKET_SYMBOL_FONT_SIZE,
@@ -648,7 +648,7 @@ function buildSlide(
       // 」 below-right of the end position
       slide.addText("」", {
         x: endPos.x + endPos.w - 0.30,
-        y: endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.21 * brs,
+        y: endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.24 * brs,
         w: symbolSize,
         h: symbolSize,
         fontSize: BRACKET_SYMBOL_FONT_SIZE,
