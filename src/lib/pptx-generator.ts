@@ -478,7 +478,7 @@ function getShapeGeometry(
       // Oval around the text with uniform SHAPE_PADDING.
       return {
         x: pos.x - SHAPE_PADDING - 0.01,
-        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.30,
+        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.34,
         w: pos.w + SHAPE_PADDING * 2,
         h: pos.h + SHAPE_PADDING * 2,
       };
@@ -486,7 +486,7 @@ function getShapeGeometry(
       // Rectangle tightly around the text.
       return {
         x: pos.x - SHAPE_PADDING / 4 - 0.01,
-        y: pos.y - 0.01 + SHAPE_Y_OFFSET + 0.30,
+        y: pos.y - 0.01 + SHAPE_Y_OFFSET + 0.34,
         w: pos.w + SHAPE_PADDING / 2,
         h: pos.h + 0.02,
       };
@@ -494,7 +494,7 @@ function getShapeGeometry(
       // Triangle tip extends above text
       return {
         x: pos.x - SHAPE_PADDING,
-        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.18,
+        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + 0.22,
         w: pos.w + SHAPE_PADDING * 2,
         h: pos.h + SHAPE_PADDING * 2,
       };
