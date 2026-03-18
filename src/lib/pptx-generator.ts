@@ -662,7 +662,7 @@ function buildSlide(
       });
 
       markerShapeCount = 2; // 「 + 」
-      shapeBottomY = endPos.y + endPos.h + SHAPE_Y_OFFSET - 0.14 + symbolSize * 0.65;
+      shapeBottomY = endPos.y + endPos.h + SHAPE_Y_OFFSET + 0.02 + symbolSize * 0.65;
       shapeLeftX = startPos.x;
       shapeWidth = pos.w;
     } else if (annotation.markerType === "summary") {
