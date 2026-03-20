@@ -3,7 +3,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import type { SlideData, Genre, Annotation, MarkerType } from "@/lib/types";
 import { DEFAULT_ANNOTATION_COLOR, ANNOTATION_COLOR_PALETTE } from "@/lib/types";
-import { ChevronUp, ChevronDown, Crosshair, Scissors, Trash2 } from "lucide-react";
+import { ChevronUp, ChevronDown, Crosshair, Scissors, Trash2, GripVertical } from "lucide-react";
+import BatchEditPanel from "@/components/BatchEditPanel";
 
 interface AnnotationEditorProps {
   slide: SlideData;
@@ -89,6 +90,14 @@ export default function AnnotationEditor({
   const [editingMarkerTypeId, setEditingMarkerTypeId] = useState<string | null>(null);
   const [editingColorId, setEditingColorId] = useState<string | null>(null);
 
+  // Drag and drop state
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+  // Split mode state
+  const [isSplitMode, setIsSplitMode] = useState(false);
+  const [splitCharIndex, setSplitCharIndex] = useState<number | null>(null);
+
   // Close popup when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -118,11 +127,14 @@ export default function AnnotationEditor({
 
   const handleTextMouseUp = useCallback(() => {
     const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || !textRef.current) return;
+    if (!selection || !textRef.current) return;
 
+    // Normal annotation requires a selected range, but split mode accepts a click (collapsed selection)
+    if (!isSplitMode && selection.isCollapsed) return;
+
+    // In split mode, we only care if they clicked or selected something
     const range = selection.getRangeAt(0);
     const selectedText = selection.toString();
-    if (!selectedText.trim()) return;
 
     // Calculate character indices in the slide's text
     // Walk through the text container's child nodes to find offset
@@ -150,7 +162,16 @@ export default function AnnotationEditor({
       charCount += textNode.length;
     }
 
-    if (startIndex < 0 || endIndex < 0 || startIndex >= endIndex) return;
+    if (startIndex < 0 || endIndex < 0) return;
+
+    // Handle split mode
+    if (isSplitMode) {
+      setSplitCharIndex(startIndex);
+      selection.removeAllRanges();
+      return;
+    }
+
+    if (startIndex >= endIndex || !selectedText.trim()) return;
 
     // Mode: retarget existing annotation
     if (retargetingId) {
@@ -194,7 +215,7 @@ export default function AnnotationEditor({
     });
     setPopupContent("");
     setPopupMarkerType("underline");
-  }, [retargetingId, clipboardAnnotation, pendingUnmatched, slide, onUpdateSlide, onPasteAnnotation, onAddUnmatched]);
+  }, [isSplitMode, retargetingId, clipboardAnnotation, pendingUnmatched, slide, onUpdateSlide, onPasteAnnotation, onAddUnmatched]);
 
   const handleAddAnnotation = useCallback(() => {
     if (!popup || !popupContent.trim()) return;
@@ -297,18 +318,94 @@ export default function AnnotationEditor({
     [slide, onUpdateSlide]
   );
 
-  const handleSplitAtPrompt = useCallback(() => {
-    const input = prompt(
-      "분할할 문자 위치를 입력하세요 (0부터 시작, 현재 슬라이드 길이: " +
-        slide.text.length +
-        ")"
-    );
-    if (input === null) return;
-    const charIndex = parseInt(input, 10);
-    if (isNaN(charIndex) || charIndex <= 0 || charIndex >= slide.text.length)
+  const handleDragStart = useCallback((e: React.DragEvent<HTMLLIElement>, id: string) => {
+    e.dataTransfer.effectAllowed = "move";
+    setDraggedId(id);
+    // Use a small timeout to allow the drag image to be generated before setting opacity
+    setTimeout(() => {
+      e.target.dispatchEvent(new CustomEvent("dragstarted"));
+    }, 0);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLLIElement>, id: string) => {
+    e.preventDefault();
+    if (draggedId && draggedId !== id) {
+      e.dataTransfer.dropEffect = "move";
+      setDragOverId(id);
+    }
+  }, [draggedId]);
+
+  const handleDrop = useCallback((e: React.DragEvent<HTMLLIElement>, id: string) => {
+    e.preventDefault();
+    if (!draggedId || draggedId === id) {
+      setDraggedId(null);
+      setDragOverId(null);
       return;
-    onSplitAt(charIndex);
-  }, [slide.text.length, onSplitAt]);
+    }
+
+    const sorted = [...slide.annotations].sort((a, b) => a.order - b.order);
+    const fromIdx = sorted.findIndex((a) => a.id === draggedId);
+    const toIdx = sorted.findIndex((a) => a.id === id);
+
+    if (fromIdx >= 0 && toIdx >= 0) {
+      const draggedItem = sorted[fromIdx];
+      sorted.splice(fromIdx, 1);
+      sorted.splice(toIdx, 0, draggedItem);
+      
+      // Update order values based on array position
+      const reordered = sorted.map((ann, idx) => ({ ...ann, order: idx + 1 }));
+      
+      onUpdateSlide({
+        ...slide,
+        annotations: reordered,
+      });
+    }
+
+    setDraggedId(null);
+    setDragOverId(null);
+  }, [draggedId, slide, onUpdateSlide]);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedId(null);
+    setDragOverId(null);
+  }, []);
+
+  const handleBatchUpdate = useCallback((updatedAnnotations: Annotation[]) => {
+    // Merge updated annotations with the rest that weren't selected
+    const updatedMap = new Map(updatedAnnotations.map(a => [a.id, a]));
+    const nextList = slide.annotations
+      .map(oldAnn => updatedMap.get(oldAnn.id) || oldAnn)
+      .filter(ann => {
+        // If it was in the slide but not in updatedMap AND it was deleted, it would be missing.
+        // BatchEditPanel passes *all* remaining annotations when a delete happens.
+        return true; 
+      });
+
+    // Actually, BatchEditPanel returns the *filtered/updated list of just the selected + remaining target ones*.
+    // Wait, BatchEditPanel receives all annotations, and returns the full list of ALL annotations after modifications or deletions.
+    onUpdateSlide({
+      ...slide,
+      annotations: updatedAnnotations,
+    });
+  }, [slide, onUpdateSlide]);
+
+  const handleStartSplitMode = useCallback(() => {
+    setIsSplitMode(true);
+    setSplitCharIndex(null);
+  }, []);
+
+  const handleConfirmSplit = useCallback(() => {
+    if (splitCharIndex !== null && splitCharIndex > 0 && splitCharIndex < slide.text.length) {
+      onSplitAt(splitCharIndex);
+    }
+    setIsSplitMode(false);
+    setSplitCharIndex(null);
+  }, [splitCharIndex, onSplitAt, slide.text.length]);
+
+  const handleCancelSplit = useCallback(() => {
+    setIsSplitMode(false);
+    setSplitCharIndex(null);
+  }, []);
 
   const handleSaveSummary = useCallback(() => {
     const trimmed = summaryContent.trim();
@@ -400,6 +497,22 @@ export default function AnnotationEditor({
     }
 
     return segments.map((seg, i) => {
+      // Calculate start index of this segment
+      const segStart = segments.slice(0, i).reduce((acc, s) => acc + s.text.length, 0);
+      let segContent: React.ReactNode = seg.text;
+
+      // Inject split marker if needed
+      if (isSplitMode && splitCharIndex !== null && splitCharIndex >= segStart && splitCharIndex < segStart + seg.text.length) {
+        const localIdx = splitCharIndex - segStart;
+        segContent = (
+          <>
+            {seg.text.slice(0, localIdx)}
+            <span className="mx-px inline-block h-5 w-0.5 border-l-2 border-dashed border-red-500 align-middle animate-pulse shadow-[0_0_4px_rgba(239,68,68,0.8)]" title="이 위치에서 분할" />
+            {seg.text.slice(localIdx)}
+          </>
+        );
+      }
+
       if (seg.annotation) {
         const annColor = seg.annotation.color || DEFAULT_ANNOTATION_COLOR;
         return (
@@ -409,13 +522,13 @@ export default function AnnotationEditor({
             style={{ backgroundColor: annColor + "20" }}
             title={`[${seg.annotation.order}] ${seg.annotation.content}`}
           >
-            {seg.text}
+            {segContent}
           </span>
         );
       }
-      return <span key={i}>{seg.text}</span>;
+      return <span key={i}>{segContent}</span>;
     });
-  }, [slide]);
+  }, [slide, isSplitMode, splitCharIndex]);
 
   const sortedAnnotations = [...slide.annotations].sort(
     (a, b) => a.order - b.order
@@ -426,20 +539,28 @@ export default function AnnotationEditor({
       {/* Text display with annotations */}
       <div className="flex min-h-0 flex-1 flex-col border-r border-[#CADCFC]/50">
         <div className="border-b border-[#CADCFC]/50 px-6 py-2">
-          {retargetingId ? (
-            <div className="flex items-center justify-between rounded-lg bg-amber-50 border border-amber-300 px-3 py-1.5">
+          {isSplitMode ? (
+            <div className="flex items-center justify-between rounded-lg bg-red-50 border border-red-300 px-3 py-1.5 shadow-sm">
+              <span className="text-xs font-semibold text-red-800">✂ 텍스트 위치를 클릭하여 분할 기준점을 지정하세요</span>
+              <div className="flex gap-2">
+                <button onClick={handleCancelSplit} className="text-xs text-red-600 hover:text-red-800">취소</button>
+                <button onClick={handleConfirmSplit} disabled={splitCharIndex === null} className="rounded bg-red-600 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-40">확인</button>
+              </div>
+            </div>
+          ) : retargetingId ? (
+            <div className="flex items-center justify-between rounded-lg bg-amber-50 border border-amber-300 px-3 py-1.5 shadow-sm">
               <span className="text-xs text-amber-800">🎯 새 타겟 텍스트를 드래그로 선택하세요</span>
               <button onClick={() => setRetargetingId(null)}
                 className="text-xs text-amber-600 hover:text-amber-800">취소</button>
             </div>
           ) : clipboardAnnotation ? (
-            <div className="flex items-center justify-between rounded-lg bg-blue-50 border border-blue-300 px-3 py-1.5">
+            <div className="flex items-center justify-between rounded-lg bg-blue-50 border border-blue-300 px-3 py-1.5 shadow-sm">
               <span className="text-xs text-blue-800">📋 붙여넣을 위치의 텍스트를 드래그로 선택하세요</span>
               <button onClick={onCancelPaste}
                 className="text-xs text-blue-600 hover:text-blue-800">취소</button>
             </div>
           ) : pendingUnmatched ? (
-            <div className="flex items-center justify-between rounded-lg bg-amber-50 border border-amber-300 px-3 py-1.5">
+            <div className="flex items-center justify-between rounded-lg bg-amber-50 border border-amber-300 px-3 py-1.5 shadow-sm">
               <span className="truncate text-xs text-amber-800">📎 미매칭 주석 추가: &ldquo;{pendingUnmatched.content.slice(0, 30)}&rdquo;</span>
               <button onClick={onCancelUnmatched}
                 className="flex-shrink-0 text-xs text-amber-600 hover:text-amber-800">취소</button>
@@ -454,8 +575,7 @@ export default function AnnotationEditor({
           <div
             ref={textRef}
             onMouseUp={handleTextMouseUp}
-            className="whitespace-pre-wrap text-base leading-relaxed text-[#1E2761] selection:bg-[#CADCFC]"
-            style={{ cursor: "text" }}
+            className={`whitespace-pre-wrap text-base leading-relaxed text-[#1E2761] selection:bg-[#CADCFC] ${isSplitMode ? "cursor-crosshair selection:bg-transparent" : "cursor-text"}`}
           >
             {renderHighlightedText()}
           </div>
@@ -588,29 +708,35 @@ export default function AnnotationEditor({
         </div>
 
         {/* Slide controls */}
-        <div className="flex flex-shrink-0 items-center gap-2 border-t border-[#CADCFC]/50 px-6 py-3">
-          <button
-            onClick={handleSplitAtPrompt}
-            className="rounded-lg border border-[#CADCFC] px-3 py-1.5 text-xs text-[#1E2761] transition-colors hover:bg-[#CADCFC]/20"
-          >
-            이 위치에서 분할
-          </button>
+        <div className="flex flex-shrink-0 items-center justify-between gap-2 border-t border-[#CADCFC]/50 px-6 py-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleStartSplitMode}
+              disabled={isSplitMode}
+              className="rounded-lg border border-red-300 bg-red-50 text-red-600 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-red-100 disabled:opacity-50"
+            >
+              ✂ 분할선 표시
+            </button>
+          </div>
           <button
             onClick={onMergeNext}
             disabled={isLastSlide}
-            className="rounded-lg border border-[#CADCFC] px-3 py-1.5 text-xs text-[#1E2761] transition-colors hover:bg-[#CADCFC]/20 disabled:opacity-30"
+            className="rounded-lg border border-[#CADCFC] bg-white px-3 py-1.5 text-xs text-[#1E2761] transition-colors hover:bg-[#CADCFC]/20 disabled:opacity-30"
           >
-            다음 슬라이드와 합치기
+            다음 슬라이드와 병합 ↓
           </button>
         </div>
       </div>
 
       {/* Right panel: annotation list */}
       <div className="flex w-full min-h-0 flex-col border-t border-[#CADCFC]/50 lg:w-80 lg:border-t-0">
-        <div className="border-b border-[#CADCFC]/50 px-4 py-2">
+        <div className="flex items-center justify-between border-b border-[#CADCFC]/50 px-4 py-2">
           <span className="text-xs font-semibold text-[#1E2761]">
             주석 목록 ({slide.annotations.length})
           </span>
+          {slide.annotations.length > 0 && (
+            <BatchEditPanel annotations={slide.annotations} onBatchUpdate={handleBatchUpdate} />
+          )}
         </div>
         <div className="flex-1 overflow-y-auto">
           {sortedAnnotations.length === 0 ? (
@@ -625,8 +751,28 @@ export default function AnnotationEditor({
           ) : (
             <ul className="divide-y divide-[#CADCFC]/30">
               {sortedAnnotations.map((ann, idx) => (
-                <li key={ann.id} className="group px-4 py-3">
+                <li
+                  key={ann.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, ann.id)}
+                  onDragOver={(e) => handleDragOver(e, ann.id)}
+                  onDrop={(e) => handleDrop(e, ann.id)}
+                  onDragEnd={handleDragEnd}
+                  className={`group px-4 py-3 relative bg-white transition-all
+                    ${draggedId === ann.id ? "opacity-30" : "opacity-100"}
+                  `}
+                >
+                  {dragOverId === ann.id && draggedId !== ann.id && (
+                    <div className="absolute left-0 top-0 h-0.5 w-full bg-blue-500 rounded-full shadow-sm z-10" />
+                  )}
                   <div className="flex items-start gap-2">
+                    {/* Drag handle */}
+                    <div 
+                      className="mt-1 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+                      title="드래그하여 순서 변경"
+                    >
+                      <GripVertical className="h-4 w-4" />
+                    </div>
                     {/* Color dot (clickable) + order number */}
                     <div className="mt-0.5 flex flex-shrink-0 flex-col items-center gap-1">
                       <div className="flex items-center gap-1">
