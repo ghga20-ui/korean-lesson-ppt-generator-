@@ -17,7 +17,8 @@ import {
   GLYPH_Y_OFFSET_CIRCLE,
   GLYPH_Y_OFFSET_RECTANGLE,
   GLYPH_Y_OFFSET_TRIANGLE,
-  PROSE_MARKER_Y_CORRECTION,
+  PROSE_UNDERLINE_Y_CORRECTION,
+  PROSE_SHAPE_Y_CORRECTION,
 } from "./pptx-constants";
 import type { MarkerType, Genre } from "./types";
 
@@ -289,7 +290,7 @@ export function getUnderlineSegments(
   settings: PptSettings,
   genre?: Genre,
 ): UnderlineSegment[] {
-  const proseCorrection = genre === "novel" ? PROSE_MARKER_Y_CORRECTION : 0;
+  const proseCorrection = genre === "novel" ? PROSE_UNDERLINE_Y_CORRECTION : 0;
   const lineStepInch =
     (settings.fontSize * PPT_LINE_STEP_RATIO * settings.lineSpacing) / 72;
   const charHeightInch = settings.fontSize / 72;
@@ -370,7 +371,7 @@ export function getShapeGeometry(
   genre?: Genre,
 ): { x: number; y: number; w: number; h: number } {
   const s = fontSize / 36;
-  const proseCorrection = genre === "novel" ? PROSE_MARKER_Y_CORRECTION : 0;
+  const proseCorrection = genre === "novel" ? PROSE_SHAPE_Y_CORRECTION : 0;
   switch (markerType) {
     case "underline":
       return {

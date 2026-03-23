@@ -131,11 +131,15 @@ export const UNDERLINE_Y_BASE_OFFSET = 0.40;
 export const LINE_DRIFT_CORRECTION = 0.015;
 
 /**
- * Prose (novel) marker Y correction (inches).
- * Applied to all marker shapes and underlines in novel slides to shift them upward.
- * Negative = up.
+ * Prose (novel) underline Y correction (inches). Negative = up.
  */
-export const PROSE_MARKER_Y_CORRECTION = -0.05;
+export const PROSE_UNDERLINE_Y_CORRECTION = -0.05;
+
+/**
+ * Prose (novel) shape (circle / rectangle / triangle) Y correction (inches).
+ * Slightly less negative than underline so shapes sit a bit lower. Negative = up.
+ */
+export const PROSE_SHAPE_Y_CORRECTION = -0.02;
 
 /**
  * Multi-line annotation vertical offset (inches).
