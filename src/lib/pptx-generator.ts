@@ -149,6 +149,7 @@ function buildSlide(
         annotation.startIndex,
         annotation.endIndex,
         settings,
+        genre,
       );
 
       for (const seg of segments) {
@@ -231,7 +232,7 @@ function buildSlide(
       shapeLeftX = summaryBoxX;
       shapeWidth = summaryBoxW;
     } else {
-      const geom = getShapeGeometry(annotation.markerType, pos, settings.fontSize);
+      const geom = getShapeGeometry(annotation.markerType, pos, settings.fontSize, genre);
       const shapeType = getShapeType(annotation.markerType, pptx);
       slide.addShape(shapeType, {
         x: geom.x,

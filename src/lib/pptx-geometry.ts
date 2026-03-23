@@ -17,8 +17,9 @@ import {
   GLYPH_Y_OFFSET_CIRCLE,
   GLYPH_Y_OFFSET_RECTANGLE,
   GLYPH_Y_OFFSET_TRIANGLE,
+  PROSE_MARKER_Y_CORRECTION,
 } from "./pptx-constants";
-import type { MarkerType } from "./types";
+import type { MarkerType, Genre } from "./types";
 
 // ---------------------------------------------------------------------------
 // Interfaces
@@ -286,7 +287,9 @@ export function getUnderlineSegments(
   startIndex: number,
   endIndex: number,
   settings: PptSettings,
+  genre?: Genre,
 ): UnderlineSegment[] {
+  const proseCorrection = genre === "novel" ? PROSE_MARKER_Y_CORRECTION : 0;
   const lineStepInch =
     (settings.fontSize * PPT_LINE_STEP_RATIO * settings.lineSpacing) / 72;
   const charHeightInch = settings.fontSize / 72;
@@ -337,7 +340,7 @@ export function getUnderlineSegments(
   for (const [lineNum, bounds] of sortedLines) {
     segments.push({
       x: TEXT_LEFT_MARGIN + bounds.left,
-      y: TEXT_TOP_MARGIN + lineNum * lineStepInch + charHeightInch + SHAPE_Y_OFFSET + UNDERLINE_Y_BASE_OFFSET - lineNum * LINE_DRIFT_CORRECTION,
+      y: TEXT_TOP_MARGIN + lineNum * lineStepInch + charHeightInch + SHAPE_Y_OFFSET + UNDERLINE_Y_BASE_OFFSET - lineNum * LINE_DRIFT_CORRECTION + proseCorrection,
       w: Math.max(0.1, bounds.right - bounds.left),
     });
   }
@@ -345,7 +348,7 @@ export function getUnderlineSegments(
   if (segments.length === 0) {
     segments.push({
       x: TEXT_LEFT_MARGIN,
-      y: TEXT_TOP_MARGIN + charHeightInch + SHAPE_Y_OFFSET + UNDERLINE_Y_BASE_OFFSET,
+      y: TEXT_TOP_MARGIN + charHeightInch + SHAPE_Y_OFFSET + UNDERLINE_Y_BASE_OFFSET + proseCorrection,
       w: 0.5,
     });
   }
@@ -364,8 +367,10 @@ export function getShapeGeometry(
   markerType: MarkerType,
   pos: TextPosition,
   fontSize: number = 36,
+  genre?: Genre,
 ): { x: number; y: number; w: number; h: number } {
   const s = fontSize / 36;
+  const proseCorrection = genre === "novel" ? PROSE_MARKER_Y_CORRECTION : 0;
   switch (markerType) {
     case "underline":
       return {
@@ -377,21 +382,21 @@ export function getShapeGeometry(
     case "circle":
       return {
         x: pos.x - SHAPE_PADDING - 0.01,
-        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + GLYPH_Y_OFFSET_CIRCLE * s,
+        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + GLYPH_Y_OFFSET_CIRCLE * s + proseCorrection,
         w: pos.w + SHAPE_PADDING * 2,
         h: pos.h + SHAPE_PADDING * 2,
       };
     case "rectangle":
       return {
         x: pos.x - SHAPE_PADDING / 4 - 0.01,
-        y: pos.y - 0.01 + SHAPE_Y_OFFSET + GLYPH_Y_OFFSET_RECTANGLE * s,
+        y: pos.y - 0.01 + SHAPE_Y_OFFSET + GLYPH_Y_OFFSET_RECTANGLE * s + proseCorrection,
         w: pos.w + SHAPE_PADDING / 2,
         h: pos.h + 0.02,
       };
     case "triangle":
       return {
         x: pos.x - SHAPE_PADDING,
-        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + GLYPH_Y_OFFSET_TRIANGLE * s,
+        y: pos.y - SHAPE_PADDING + SHAPE_Y_OFFSET + GLYPH_Y_OFFSET_TRIANGLE * s + proseCorrection,
         w: pos.w + SHAPE_PADDING * 2,
         h: pos.h + SHAPE_PADDING * 2,
       };
