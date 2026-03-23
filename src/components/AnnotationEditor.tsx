@@ -96,7 +96,7 @@ export default function AnnotationEditor({
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   // Annotation panel resize
-  const { width: annotationPanelWidth, startDrag: startAnnotationPanelDrag } = usePanelResize(320, 200, 520, "left");
+  const { width: annotationPanelWidth, startDrag: startAnnotationPanelDrag } = usePanelResize(380, 200, 560, "left");
 
   // Split mode state
   const [isSplitMode, setIsSplitMode] = useState(false);
@@ -822,7 +822,7 @@ export default function AnnotationEditor({
                     <div className="min-w-0 flex-1">
                       {/* Target text */}
                       <p
-                        className={`mb-1 truncate rounded px-1.5 py-0.5 text-xs ${MARKER_COLORS[ann.markerType]}`}
+                        className={`mb-1 truncate rounded px-1.5 py-0.5 text-sm ${MARKER_COLORS[ann.markerType]}`}
                       >
                         {ann.targetText}
                       </p>
@@ -839,14 +839,14 @@ export default function AnnotationEditor({
                             }
                             if (e.key === "Escape") setEditingAnnotationId(null);
                           }}
-                          className="w-full resize-none rounded border border-[#CADCFC] px-1.5 py-1 text-xs text-[#1E2761] outline-none focus:border-[#1E2761]"
+                          className="w-full resize-none rounded border border-[#CADCFC] px-1.5 py-1 text-sm text-[#1E2761] outline-none focus:border-[#1E2761]"
                           rows={2}
                           autoFocus
                         />
                       ) : (
                         <p
                           onClick={() => { setEditingAnnotationId(ann.id); setEditingContent(ann.content); }}
-                          className="cursor-pointer rounded px-1 text-xs leading-relaxed text-[#1E2761]/70 hover:bg-[#CADCFC]/20"
+                          className="cursor-pointer rounded px-1 text-sm leading-relaxed text-[#1E2761]/70 hover:bg-[#CADCFC]/20"
                           title="클릭하여 내용 수정"
                         >
                           {ann.content}
@@ -855,7 +855,7 @@ export default function AnnotationEditor({
                       {/* Marker type badge — click to change */}
                       <span
                         onClick={() => setEditingMarkerTypeId(editingMarkerTypeId === ann.id ? null : ann.id)}
-                        className={`mt-1 inline-block cursor-pointer rounded border px-1.5 py-0.5 text-[10px] ${MARKER_BORDER_COLORS[ann.markerType]} text-[#1E2761]/50 hover:bg-[#CADCFC]/20`}
+                        className={`mt-1 inline-block cursor-pointer rounded border px-1.5 py-0.5 text-xs ${MARKER_BORDER_COLORS[ann.markerType]} text-[#1E2761]/50 hover:bg-[#CADCFC]/20`}
                         title="클릭하여 마커 타입 변경"
                       >
                         {MARKER_LABELS[ann.markerType]}
@@ -866,7 +866,7 @@ export default function AnnotationEditor({
                             <button
                               key={type}
                               onClick={() => changeMarkerType(ann.id, type)}
-                              className={`rounded border px-1.5 py-0.5 text-[10px] transition-colors ${
+                              className={`rounded border px-1.5 py-0.5 text-xs transition-colors ${
                                 ann.markerType === type
                                   ? `${MARKER_BORDER_COLORS[type]} font-bold text-[#1E2761]`
                                   : "border-[#CADCFC] text-[#1E2761]/50 hover:border-[#1E2761]/30"
