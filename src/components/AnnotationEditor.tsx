@@ -92,7 +92,8 @@ export default function AnnotationEditor({
   const maxLines = getMaxLinesPerSlide(pptSettings);
   const usedLines = countVisualLines(slide.text, pptSettings.fontSize, textAreaWidth);
   const overflowRatio = usedLines / maxLines;
-  const isOverflow = usedLines > maxLines;
+  const isOverflow = usedLines > maxLines + 1;   // 9줄부터 경고
+  const isWarning = !isOverflow && usedLines >= maxLines; // 7-8줄은 주의
 
   const [popup, setPopup] = useState<SelectionPopup | null>(null);
   const [popupMarkerType, setPopupMarkerType] =
@@ -117,6 +118,10 @@ export default function AnnotationEditor({
   const [isSplitMode, setIsSplitMode] = useState(false);
   const [splitCharIndex, setSplitCharIndex] = useState<number | null>(null);
 
+  // Text edit mode state
+  const [isTextEditMode, setIsTextEditMode] = useState(false);
+  const [editingText, setEditingText] = useState("");
+
   // Close popup when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -138,6 +143,7 @@ export default function AnnotationEditor({
     setPopup(null);
     setPopupContent("");
     setRetargetingId(null);
+    setIsTextEditMode(false);
     const existingSummary = slide.annotations.find(
       (a) => a.markerType === "summary"
     );
@@ -408,6 +414,26 @@ export default function AnnotationEditor({
     });
   }, [slide, onUpdateSlide]);
 
+  const handleStartTextEdit = useCallback(() => {
+    setEditingText(slide.text);
+    setIsTextEditMode(true);
+  }, [slide.text]);
+
+  const handleConfirmTextEdit = useCallback(() => {
+    if (editingText !== slide.text) {
+      // Remove annotations whose indices now exceed the new text length
+      const validAnnotations = slide.annotations.filter(
+        (a) => a.startIndex < editingText.length && a.endIndex <= editingText.length
+      );
+      onUpdateSlide({ ...slide, text: editingText, annotations: validAnnotations });
+    }
+    setIsTextEditMode(false);
+  }, [editingText, slide, onUpdateSlide]);
+
+  const handleCancelTextEdit = useCallback(() => {
+    setIsTextEditMode(false);
+  }, []);
+
   const handleStartSplitMode = useCallback(() => {
     setIsSplitMode(true);
     setSplitCharIndex(null);
@@ -558,7 +584,15 @@ export default function AnnotationEditor({
       {/* Text display with annotations */}
       <div className="flex min-h-0 flex-1 flex-col border-r border-[#CADCFC]/50">
         <div className="border-b border-[#CADCFC]/50 px-6 py-2">
-          {isSplitMode ? (
+          {isTextEditMode ? (
+            <div className="flex items-center justify-between rounded-lg bg-emerald-50 border border-emerald-300 px-3 py-1.5 shadow-sm">
+              <span className="text-xs font-semibold text-emerald-800">✏ 텍스트 편집 중 — 완료 후 저장됩니다</span>
+              <div className="flex gap-2">
+                <button onClick={handleCancelTextEdit} className="text-xs text-emerald-600 hover:text-emerald-800">취소</button>
+                <button onClick={handleConfirmTextEdit} className="rounded bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-emerald-700">완료</button>
+              </div>
+            </div>
+          ) : isSplitMode ? (
             <div className="flex items-center justify-between rounded-lg bg-red-50 border border-red-300 px-3 py-1.5 shadow-sm">
               <span className="text-xs font-semibold text-red-800">✂ 텍스트 위치를 클릭하여 분할 기준점을 지정하세요</span>
               <div className="flex gap-2">
@@ -585,12 +619,28 @@ export default function AnnotationEditor({
                 className="flex-shrink-0 text-xs text-amber-600 hover:text-amber-800">취소</button>
             </div>
           ) : (
-            <span className="text-xs font-medium text-[#1E2761]/60">
-              텍스트 영역 -- 텍스트를 선택하여 주석을 추가하세요
-            </span>
+            <div className="flex items-center justify-between w-full">
+              <span className="text-xs font-medium text-[#1E2761]/60">
+                텍스트를 선택하여 주석을 추가하세요
+              </span>
+              <button
+                onClick={handleStartTextEdit}
+                className="rounded border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-700 transition-colors hover:bg-emerald-100"
+              >
+                ✏ 텍스트 편집
+              </button>
+            </div>
           )}
         </div>
         <div className="relative min-h-0 flex-1 overflow-y-auto p-6">
+          {isTextEditMode ? (
+            <textarea
+              value={editingText}
+              onChange={(e) => setEditingText(e.target.value)}
+              autoFocus
+              className="h-full min-h-64 w-full resize-none rounded-lg border border-emerald-300 bg-emerald-50/30 p-3 text-base leading-relaxed text-[#1E2761] focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+            />
+          ) : (
           <div
             ref={textRef}
             onMouseUp={handleTextMouseUp}
@@ -598,6 +648,7 @@ export default function AnnotationEditor({
           >
             {renderHighlightedText()}
           </div>
+          )}
 
           {/* Selection popup */}
           {popup && (
@@ -742,11 +793,11 @@ export default function AnnotationEditor({
           <div className="flex items-center gap-2">
             <div className="w-20 h-1.5 rounded-full bg-gray-200 overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all ${isOverflow ? "bg-red-500" : overflowRatio > 0.85 ? "bg-amber-400" : "bg-[#1E2761]/40"}`}
+                className={`h-full rounded-full transition-all ${isOverflow ? "bg-red-500" : isWarning ? "bg-amber-400" : "bg-[#1E2761]/40"}`}
                 style={{ width: `${Math.min(100, overflowRatio * 100)}%` }}
               />
             </div>
-            <span className={`text-xs font-medium tabular-nums ${isOverflow ? "text-red-600" : "text-[#1E2761]/60"}`}>
+            <span className={`text-xs font-medium tabular-nums ${isOverflow ? "text-red-600" : isWarning ? "text-amber-600" : "text-[#1E2761]/60"}`}>
               {usedLines}/{maxLines}줄
             </span>
             {isOverflow && (
