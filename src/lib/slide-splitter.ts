@@ -6,7 +6,7 @@ import { getFontMetrics } from "./font-metrics";
  * Estimate max lines per slide given font size, line spacing, and slide dimensions.
  * Reserves ~30% of slide height for annotation text boxes below the main text.
  */
-function getMaxLinesPerSlide(settings: PptSettings): number {
+export function getMaxLinesPerSlide(settings: PptSettings): number {
   const usableHeightInches = settings.slideHeight * settings.textAreaHeightRatio;
   const lineHeightPt = settings.fontSize * settings.lineSpacing;
   const lineHeightInches = lineHeightPt / 72; // 72 points per inch

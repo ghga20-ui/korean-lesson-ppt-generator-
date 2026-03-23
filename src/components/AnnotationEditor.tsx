@@ -3,7 +3,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { usePanelResize } from "@/hooks/usePanelResize";
 import type { SlideData, Genre, Annotation, MarkerType } from "@/lib/types";
-import { DEFAULT_ANNOTATION_COLOR, ANNOTATION_COLOR_PALETTE } from "@/lib/types";
+import { DEFAULT_ANNOTATION_COLOR, ANNOTATION_COLOR_PALETTE, DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
+import { countVisualLines } from "@/lib/pptx-geometry";
+import { getMaxLinesPerSlide } from "@/lib/slide-splitter";
+import { TEXT_LEFT_MARGIN } from "@/lib/pptx-constants";
 import { ChevronUp, ChevronDown, Crosshair, Scissors, Trash2, GripVertical } from "lucide-react";
 import BatchEditPanel from "@/components/BatchEditPanel";
 
@@ -13,6 +16,8 @@ interface AnnotationEditorProps {
   onUpdateSlide: (updatedSlide: SlideData) => void;
   onSplitAt: (charIndex: number) => void;
   onMergeNext: () => void;
+  onMergePrev: () => void;
+  isFirstSlide: boolean;
   isLastSlide: boolean;
   clipboardAnnotation: Annotation | null;
   onCutAnnotation: (annotation: Annotation) => void;
@@ -67,6 +72,8 @@ export default function AnnotationEditor({
   onUpdateSlide,
   onSplitAt,
   onMergeNext,
+  onMergePrev,
+  isFirstSlide,
   isLastSlide,
   clipboardAnnotation,
   onCutAnnotation,
@@ -78,6 +85,14 @@ export default function AnnotationEditor({
 }: AnnotationEditorProps) {
   const textRef = useRef<HTMLDivElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
+
+  // Overflow indicator
+  const pptSettings = genre === "poetry" ? DEFAULT_POETRY_SETTINGS : DEFAULT_NOVEL_SETTINGS;
+  const textAreaWidth = pptSettings.slideWidth - TEXT_LEFT_MARGIN * 2;
+  const maxLines = getMaxLinesPerSlide(pptSettings);
+  const usedLines = countVisualLines(slide.text, pptSettings.fontSize, textAreaWidth);
+  const overflowRatio = usedLines / maxLines;
+  const isOverflow = usedLines > maxLines;
 
   const [popup, setPopup] = useState<SelectionPopup | null>(null);
   const [popupMarkerType, setPopupMarkerType] =
@@ -722,13 +737,39 @@ export default function AnnotationEditor({
               ✂ 분할선 표시
             </button>
           </div>
-          <button
-            onClick={onMergeNext}
-            disabled={isLastSlide}
-            className="rounded-lg border border-[#CADCFC] bg-white px-3 py-1.5 text-xs text-[#1E2761] transition-colors hover:bg-[#CADCFC]/20 disabled:opacity-30"
-          >
-            다음 슬라이드와 병합 ↓
-          </button>
+
+          {/* Capacity indicator */}
+          <div className="flex items-center gap-2">
+            <div className="w-20 h-1.5 rounded-full bg-gray-200 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${isOverflow ? "bg-red-500" : overflowRatio > 0.85 ? "bg-amber-400" : "bg-[#1E2761]/40"}`}
+                style={{ width: `${Math.min(100, overflowRatio * 100)}%` }}
+              />
+            </div>
+            <span className={`text-xs font-medium tabular-nums ${isOverflow ? "text-red-600" : "text-[#1E2761]/60"}`}>
+              {usedLines}/{maxLines}줄
+            </span>
+            {isOverflow && (
+              <span className="text-xs text-red-500 font-medium">⚠ PPT 잘림 가능</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onMergePrev}
+              disabled={isFirstSlide}
+              className="rounded-lg border border-[#CADCFC] bg-white px-3 py-1.5 text-xs text-[#1E2761] transition-colors hover:bg-[#CADCFC]/20 disabled:opacity-30"
+            >
+              ↑ 이전과 병합
+            </button>
+            <button
+              onClick={onMergeNext}
+              disabled={isLastSlide}
+              className="rounded-lg border border-[#CADCFC] bg-white px-3 py-1.5 text-xs text-[#1E2761] transition-colors hover:bg-[#CADCFC]/20 disabled:opacity-30"
+            >
+              ↓ 다음과 병합
+            </button>
+          </div>
         </div>
       </div>
 

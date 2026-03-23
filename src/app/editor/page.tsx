@@ -82,6 +82,7 @@ function EditorInner({ genre }: { genre: Genre }) {
           onUpdateSlide={editor.handleUpdateSlide}
           onSplitAt={editor.handleSplitAt}
           onMergeNext={editor.handleMergeNext}
+          onMergePrev={editor.handleMergePrev}
           onCutAnnotation={editor.handleCutAnnotation}
           onPasteAnnotation={editor.handlePasteAnnotation}
           onCancelPaste={editor.handleCancelPaste}

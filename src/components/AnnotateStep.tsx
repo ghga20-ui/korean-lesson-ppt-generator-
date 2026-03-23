@@ -19,6 +19,7 @@ interface AnnotateStepProps {
   onUpdateSlide: (slide: SlideData) => void;
   onSplitAt: (charIndex: number) => void;
   onMergeNext: () => void;
+  onMergePrev: () => void;
   onCutAnnotation: (annotation: Annotation) => void;
   onPasteAnnotation: (start: number, end: number, text: string) => void;
   onCancelPaste: () => void;
@@ -47,6 +48,7 @@ export default function AnnotateStep({
   onUpdateSlide,
   onSplitAt,
   onMergeNext,
+  onMergePrev,
   onCutAnnotation,
   onPasteAnnotation,
   onCancelPaste,
@@ -247,6 +249,8 @@ export default function AnnotateStep({
                 onUpdateSlide={onUpdateSlide}
                 onSplitAt={onSplitAt}
                 onMergeNext={onMergeNext}
+                onMergePrev={onMergePrev}
+                isFirstSlide={currentSlideIndex === 0}
                 isLastSlide={currentSlideIndex === slides.length - 1}
                 clipboardAnnotation={clipboardAnnotation}
                 onCutAnnotation={onCutAnnotation}

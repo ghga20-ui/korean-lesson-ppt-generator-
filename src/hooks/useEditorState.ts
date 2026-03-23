@@ -119,6 +119,7 @@ export interface EditorActions {
   handleUpdateSlide: (updatedSlide: SlideData) => void;
   handleSplitAt: (charIndex: number) => void;
   handleMergeNext: () => void;
+  handleMergePrev: () => void;
   handleGenerate: () => Promise<void>;
   handleCutAnnotation: (annotation: Annotation) => void;
   handlePasteAnnotation: (startIndex: number, endIndex: number, targetText: string) => void;
@@ -324,6 +325,16 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     });
   }, [currentSlideIndex, history]);
 
+  const handleMergePrev = useCallback(() => {
+    if (currentSlideIndex === 0) return;
+    setSlides((prev) => {
+      const next = mergeSlides(prev, currentSlideIndex - 1);
+      history.push(next);
+      return next;
+    });
+    setCurrentSlideIndex(currentSlideIndex - 1);
+  }, [currentSlideIndex, history]);
+
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
     try {
@@ -468,7 +479,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     setStep, showToast, setFullText, setSlides, setCurrentSlideIndex,
     setInputMode, setPdfFile, setUnmatchedAnnotations, setPendingUnmatched,
     setPptSettings, handleSplit, handleExtractAnnotations, handleExtractAll,
-    handleUpdateSlide, handleSplitAt, handleMergeNext, handleGenerate,
+    handleUpdateSlide, handleSplitAt, handleMergeNext, handleMergePrev, handleGenerate,
     handleCutAnnotation, handlePasteAnnotation, handleCancelPaste,
     handleAddUnmatched, handleCancelUnmatched, resetToInput,
     undo, redo, exportProject, importProject,
