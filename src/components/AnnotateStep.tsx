@@ -4,6 +4,7 @@ import { useRef } from "react";
 import type { SlideData, Genre, Annotation, ExtractedAnnotation } from "@/lib/types";
 import AnnotationEditor from "@/components/AnnotationEditor";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { usePanelResize } from "@/hooks/usePanelResize";
 
 interface AnnotateStepProps {
   genre: Genre;
@@ -62,6 +63,7 @@ export default function AnnotateStep({
 }: AnnotateStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const currentSlide = slides[currentSlideIndex];
+  const { width: sidebarWidth, startDrag: startSidebarDrag } = usePanelResize(256, 160, 400, "right");
 
   useKeyboardShortcuts({
     onPrevSlide: () => onSlideSelect(Math.max(0, currentSlideIndex - 1)),
@@ -82,7 +84,7 @@ export default function AnnotateStep({
   return (
     <div className="flex flex-1 overflow-hidden">
       {/* Left sidebar: slide list */}
-      <aside className="flex w-64 flex-shrink-0 flex-col border-r border-[#CADCFC] bg-[#CADCFC]/10">
+      <aside className="flex flex-shrink-0 flex-col border-r border-[#CADCFC] bg-[#CADCFC]/10" style={{ width: sidebarWidth }}>
         <div className="border-b border-[#CADCFC] px-4 py-3">
           <h3 className="text-sm font-semibold text-[#1E2761]">
             슬라이드 ({slides.length})
@@ -198,6 +200,15 @@ export default function AnnotateStep({
           </div>
         </div>
       </aside>
+
+      {/* Resize handle: slide list ↔ main */}
+      <div
+        onMouseDown={startSidebarDrag}
+        className="group relative z-10 flex w-1.5 flex-shrink-0 cursor-col-resize items-center justify-center bg-transparent transition-colors hover:bg-[#1E2761]/10 active:bg-[#1E2761]/20"
+        title="드래그하여 너비 조절"
+      >
+        <div className="h-10 w-px rounded-full bg-[#CADCFC] transition-colors group-hover:bg-[#1E2761]/40" />
+      </div>
 
       {/* Main content: annotation editor */}
       <main className="flex flex-1 flex-col overflow-hidden">

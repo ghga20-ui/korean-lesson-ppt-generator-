@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { usePanelResize } from "@/hooks/usePanelResize";
 import type { SlideData, Genre, Annotation, MarkerType } from "@/lib/types";
 import { DEFAULT_ANNOTATION_COLOR, ANNOTATION_COLOR_PALETTE } from "@/lib/types";
 import { ChevronUp, ChevronDown, Crosshair, Scissors, Trash2, GripVertical } from "lucide-react";
@@ -93,6 +94,9 @@ export default function AnnotationEditor({
   // Drag and drop state
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+  // Annotation panel resize
+  const { width: annotationPanelWidth, startDrag: startAnnotationPanelDrag } = usePanelResize(320, 200, 520, "left");
 
   // Split mode state
   const [isSplitMode, setIsSplitMode] = useState(false);
@@ -728,8 +732,20 @@ export default function AnnotationEditor({
         </div>
       </div>
 
+      {/* Resize handle: text area ↔ annotation list */}
+      <div
+        onMouseDown={startAnnotationPanelDrag}
+        className="group relative z-10 hidden lg:flex w-1.5 flex-shrink-0 cursor-col-resize items-center justify-center bg-transparent transition-colors hover:bg-[#1E2761]/10 active:bg-[#1E2761]/20"
+        title="드래그하여 너비 조절"
+      >
+        <div className="h-10 w-px rounded-full bg-[#CADCFC] transition-colors group-hover:bg-[#1E2761]/40" />
+      </div>
+
       {/* Right panel: annotation list */}
-      <div className="flex w-full min-h-0 flex-col border-t border-[#CADCFC]/50 lg:w-80 lg:border-t-0">
+      <div
+        className="flex min-h-0 flex-col border-t border-[#CADCFC]/50 lg:border-t-0 lg:flex-shrink-0"
+        style={{ width: annotationPanelWidth }}
+      >
         <div className="flex items-center justify-between border-b border-[#CADCFC]/50 px-4 py-2">
           <span className="text-xs font-semibold text-[#1E2761]">
             주석 목록 ({slide.annotations.length})

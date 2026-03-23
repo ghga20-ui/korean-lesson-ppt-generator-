@@ -69,12 +69,6 @@ function getShapeType(
   }
 }
 
-/**
- * Return the marker color for annotation shapes.
- */
-function getAnnotationColor(_index: number): string {
-  return MARKER_COLOR;
-}
 
 // ---------------------------------------------------------------------------
 // Slide builder
@@ -134,7 +128,7 @@ function buildSlide(
 
   for (let idx = 0; idx < sortedAnnotations.length; idx++) {
     const annotation = sortedAnnotations[idx];
-    const color = getAnnotationColor(idx);
+    const color = (annotation.color ?? MARKER_COLOR).replace(/^#/, "");
 
     const pos = estimateTextPosition(
       slideData.text,
