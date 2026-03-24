@@ -41,10 +41,10 @@ export default function InputStep({
     <div className="flex-1 overflow-y-auto">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-10">
         <div>
-          <h2 className="mb-2 text-2xl font-bold text-[#1E2761]">
+          <h2 className="mb-2 text-2xl font-bold text-[#6B3F26]">
             텍스트 입력
           </h2>
-          <p className="text-sm text-[#1E2761]/60">
+          <p className="text-sm text-[#6B3F26]/60">
             {genre === "poetry"
               ? "텍스트를 입력하세요. 연/단락 사이는 빈 줄로 구분합니다."
               : "텍스트를 입력하세요. 적정 분량으로 자동 분할됩니다."}
@@ -69,11 +69,11 @@ export default function InputStep({
                   ? "교과서 본문을 붙여넣으세요...\n\n연/단락 사이에 빈 줄을 넣어주세요."
                   : "교과서 본문을 붙여넣으세요..."
               }
-              className="min-h-[400px] w-full flex-1 resize-y rounded-xl border border-[#CADCFC]/60 bg-white p-5 text-base leading-relaxed text-[#1E2761] placeholder-[#1E2761]/50 outline-none shadow-inner transition-all hover:border-[#CADCFC] focus:border-[#1E2761] focus:ring-1 focus:ring-[#1E2761]"
+              className="min-h-[400px] w-full flex-1 resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
             />
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-[#1E2761]/60">
+              <span className="text-sm text-[#6B3F26]/60">
                 {fullText.length > 0
                   ? `${fullText.length}자 / ${fullText.split("\n").length}줄`
                   : ""}
@@ -81,7 +81,7 @@ export default function InputStep({
               <button
                 onClick={onSplit}
                 disabled={!fullText.trim()}
-                className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#1E2761]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-xl bg-[#6B3F26] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6B3F26]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
               >
                 슬라이드 분할
               </button>
@@ -100,18 +100,18 @@ export default function InputStep({
                   ? "교과서 본문을 붙여넣으세요...\n\n연/단락 사이에 빈 줄을 넣어주세요."
                   : "교과서 본문을 붙여넣으세요..."
               }
-              className="min-h-[300px] w-full resize-y rounded-xl border border-[#CADCFC]/60 bg-white p-5 text-base leading-relaxed text-[#1E2761] placeholder-[#1E2761]/50 outline-none shadow-inner transition-all hover:border-[#CADCFC] focus:border-[#1E2761] focus:ring-1 focus:ring-[#1E2761]"
+              className="min-h-[300px] w-full resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
             />
 
             <div className="flex flex-col gap-3">
-              <label className="text-sm font-medium text-[#1E2761]">
+              <label className="text-sm font-medium text-[#6B3F26]">
                 교사용 교과서 PDF 업로드
               </label>
               <PdfUploader file={pdfFile} onFileChange={onPdfFileChange} />
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-[#1E2761]/60">
+              <span className="text-sm text-[#6B3F26]/60">
                 {fullText.length > 0
                   ? `${fullText.length}자 / ${fullText.split("\n").length}줄`
                   : ""}
@@ -120,14 +120,14 @@ export default function InputStep({
                 <button
                   onClick={onSplit}
                   disabled={!fullText.trim()}
-                  className="rounded-xl border border-[#1E2761]/40 px-6 py-3 text-base font-semibold text-[#1E2761] transition-all hover:-translate-y-0.5 hover:border-[#1E2761] hover:bg-[#1E2761]/5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-xl border border-[#6B3F26]/40 px-6 py-3 text-base font-semibold text-[#6B3F26] transition-all hover:-translate-y-0.5 hover:border-[#6B3F26] hover:bg-[#6B3F26]/5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   주석 없이 분할
                 </button>
                 <button
                   onClick={onExtractAnnotations}
                   disabled={!fullText.trim() || !pdfFile || isExtracting}
-                  className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#1E2761]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-xl bg-[#6B3F26] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6B3F26]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isExtracting ? "추출 중..." : "주석 추출 + 분할"}
                 </button>
@@ -140,7 +140,7 @@ export default function InputStep({
         {inputMode === "A" && (
           <>
             <div className="flex flex-col gap-3">
-              <label className="text-sm font-medium text-[#1E2761]">
+              <label className="text-sm font-medium text-[#6B3F26]">
                 교사용 교과서 PDF 업로드
               </label>
               <PdfUploader file={pdfFile} onFileChange={onPdfFileChange} />
@@ -149,23 +149,23 @@ export default function InputStep({
             {fullText && (
               <>
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[#1E2761]">
+                  <label className="mb-2 block text-sm font-medium text-[#6B3F26]">
                     추출된 텍스트 (확인/수정 후 분할하세요)
                   </label>
                   <textarea
                     value={fullText}
                     onChange={(e) => onFullTextChange(e.target.value)}
-                    className="min-h-[300px] w-full resize-y rounded-xl border border-[#CADCFC]/60 bg-white p-5 text-base leading-relaxed text-[#1E2761] outline-none shadow-inner transition-all hover:border-[#CADCFC] focus:border-[#1E2761] focus:ring-1 focus:ring-[#1E2761]"
+                    className="min-h-[300px] w-full resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#1E2761]/60">
+                  <span className="text-sm text-[#6B3F26]/60">
                     {`${fullText.length}자 / ${fullText.split("\n").length}줄`}
                   </span>
                   <button
                     onClick={onSplit}
                     disabled={!fullText.trim()}
-                    className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#1E2761]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-xl bg-[#6B3F26] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6B3F26]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     슬라이드 분할
                   </button>
@@ -178,7 +178,7 @@ export default function InputStep({
                 <button
                   onClick={onExtractAll}
                   disabled={!pdfFile || isExtracting}
-                  className="rounded-xl bg-[#1E2761] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#1E2761]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-xl bg-[#6B3F26] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6B3F26]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isExtracting ? "추출 중..." : "텍스트 & 주석 추출"}
                 </button>
@@ -191,8 +191,8 @@ export default function InputStep({
         {isExtracting && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
             <div className="flex flex-col items-center gap-4 rounded-2xl bg-white px-10 py-8 shadow-xl">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#CADCFC] border-t-[#1E2761]" />
-              <p className="text-sm font-medium text-[#1E2761]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#EEDDD0] border-t-[#6B3F26]" />
+              <p className="text-sm font-medium text-[#6B3F26]">
                 {extractionProgress || "처리 중..."}
               </p>
             </div>

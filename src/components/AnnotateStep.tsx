@@ -86,9 +86,9 @@ export default function AnnotateStep({
   return (
     <div className="flex flex-1 overflow-hidden">
       {/* Left sidebar: slide list */}
-      <aside className="flex flex-shrink-0 flex-col border-r border-[#CADCFC] bg-[#CADCFC]/10" style={{ width: sidebarWidth }}>
-        <div className="border-b border-[#CADCFC] px-4 py-3">
-          <h3 className="text-sm font-semibold text-[#1E2761]">
+      <aside className="flex flex-shrink-0 flex-col border-r border-[#EEDDD0] bg-[#EEDDD0]/10" style={{ width: sidebarWidth }}>
+        <div className="border-b border-[#EEDDD0] px-4 py-3">
+          <h3 className="text-sm font-semibold text-[#6B3F26]">
             슬라이드 ({slides.length})
           </h3>
         </div>
@@ -102,15 +102,15 @@ export default function AnnotateStep({
                 key={slide.id}
                 onClick={() => onSlideSelect(index)}
                 className={`flex w-full flex-col gap-1 rounded-lg px-3 py-2.5 text-left mb-1 transition-all ${isActive
-                  ? "bg-white text-[#1E2761] shadow-sm ring-1 ring-[#CADCFC]/60 border-l-4 border-l-[#1E2761]"
-                  : "text-[#1E2761] hover:bg-[#CADCFC]/30"
+                  ? "bg-white text-[#6B3F26] shadow-sm ring-1 ring-[#EEDDD0]/60 border-l-4 border-l-[#6B3F26]"
+                  : "text-[#6B3F26] hover:bg-[#EEDDD0]/30"
                   }`}
               >
                 <span className="text-xs font-semibold">
                   슬라이드 {index + 1}
                 </span>
                 <span
-                  className={`truncate text-xs ${isActive ? "text-[#1E2761]/70" : "text-[#1E2761]/50"
+                  className={`truncate text-xs ${isActive ? "text-[#6B3F26]/70" : "text-[#6B3F26]/50"
                     }`}
                 >
                   {firstLine}
@@ -118,7 +118,7 @@ export default function AnnotateStep({
                 </span>
                 {slide.annotations.length > 0 && (
                   <span
-                    className={`text-xs ${isActive ? "font-medium text-[#1E2761]" : "text-[#1E2761]/60"
+                    className={`text-xs ${isActive ? "font-medium text-[#6B3F26]" : "text-[#6B3F26]/60"
                       }`}
                   >
                     주석 {slide.annotations.length}개
@@ -157,26 +157,26 @@ export default function AnnotateStep({
         )}
 
         {/* Bottom actions */}
-        <div className="border-t border-[#CADCFC] p-4">
+        <div className="border-t border-[#EEDDD0] p-4">
           <div className="mb-4 space-y-2">
             <div className="flex gap-2">
               <button onClick={undo} disabled={!canUndo}
-                className="flex-1 rounded border border-[#CADCFC] py-1 text-xs text-[#1E2761] hover:bg-[#CADCFC]/20 disabled:opacity-30">
+                className="flex-1 rounded border border-[#EEDDD0] py-1 text-xs text-[#6B3F26] hover:bg-[#EEDDD0]/20 disabled:opacity-30">
                 실행 취소
               </button>
               <button onClick={redo} disabled={!canRedo}
-                className="flex-1 rounded border border-[#CADCFC] py-1 text-xs text-[#1E2761] hover:bg-[#CADCFC]/20 disabled:opacity-30">
+                className="flex-1 rounded border border-[#EEDDD0] py-1 text-xs text-[#6B3F26] hover:bg-[#EEDDD0]/20 disabled:opacity-30">
                 다시 실행
               </button>
             </div>
             
             <div className="flex gap-2">
               <button onClick={exportProject}
-                className="flex-1 rounded border border-[#CADCFC] py-1 text-xs text-[#1E2761] hover:bg-[#CADCFC]/20">
+                className="flex-1 rounded border border-[#EEDDD0] py-1 text-xs text-[#6B3F26] hover:bg-[#EEDDD0]/20">
                 저장 (JSON)
               </button>
               <button onClick={() => fileInputRef.current?.click()}
-                className="flex-1 rounded border border-[#CADCFC] py-1 text-xs text-[#1E2761] hover:bg-[#CADCFC]/20">
+                className="flex-1 rounded border border-[#EEDDD0] py-1 text-xs text-[#6B3F26] hover:bg-[#EEDDD0]/20">
                 불러오기
               </button>
               <input type="file" accept=".json" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
@@ -185,19 +185,19 @@ export default function AnnotateStep({
 
           <button
             onClick={onResetToInput}
-            className="mb-2 w-full rounded-lg border border-[#CADCFC] px-3 py-2 text-xs text-[#1E2761] transition-colors hover:bg-[#CADCFC]/20"
+            className="mb-2 w-full rounded-lg border border-[#EEDDD0] px-3 py-2 text-xs text-[#6B3F26] transition-colors hover:bg-[#EEDDD0]/20"
           >
             텍스트 다시 입력
           </button>
           <button
             onClick={onGenerate}
             disabled={isGenerating}
-            className="w-full rounded-lg bg-[#1E2761] px-3 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#1E2761]/95 hover:shadow-md disabled:opacity-40"
+            className="w-full rounded-lg bg-[#6B3F26] px-3 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6B3F26]/95 hover:shadow-md disabled:opacity-40"
           >
             {isGenerating ? "생성 중..." : "PPT 생성"}
           </button>
           
-          <div className="mt-3 text-center text-[10px] text-[#1E2761]/50">
+          <div className="mt-3 text-center text-[10px] text-[#6B3F26]/50">
             단축키: Ctrl+S (저장), Ctrl+Enter (생성)
           </div>
         </div>
@@ -206,10 +206,10 @@ export default function AnnotateStep({
       {/* Resize handle: slide list ↔ main */}
       <div
         onMouseDown={startSidebarDrag}
-        className="group relative z-10 flex w-1.5 flex-shrink-0 cursor-col-resize items-center justify-center bg-transparent transition-colors hover:bg-[#1E2761]/10 active:bg-[#1E2761]/20"
+        className="group relative z-10 flex w-1.5 flex-shrink-0 cursor-col-resize items-center justify-center bg-transparent transition-colors hover:bg-[#6B3F26]/10 active:bg-[#6B3F26]/20"
         title="드래그하여 너비 조절"
       >
-        <div className="h-10 w-px rounded-full bg-[#CADCFC] transition-colors group-hover:bg-[#1E2761]/40" />
+        <div className="h-10 w-px rounded-full bg-[#EEDDD0] transition-colors group-hover:bg-[#6B3F26]/40" />
       </div>
 
       {/* Main content: annotation editor */}
@@ -217,17 +217,17 @@ export default function AnnotateStep({
         {currentSlide ? (
           <>
             {/* Slide navigation */}
-            <div className="flex items-center justify-between border-b border-[#CADCFC] bg-white px-6 py-3">
+            <div className="flex items-center justify-between border-b border-[#EEDDD0] bg-white px-6 py-3">
               <button
                 onClick={() =>
                   onSlideSelect(Math.max(0, currentSlideIndex - 1))
                 }
                 disabled={currentSlideIndex === 0}
-                className="rounded-lg px-3 py-1 text-sm text-[#1E2761] transition-colors hover:bg-[#CADCFC]/30 disabled:opacity-30"
+                className="rounded-lg px-3 py-1 text-sm text-[#6B3F26] transition-colors hover:bg-[#EEDDD0]/30 disabled:opacity-30"
               >
                 &larr; 이전
               </button>
-              <span className="text-sm font-medium text-[#1E2761]">
+              <span className="text-sm font-medium text-[#6B3F26]">
                 슬라이드 {currentSlideIndex + 1} / {slides.length}
               </span>
               <button
@@ -235,7 +235,7 @@ export default function AnnotateStep({
                   onSlideSelect(Math.min(slides.length - 1, currentSlideIndex + 1))
                 }
                 disabled={currentSlideIndex === slides.length - 1}
-                className="rounded-lg px-3 py-1 text-sm text-[#1E2761] transition-colors hover:bg-[#CADCFC]/30 disabled:opacity-30"
+                className="rounded-lg px-3 py-1 text-sm text-[#6B3F26] transition-colors hover:bg-[#EEDDD0]/30 disabled:opacity-30"
               >
                 다음 &rarr;
               </button>
@@ -263,7 +263,7 @@ export default function AnnotateStep({
             </div>
           </>
         ) : (
-          <div className="flex flex-1 items-center justify-center text-[#1E2761]/60">
+          <div className="flex flex-1 items-center justify-center text-[#6B3F26]/60">
             슬라이드가 없습니다
           </div>
         )}

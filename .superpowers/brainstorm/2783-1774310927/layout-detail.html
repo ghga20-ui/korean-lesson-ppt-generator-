@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>슬라이드 공방 — 메인 페이지 시안</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: #f0f4ff; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+
+  .page {
+    width: 100%;
+    max-width: 960px;
+    min-height: 540px;
+    background: linear-gradient(135deg, #ffffff 0%, #eef3ff 100%);
+    border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(30,39,97,0.12);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+  }
+
+  /* LEFT */
+  .left {
+    padding: 52px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+    border-right: 1px solid #dde6fb;
+  }
+
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-icon {
+    width: 40px; height: 40px;
+    background: #1E2761;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .brand-name {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1E2761;
+    letter-spacing: -0.5px;
+  }
+
+  .desc {
+    font-size: 14px;
+    color: #4a5380;
+    line-height: 1.7;
+  }
+
+  .features {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #3a4270;
+  }
+  .feature-dot {
+    width: 6px; height: 6px;
+    background: #1E2761;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .steps-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #1E2761;
+    opacity: 0.5;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    position: relative;
+  }
+  .step:not(:last-child) {
+    padding-bottom: 14px;
+  }
+  .step-num {
+    width: 24px; height: 24px;
+    background: #1E2761;
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .step:not(:last-child) .step-num::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1.5px;
+    height: 14px;
+    background: #CADCFC;
+    margin-top: 2px;
+  }
+  .step-text h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1E2761;
+    margin-bottom: 2px;
+  }
+  .step-text p {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+
+  /* RIGHT */
+  .right {
+    padding: 52px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    background: white;
+  }
+
+  .right-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1E2761;
+    opacity: 0.5;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .mode-card {
+    border: 1.5px solid #dde6fb;
+    border-radius: 14px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #fafbff;
+  }
+  .mode-card:hover {
+    border-color: #1E2761;
+    box-shadow: 0 4px 20px rgba(30,39,97,0.1);
+    transform: translateY(-2px);
+    background: white;
+  }
+
+  .mode-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .mode-icon {
+    width: 42px; height: 42px;
+    background: #eef3ff;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .mode-card:hover .mode-icon {
+    background: #1E2761;
+  }
+  .mode-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1E2761;
+  }
+  .mode-sub {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
+  }
+  .mode-desc {
+    font-size: 12.5px;
+    color: #6b7280;
+    line-height: 1.6;
+  }
+  .mode-arrow {
+    align-self: flex-end;
+    font-size: 13px;
+    color: #1E2761;
+    opacity: 0.4;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .mode-card:hover .mode-arrow {
+    opacity: 1;
+    transform: translateX(3px);
+  }
+
+  .footer-note {
+    font-size: 11px;
+    color: #9ca3af;
+    text-align: center;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- LEFT -->
+  <div class="left">
+    <div class="brand">
+      <div class="brand-icon">✏️</div>
+      <span class="brand-name">슬라이드 공방</span>
+    </div>
+
+    <p class="desc">
+      문학 텍스트를 붙여넣고 주석을 달면<br>
+      수업용 PPT가 완성됩니다.
+    </p>
+
+    <div class="features">
+      <div class="feature-item"><span class="feature-dot"></span>연·문장 단위 자동 분할</div>
+      <div class="feature-item"><span class="feature-dot"></span>밑줄·원·사각형 주석 도형</div>
+      <div class="feature-item"><span class="feature-dot"></span>클릭 애니메이션 자동 적용</div>
+      <div class="feature-item"><span class="feature-dot"></span>PDF 주석 OCR 추출</div>
+    </div>
+
+    <div class="steps">
+      <div class="steps-label">사용 흐름</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <h4>텍스트 입력</h4>
+          <p>시·소설 본문을 붙여넣거나 PDF에서 추출</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <h4>주석 달기</h4>
+          <p>슬라이드별로 밑줄·도형·설명을 추가</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <h4>PPT 저장</h4>
+          <p>클릭 애니메이션이 포함된 .pptx 다운로드</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="right-label">텍스트 유형 선택</div>
+
+    <div class="mode-card">
+      <div class="mode-top">
+        <div class="mode-icon">📜</div>
+        <div>
+          <div class="mode-title">운문 / 짧은 텍스트</div>
+          <div class="mode-sub">시 · 시조 · 가사 · 짧은 지문</div>
+        </div>
+      </div>
+      <p class="mode-desc">연·행 단위로 슬라이드를 분할합니다. 빈 줄로 연을 구분합니다.</p>
+      <span class="mode-arrow">→ 시작하기</span>
+    </div>
+
+    <div class="mode-card">
+      <div class="mode-top">
+        <div class="mode-icon">📖</div>
+        <div>
+          <div class="mode-title">산문 / 긴 텍스트</div>
+          <div class="mode-sub">소설 · 수필 · 비문학 지문</div>
+        </div>
+      </div>
+      <p class="mode-desc">적정 분량으로 자동 분할합니다. 문장 경계에서 자연스럽게 나눕니다.</p>
+      <span class="mode-arrow">→ 시작하기</span>
+    </div>
+
+    <p class="footer-note">선택 후 텍스트를 입력하면 편집 화면으로 이동합니다.</p>
+  </div>
+
+</div>
+</body>
+</html>

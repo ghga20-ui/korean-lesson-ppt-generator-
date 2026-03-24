@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "국어 수업 PPT 생성기",
+  title: "국어 수업 슬라이드 뚝딱!",
   description: "국어 수업 PPT를 자동으로 생성합니다",
 };
 

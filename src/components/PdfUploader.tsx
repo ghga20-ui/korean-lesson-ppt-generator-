@@ -135,21 +135,21 @@ export default function PdfUploader({ file, onFileChange }: PdfUploaderProps) {
   // Step 2: Raw file uploaded, show page extraction UI
   if (rawFile) {
     return (
-      <div className="rounded-xl border-2 border-[#CADCFC] bg-[#CADCFC]/5 p-4">
+      <div className="rounded-xl border-2 border-[#EEDDD0] bg-[#EEDDD0]/5 p-4">
         {/* File info */}
         <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-[#1E2761]/10 text-xs font-bold text-[#1E2761]">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-[#6B3F26]/10 text-xs font-bold text-[#6B3F26]">
             PDF
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-[#1E2761]">{rawFile.name}</p>
-            <p className="text-xs text-[#1E2761]/50">
+            <p className="truncate text-sm font-medium text-[#6B3F26]">{rawFile.name}</p>
+            <p className="text-xs text-[#6B3F26]/50">
               {formatSize(rawFile.size)} · {totalPages}페이지
             </p>
           </div>
           <button
             onClick={handleReset}
-            className="rounded-lg p-1 text-[#1E2761]/50 hover:bg-red-50 hover:text-red-500"
+            className="rounded-lg p-1 text-[#6B3F26]/50 hover:bg-red-50 hover:text-red-500"
             title="삭제"
           >
             <X className="h-4 w-4" />
@@ -157,11 +157,11 @@ export default function PdfUploader({ file, onFileChange }: PdfUploaderProps) {
         </div>
 
         {/* Page range input */}
-        <p className="mb-2 text-xs text-[#1E2761]/60">
+        <p className="mb-2 text-xs text-[#6B3F26]/60">
           작품 본문이 수록된 페이지 번호를 정확히 입력하세요. 해당 페이지만 추출하여 주석을 인식합니다.
         </p>
         <div className="flex items-center gap-2">
-          <label className="flex-shrink-0 text-xs font-medium text-[#1E2761]">
+          <label className="flex-shrink-0 text-xs font-medium text-[#6B3F26]">
             페이지 범위
           </label>
           <input
@@ -169,13 +169,13 @@ export default function PdfUploader({ file, onFileChange }: PdfUploaderProps) {
             value={pageRange}
             onChange={(e) => { setPageRange(e.target.value); setError(""); setExtractedInfo(""); }}
             placeholder={`예: 15-18 (1~${totalPages})`}
-            className="min-w-0 flex-1 rounded-lg border border-[#CADCFC] px-3 py-1.5 text-xs text-[#1E2761] placeholder-[#1E2761]/40 outline-none focus:border-[#1E2761]"
+            className="min-w-0 flex-1 rounded-lg border border-[#EEDDD0] px-3 py-1.5 text-xs text-[#6B3F26] placeholder-[#6B3F26]/40 outline-none focus:border-[#6B3F26]"
             onKeyDown={(e) => { if (e.key === "Enter") handleExtractPages(); }}
           />
           <button
             onClick={handleExtractPages}
             disabled={!pageRange.trim() || isExtracting}
-            className="flex flex-shrink-0 items-center gap-1 rounded-lg bg-[#1E2761] px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-[#1E2761]/90 disabled:opacity-40"
+            className="flex flex-shrink-0 items-center gap-1 rounded-lg bg-[#6B3F26] px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-[#6B3F26]/90 disabled:opacity-40"
           >
             <Scissors className="h-3 w-3" />
             {isExtracting ? "추출 중..." : "추출"}
@@ -206,15 +206,15 @@ export default function PdfUploader({ file, onFileChange }: PdfUploaderProps) {
         onClick={() => inputRef.current?.click()}
         className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 transition-colors ${
           isDragging
-            ? "border-[#1E2761] bg-[#CADCFC]/20"
-            : "border-[#CADCFC] hover:border-[#1E2761]/50 hover:bg-[#CADCFC]/10"
+            ? "border-[#6B3F26] bg-[#EEDDD0]/20"
+            : "border-[#EEDDD0] hover:border-[#6B3F26]/50 hover:bg-[#EEDDD0]/10"
         }`}
       >
-        <FileUp className="h-6 w-6 text-[#1E2761]/40" />
-        <p className="text-sm text-[#1E2761]/60">
+        <FileUp className="h-6 w-6 text-[#6B3F26]/40" />
+        <p className="text-sm text-[#6B3F26]/60">
           교과서 PDF를 드래그하거나 클릭하여 업로드
         </p>
-        <p className="text-xs text-[#1E2761]/40">업로드 후 필요한 페이지만 추출합니다</p>
+        <p className="text-xs text-[#6B3F26]/40">업로드 후 필요한 페이지만 추출합니다</p>
       </div>
       <input
         ref={inputRef}
