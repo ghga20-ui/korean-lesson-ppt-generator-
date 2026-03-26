@@ -84,27 +84,26 @@ export function buildTimingXml(groups: AnimationGroup[]): string {
 
   let ctnId = 0;
 
-  /** Helper: build a single "appear" <p:par> node for one shape. */
+  /** Helper: build a single "fade" <p:par> node for one shape. */
   function appearNode(spid: number, nodeType: string): string {
+    const dur = 500; // fade duration in ms
     return (
       `<p:par>` +
       `<p:cTn id="${++ctnId}" fill="hold">` +
       `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
       `<p:childTnLst>` +
       `<p:par>` +
-      `<p:cTn id="${++ctnId}" presetID="1" presetClass="entr" presetSubtype="0" fill="hold" grpId="0" nodeType="${nodeType}">` +
+      `<p:cTn id="${++ctnId}" presetID="10" presetClass="entr" presetSubtype="0" fill="hold" grpId="0" nodeType="${nodeType}" dur="${dur}">` +
       `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
       `<p:childTnLst>` +
-      `<p:set>` +
+      `<p:animEffect transition="in" filter="fade">` +
       `<p:cBhvr>` +
-      `<p:cTn id="${++ctnId}" dur="1" fill="hold">` +
+      `<p:cTn id="${++ctnId}" dur="${dur}">` +
       `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
       `</p:cTn>` +
       `<p:tgtEl><p:spTgt spid="${spid}"/></p:tgtEl>` +
-      `<p:attrNameLst><p:attrName>style.visibility</p:attrName></p:attrNameLst>` +
       `</p:cBhvr>` +
-      `<p:to><p:strVal val="visible"/></p:to>` +
-      `</p:set>` +
+      `</p:animEffect>` +
       `</p:childTnLst>` +
       `</p:cTn>` +
       `</p:par>` +

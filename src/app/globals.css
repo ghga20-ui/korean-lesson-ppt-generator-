@@ -36,6 +36,13 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Progress bar slide animation */
+@keyframes progressSlide {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(150%); }
+  100% { transform: translateX(350%); }
+}
+
 /* Focus ring for keyboard navigation */
 button:focus-visible,
 a:focus-visible,

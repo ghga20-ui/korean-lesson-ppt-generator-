@@ -213,7 +213,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
   const handleExtractAnnotations = useCallback(async () => {
     if (!pdfFile || !fullText.trim()) return;
     setIsExtracting(true);
-    setExtractionProgress("추출 중...");
+    setExtractionProgress("PDF를 Gemini에 전송 중...");
     setUnmatchedAnnotations([]);
 
     try {
@@ -229,6 +229,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
         throw new Error(err.error);
       }
       const result = await response.json();
+      setExtractionProgress("본문과 주석 매칭 중...");
       const { matched, unmatched } = matchAnnotationsToText(fullText, result.annotations);
       if (unmatched.length > 0) setUnmatchedAnnotations(unmatched);
 
@@ -236,6 +237,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
         .filter(a => a.markerType === "summary")
         .map(a => { const nl = fullText.indexOf("\n", a.endIndex); return nl !== -1 ? nl + 1 : fullText.length; });
 
+      setExtractionProgress("슬라이드로 분할 중...");
       const splitSlides = splitText(fullText, genre, pptSettings, summaryBreaks);
       const slidesWithAnnotations = distributeAnnotationsToSlides(fullText, splitSlides, matched);
 
@@ -254,7 +256,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
   const handleExtractAll = useCallback(async () => {
     if (!pdfFile) return;
     setIsExtracting(true);
-    setExtractionProgress("추출 중...");
+    setExtractionProgress("PDF를 Gemini에 전송 중...");
     setUnmatchedAnnotations([]);
 
     try {
@@ -272,6 +274,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
       setFullText(result.text);
 
       if (result.annotations.length > 0) {
+        setExtractionProgress("본문과 주석 매칭 중...");
         const { matched, unmatched } = matchAnnotationsToText(result.text, result.annotations);
         if (unmatched.length > 0) setUnmatchedAnnotations(unmatched);
 
@@ -279,6 +282,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
           .filter(a => a.markerType === "summary")
           .map(a => { const nl = result.text.indexOf("\n", a.endIndex); return nl !== -1 ? nl + 1 : result.text.length; });
 
+        setExtractionProgress("슬라이드로 분할 중...");
         const splitSlides2 = splitText(result.text, genre, pptSettings, summaryBreaks);
         const slidesWithAnnotations = distributeAnnotationsToSlides(result.text, splitSlides2, matched);
 

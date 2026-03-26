@@ -189,12 +189,26 @@ export default function InputStep({
 
         {/* Extraction progress overlay */}
         {isExtracting && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-            <div className="flex flex-col items-center gap-4 rounded-2xl bg-white px-10 py-8 shadow-xl">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#EEDDD0] border-t-[#6B3F26]" />
-              <p className="text-sm font-medium text-[#6B3F26]">
-                {extractionProgress || "처리 중..."}
-              </p>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="flex w-72 flex-col items-center gap-5 rounded-2xl bg-white px-8 py-8 shadow-2xl">
+              {/* Spinner */}
+              <div className="relative flex h-14 w-14 items-center justify-center">
+                <div className="absolute inset-0 animate-spin rounded-full border-4 border-[#EEDDD0] border-t-[#6B3F26]" />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="22" height="22" fill="#6B3F26" aria-hidden="true">
+                  <path d="M240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
+                </svg>
+              </div>
+              {/* Message */}
+              <div className="flex flex-col items-center gap-1 text-center">
+                <p className="text-sm font-semibold text-[#6B3F26]">
+                  {extractionProgress || "처리 중..."}
+                </p>
+                <p className="text-xs text-[#6B3F26]/50">잠시만 기다려 주세요</p>
+              </div>
+              {/* Progress bar (indeterminate) */}
+              <div className="h-1 w-full overflow-hidden rounded-full bg-[#EEDDD0]">
+                <div className="h-full w-1/3 animate-[progressSlide_1.4s_ease-in-out_infinite] rounded-full bg-[#6B3F26]" />
+              </div>
             </div>
           </div>
         )}
