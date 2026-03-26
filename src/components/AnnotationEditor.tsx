@@ -7,7 +7,7 @@ import { DEFAULT_ANNOTATION_COLOR, ANNOTATION_COLOR_PALETTE, DEFAULT_POETRY_SETT
 import { countVisualLines } from "@/lib/pptx-geometry";
 import { getMaxLinesPerSlide } from "@/lib/slide-splitter";
 import { TEXT_LEFT_MARGIN } from "@/lib/pptx-constants";
-import { ChevronUp, ChevronDown, Crosshair, Scissors, Trash2, GripVertical } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import BatchEditPanel from "@/components/BatchEditPanel";
 
 interface AnnotationEditorProps {
@@ -49,7 +49,7 @@ const MARKER_BORDER_COLORS: Record<MarkerType, string> = {
 const MARKER_LABELS: Record<MarkerType, string> = {
   underline: "밑줄",
   circle: "원형",
-  rectangle: "사각형",
+  rectangle: "네모",
   triangle: "세모",
   bracket: "꺾쇠",
   summary: "요약",
@@ -102,10 +102,8 @@ export default function AnnotationEditor({
   const [popupColor, setPopupColor] = useState(DEFAULT_ANNOTATION_COLOR);
   const [summaryContent, setSummaryContent] = useState("");
   const [retargetingId, setRetargetingId] = useState<string | null>(null);
-  const [editingAnnotationId, setEditingAnnotationId] = useState<string | null>(null);
+  const [expandedAnnotationId, setExpandedAnnotationId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
-  const [editingMarkerTypeId, setEditingMarkerTypeId] = useState<string | null>(null);
-  const [editingColorId, setEditingColorId] = useState<string | null>(null);
 
   // Drag and drop state
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -143,6 +141,7 @@ export default function AnnotationEditor({
     setPopup(null);
     setPopupContent("");
     setRetargetingId(null);
+    setExpandedAnnotationId(null);
     setIsTextEditMode(false);
     const existingSummary = slide.annotations.find(
       (a) => a.markerType === "summary"
@@ -282,14 +281,14 @@ export default function AnnotationEditor({
 
   const saveEditContent = useCallback(
     (id: string) => {
-      if (!editingContent.trim()) { setEditingAnnotationId(null); return; }
+      if (!editingContent.trim()) { setExpandedAnnotationId(null); return; }
       onUpdateSlide({
         ...slide,
         annotations: slide.annotations.map((a) =>
           a.id === id ? { ...a, content: editingContent.trim() } : a
         ),
       });
-      setEditingAnnotationId(null);
+      setExpandedAnnotationId(null);
     },
     [editingContent, slide, onUpdateSlide]
   );
@@ -302,7 +301,6 @@ export default function AnnotationEditor({
           a.id === id ? { ...a, markerType: newType } : a
         ),
       });
-      setEditingMarkerTypeId(null);
     },
     [slide, onUpdateSlide]
   );
@@ -315,7 +313,6 @@ export default function AnnotationEditor({
           a.id === id ? { ...a, color: newColor } : a
         ),
       });
-      setEditingColorId(null);
     },
     [slide, onUpdateSlide]
   );
@@ -578,6 +575,22 @@ export default function AnnotationEditor({
   const sortedAnnotations = [...slide.annotations].sort(
     (a, b) => a.order - b.order
   );
+
+  // summary 제외한 표시용 목록
+  const displayAnnotations = sortedAnnotations.filter(
+    (a) => a.markerType !== "summary"
+  );
+
+  // 카드 열기/닫기 핸들러
+  const handleExpandCard = (ann: Annotation) => {
+    if (retargetingId) setRetargetingId(null);
+    if (expandedAnnotationId === ann.id) {
+      setExpandedAnnotationId(null);
+    } else {
+      setExpandedAnnotationId(ann.id);
+      setEditingContent(ann.content);
+    }
+  };
 
   return (
     <div className="flex h-full flex-col gap-0 lg:flex-row">
@@ -847,7 +860,7 @@ export default function AnnotationEditor({
           )}
         </div>
         <div className="flex-1 overflow-y-auto">
-          {sortedAnnotations.length === 0 ? (
+          {displayAnnotations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <span className="mb-2 text-2xl text-[#6B3F26]/20">+</span>
               <p className="text-xs text-[#6B3F26]/60">
@@ -858,141 +871,162 @@ export default function AnnotationEditor({
             </div>
           ) : (
             <ul className="divide-y divide-[#EEDDD0]/30">
-              {sortedAnnotations.map((ann, idx) => (
-                <li
-                  key={ann.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, ann.id)}
-                  onDragOver={(e) => handleDragOver(e, ann.id)}
-                  onDrop={(e) => handleDrop(e, ann.id)}
-                  onDragEnd={handleDragEnd}
-                  className={`group px-4 py-3 relative bg-white transition-all
-                    ${draggedId === ann.id ? "opacity-30" : "opacity-100"}
-                  `}
-                >
-                  {dragOverId === ann.id && draggedId !== ann.id && (
-                    <div className="absolute left-0 top-0 h-0.5 w-full bg-blue-500 rounded-full shadow-sm z-10" />
-                  )}
-                  <div className="flex items-start gap-2">
-                    {/* Drag handle */}
-                    <div 
-                      className="mt-1 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
-                      title="드래그하여 순서 변경"
+              {displayAnnotations.map((ann) => {
+                const isExpanded = expandedAnnotationId === ann.id;
+                return (
+                  <li
+                    key={ann.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, ann.id)}
+                    onDragOver={(e) => handleDragOver(e, ann.id)}
+                    onDrop={(e) => handleDrop(e, ann.id)}
+                    onDragEnd={handleDragEnd}
+                    className={`relative transition-all
+                      ${draggedId === ann.id ? "opacity-30" : "opacity-100"}
+                      ${isExpanded ? "bg-[#fdf8f5]" : "bg-white"}
+                    `}
+                  >
+                    {dragOverId === ann.id && draggedId !== ann.id && (
+                      <div className="absolute left-0 top-0 h-0.5 w-full rounded-full bg-blue-500 shadow-sm z-10" />
+                    )}
+
+                    {/* ── 닫힌 헤더 (항상 표시) ── */}
+                    <div
+                      className="flex cursor-pointer items-start gap-2 px-3 py-2.5 hover:bg-[#EEDDD0]/10"
+                      onClick={() => handleExpandCard(ann)}
                     >
-                      <GripVertical className="h-4 w-4" />
-                    </div>
-                    {/* Color dot (clickable) + order number */}
-                    <div className="mt-0.5 flex flex-shrink-0 flex-col items-center gap-1">
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => setEditingColorId(editingColorId === ann.id ? null : ann.id)}
-                          className="inline-block h-3.5 w-3.5 rounded-full border border-gray-300 transition-transform hover:scale-125"
-                          style={{ backgroundColor: ann.color || DEFAULT_ANNOTATION_COLOR }}
-                          title="색상 변경"
-                        />
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#6B3F26] text-[10px] font-bold text-white">
-                          {ann.order}
-                        </span>
+                      {/* 드래그 핸들 */}
+                      <div
+                        className="mt-0.5 flex-shrink-0 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+                        title="드래그하여 순서 변경"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <GripVertical className="h-4 w-4" />
                       </div>
-                      {editingColorId === ann.id && (
-                        <div className="flex flex-wrap gap-1">
-                          {ANNOTATION_COLOR_PALETTE.map((c) => (
-                            <button
-                              key={c}
-                              onClick={() => changeAnnotationColor(ann.id, c)}
-                              className={`h-4 w-4 rounded-full border transition-transform hover:scale-110 ${
-                                (ann.color || DEFAULT_ANNOTATION_COLOR) === c
-                                  ? "border-gray-800 scale-110"
-                                  : "border-transparent"
-                              }`}
-                              style={{ backgroundColor: c }}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      {/* Target text */}
-                      <p
-                        className={`mb-1 truncate rounded px-1.5 py-0.5 text-sm ${MARKER_COLORS[ann.markerType]}`}
-                      >
-                        {ann.targetText}
-                      </p>
-                      {/* Content — click to edit inline */}
-                      {editingAnnotationId === ann.id ? (
-                        <textarea
-                          value={editingContent}
-                          onChange={(e) => setEditingContent(e.target.value)}
-                          onBlur={() => saveEditContent(ann.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault();
-                              saveEditContent(ann.id);
-                            }
-                            if (e.key === "Escape") setEditingAnnotationId(null);
-                          }}
-                          className="w-full resize-none rounded border border-[#EEDDD0] px-1.5 py-1 text-sm text-[#1E2761] outline-none focus:border-[#6B3F26]"
-                          rows={2}
-                          autoFocus
-                        />
-                      ) : (
-                        <p
-                          onClick={() => { setEditingAnnotationId(ann.id); setEditingContent(ann.content); }}
-                          className="cursor-pointer rounded px-1 text-sm leading-relaxed text-[#1E2761]/70 hover:bg-[#EEDDD0]/20"
-                          title="클릭하여 내용 수정"
-                        >
-                          {ann.content}
-                        </p>
-                      )}
-                      {/* Marker type badge — click to change */}
-                      <span
-                        onClick={() => setEditingMarkerTypeId(editingMarkerTypeId === ann.id ? null : ann.id)}
-                        className={`mt-1 inline-block cursor-pointer rounded border px-1.5 py-0.5 text-xs ${MARKER_BORDER_COLORS[ann.markerType]} text-[#6B3F26]/50 hover:bg-[#EEDDD0]/20`}
-                        title="클릭하여 마커 타입 변경"
-                      >
-                        {MARKER_LABELS[ann.markerType]}
+
+                      {/* 번호 배지 */}
+                      <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#6B3F26] text-[10px] font-bold text-white">
+                        {ann.order}
                       </span>
-                      {editingMarkerTypeId === ann.id && (
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {POPUP_MARKER_TYPES.map((type) => (
-                            <button
-                              key={type}
-                              onClick={() => changeMarkerType(ann.id, type)}
-                              className={`rounded border px-1.5 py-0.5 text-xs transition-colors ${
-                                ann.markerType === type
-                                  ? `${MARKER_BORDER_COLORS[type]} font-bold text-[#6B3F26]`
-                                  : "border-[#EEDDD0] text-[#6B3F26]/50 hover:border-[#6B3F26]/30"
-                              }`}
-                            >
-                              {MARKER_LABELS[type]}
-                            </button>
-                          ))}
+
+                      {/* 요약 정보 */}
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-0.5 flex items-center gap-1.5">
+                          <span
+                            className="inline-block h-2.5 w-2.5 flex-shrink-0 rounded-full border border-white shadow-sm"
+                            style={{ backgroundColor: ann.color || DEFAULT_ANNOTATION_COLOR }}
+                          />
+                          <span
+                            className={`flex-shrink-0 rounded border px-1.5 py-0 text-[10px] font-semibold ${MARKER_BORDER_COLORS[ann.markerType]}`}
+                            style={{ color: ann.color || DEFAULT_ANNOTATION_COLOR }}
+                          >
+                            {MARKER_LABELS[ann.markerType]}
+                          </span>
+                          <span className="truncate text-xs font-medium text-[#374151]">
+                            {ann.targetText}
+                          </span>
                         </div>
-                      )}
+                        <p className="truncate text-xs text-[#6b7280]">{ann.content}</p>
+                      </div>
+
+                      <span className="mt-0.5 flex-shrink-0 text-[10px] text-[#9ca3af]">
+                        {isExpanded ? "▲" : "▼"}
+                      </span>
                     </div>
-                  </div>
-                  {/* Action buttons — always visible */}
-                  <div className="mt-1.5 flex items-center gap-0.5 pl-9">
-                    <button onClick={() => handleMoveAnnotation(ann.id, "up")}
-                      disabled={idx === 0}
-                      className="cursor-pointer rounded p-1 text-[#6B3F26]/60 hover:bg-[#EEDDD0]/30 disabled:opacity-30"
-                      title="위로"><ChevronUp className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => handleMoveAnnotation(ann.id, "down")}
-                      disabled={idx === sortedAnnotations.length - 1}
-                      className="cursor-pointer rounded p-1 text-[#6B3F26]/60 hover:bg-[#EEDDD0]/30 disabled:opacity-30"
-                      title="아래로"><ChevronDown className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => setRetargetingId(ann.id)}
-                      className="cursor-pointer rounded p-1 text-[#6B3F26]/60 hover:bg-[#EEDDD0]/30"
-                      title="타겟 변경"><Crosshair className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => onCutAnnotation(ann)}
-                      className="cursor-pointer rounded p-1 text-[#6B3F26]/60 hover:bg-[#EEDDD0]/30"
-                      title="잘라내기"><Scissors className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => handleDeleteAnnotation(ann.id)}
-                      className="cursor-pointer rounded p-1 text-red-400 hover:bg-red-50"
-                      title="삭제"><Trash2 className="h-3.5 w-3.5" /></button>
-                  </div>
-                </li>
-              ))}
+
+                    {/* ── 열린 편집 영역 ── */}
+                    {isExpanded && (
+                      <div className="border-t border-[#eeddd0] px-4 pb-3 pt-3 flex flex-col gap-3">
+                        {/* 마커 유형 */}
+                        <div>
+                          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-[#9ca3af]">마커 유형</p>
+                          <div className="flex flex-wrap gap-1">
+                            {POPUP_MARKER_TYPES.map((type) => (
+                              <button
+                                key={type}
+                                onClick={() => changeMarkerType(ann.id, type)}
+                                className={`rounded border px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                                  ann.markerType === type
+                                    ? "border-[#6B3F26] bg-[#6B3F26] text-white"
+                                    : "border-[#eeddd0] text-[#6B3F26]/60 hover:border-[#6B3F26]/40 hover:text-[#6B3F26]"
+                                }`}
+                              >
+                                {MARKER_LABELS[type]}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 색상 */}
+                        <div>
+                          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-[#9ca3af]">색상</p>
+                          <div className="flex gap-1.5">
+                            {ANNOTATION_COLOR_PALETTE.map((c) => (
+                              <button
+                                key={c}
+                                onClick={() => changeAnnotationColor(ann.id, c)}
+                                className={`h-5 w-5 rounded-full border-2 transition-all hover:scale-110 ${
+                                  (ann.color || DEFAULT_ANNOTATION_COLOR) === c
+                                    ? "border-gray-700 scale-110"
+                                    : "border-transparent"
+                                }`}
+                                style={{ backgroundColor: c }}
+                                title={c}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 주석 내용 */}
+                        <div>
+                          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-[#9ca3af]">주석 내용</p>
+                          <textarea
+                            value={editingContent}
+                            onChange={(e) => setEditingContent(e.target.value)}
+                            className="w-full resize-none rounded-lg border border-[#eeddd0] px-2.5 py-1.5 text-sm text-[#1E2761] outline-none focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]/20"
+                            rows={2}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                saveEditContent(ann.id);
+                              }
+                              if (e.key === "Escape") setExpandedAnnotationId(null);
+                            }}
+                          />
+                        </div>
+
+                        {/* 액션 버튼 */}
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            onClick={() => saveEditContent(ann.id)}
+                            className="rounded-lg bg-[#6B3F26] px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#6B3F26]/90"
+                          >
+                            저장
+                          </button>
+                          <button
+                            onClick={() => { setRetargetingId(ann.id); setExpandedAnnotationId(null); }}
+                            className="rounded-lg border border-[#eeddd0] px-3 py-1 text-xs text-[#6B3F26] transition-colors hover:bg-[#eeddd0]/30"
+                          >
+                            타겟변경
+                          </button>
+                          <button
+                            onClick={() => { onCutAnnotation(ann); setExpandedAnnotationId(null); }}
+                            className="rounded-lg border border-[#eeddd0] px-3 py-1 text-xs text-[#6B3F26] transition-colors hover:bg-[#eeddd0]/30"
+                          >
+                            다른 슬라이드로
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAnnotation(ann.id)}
+                            className="rounded-lg border border-red-200 px-3 py-1 text-xs text-red-500 transition-colors hover:bg-red-50"
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
