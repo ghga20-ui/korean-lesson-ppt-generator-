@@ -1,7 +1,7 @@
 import type { Genre, ExtractedAnnotation } from "./types";
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
-const MODEL = "gemini-3-flash-preview";
+const MODEL = "gemini-3.1-pro-preview";
 
 interface GeminiResponse {
   candidates?: Array<{
