@@ -54,7 +54,7 @@ export default function Home() {
         {/* Description */}
         <p className="text-lg leading-relaxed text-[#8B6040]">
           교과서 본문 텍스트를 붙여넣고 주석을 달면<br />
-          수업용 PPT가 완성됩니다.
+          수업용 PPT 초안을 빠르게 만들 수 있습니다.
         </p>
 
         {/* Features */}
@@ -121,6 +121,11 @@ export default function Home() {
 
         <p className="text-center text-sm text-[#D4B8A8]">
           유형을 선택하면 편집 화면으로 이동합니다.
+        </p>
+
+        <p className="rounded-xl border border-[#EEDDD0] bg-[#FFF8F4] px-5 py-3 text-center text-xs leading-relaxed text-[#B09070]">
+          생성된 파일은 <strong className="font-semibold text-[#8B6040]">초안</strong>입니다.
+          폰트 설치 여부·레이아웃 세부 조정은 PowerPoint에서 직접 확인 후 사용하세요.
         </p>
       </div>
     </div>

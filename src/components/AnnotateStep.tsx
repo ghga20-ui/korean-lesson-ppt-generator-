@@ -200,6 +200,9 @@ export default function AnnotateStep({
           <div className="mt-3 text-center text-[10px] text-[#6B3F26]/50">
             단축키: Ctrl+S (저장), Ctrl+Enter (생성)
           </div>
+          <div className="mt-2 text-center text-[10px] leading-relaxed text-[#6B3F26]/40">
+            생성 파일은 초안입니다.<br />PowerPoint에서 검토 후 사용하세요.
+          </div>
         </div>
       </aside>
 

@@ -225,8 +225,10 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
 
       const response = await fetch("/api/extract", { method: "POST", body: formData });
       if (!response.ok) {
-        const err = await response.json().catch(() => ({ error: "추출 실패" }));
-        throw new Error(err.error);
+        const text = await response.text().catch(() => "");
+        let msg = `오류 (HTTP ${response.status})`;
+        try { msg = JSON.parse(text).error || msg; } catch { msg = text.slice(0, 200) || msg; }
+        throw new Error(msg);
       }
       const result = await response.json();
       setExtractionProgress("본문과 주석 매칭 중...");
@@ -267,8 +269,10 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
 
       const response = await fetch("/api/extract", { method: "POST", body: formData });
       if (!response.ok) {
-        const err = await response.json().catch(() => ({ error: "추출 실패" }));
-        throw new Error(err.error);
+        const text = await response.text().catch(() => "");
+        let msg = `오류 (HTTP ${response.status})`;
+        try { msg = JSON.parse(text).error || msg; } catch { msg = text.slice(0, 200) || msg; }
+        throw new Error(msg);
       }
       const result = await response.json();
       setFullText(result.text);

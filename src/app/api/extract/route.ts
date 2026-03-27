@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Genre } from "@/lib/types";
 import { extractFromPdfServer } from "@/lib/gemini-server";
 
-export const config = {
-  api: { bodyParser: { sizeLimit: "35mb" } },
-};
+export const maxDuration = 120; // 2분 (Pro plan 필요)
 
 export async function POST(request: NextRequest) {
   try {

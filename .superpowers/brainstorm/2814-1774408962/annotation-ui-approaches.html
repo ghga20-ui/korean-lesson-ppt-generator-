@@ -1,0 +1,278 @@
+<h2>주석 편집 UI — 3가지 접근 방안</h2>
+<p class="subtitle">각 방안을 클릭해서 선택해주세요</p>
+
+<style>
+  .approach-grid { display: flex; flex-direction: column; gap: 28px; margin-top: 20px; }
+  .approach-card { border: 2px solid #e5e7eb; border-radius: 14px; overflow: hidden; cursor: pointer; transition: all 0.2s; }
+  .approach-card:hover { border-color: #6B3F26; box-shadow: 0 4px 20px rgba(107,63,38,0.12); transform: translateY(-2px); }
+  .approach-card.selected { border-color: #6B3F26; box-shadow: 0 0 0 3px rgba(107,63,38,0.15); }
+  .approach-header { padding: 14px 20px; background: #faf9f7; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 10px; }
+  .approach-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: #6B3F26; color: white; padding: 3px 10px; border-radius: 20px; }
+  .approach-title { font-size: 15px; font-weight: 700; color: #1f1f1f; }
+  .approach-desc { font-size: 12px; color: #6b7280; margin-left: auto; }
+  .mockup-area { padding: 16px 20px; background: white; }
+  .pros-cons-row { display: flex; gap: 16px; padding: 12px 20px 14px; background: #fafafa; border-top: 1px solid #f0f0f0; }
+  .pro-item { font-size: 11px; color: #15803d; }
+  .con-item { font-size: 11px; color: #b91c1c; }
+  .pro-item::before { content: "✓ "; }
+  .con-item::before { content: "✗ "; }
+
+  /* ── Mockup shared styles ── */
+  .mock-app { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; font-size: 11px; display: flex; height: 200px; }
+  .mock-text-panel { flex: 1; padding: 10px 12px; background: white; border-right: 1px solid #e5e7eb; overflow: hidden; }
+  .mock-ann-panel { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; }
+  .mock-panel-header { padding: 6px 10px; border-bottom: 1px solid #eeddd0; background: #fdf8f5; font-size: 10px; font-weight: 700; color: #6B3F26; display: flex; align-items: center; justify-content: space-between; }
+  .mock-text { font-size: 11.5px; line-height: 1.8; color: #1E2761; }
+  .mock-text .hl { background: #294C6720; border-radius: 2px; padding: 0 2px; }
+  .mock-text .hl2 { background: #C44E4E20; border-radius: 2px; padding: 0 2px; }
+
+  /* A: 상단 툴바 */
+  .mock-toolbar { padding: 7px 10px; background: #6B3F26; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .tool-btn { padding: 3px 8px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 5px; color: white; font-size: 10px; font-weight: 500; white-space: nowrap; }
+  .tool-btn.active { background: rgba(255,255,255,0.9); color: #6B3F26; }
+  .tool-sep { width: 1px; height: 16px; background: rgba(255,255,255,0.2); }
+  .mock-ann-list-a { flex: 1; overflow: hidden; padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+  .ann-row { padding: 5px 7px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; cursor: pointer; transition: all 0.15s; }
+  .ann-row.sel { border-color: #6B3F26; background: #fdf8f5; box-shadow: 0 0 0 2px rgba(107,63,38,0.1); }
+  .ann-row-text { font-size: 9.5px; font-weight: 600; color: #6B3F26; truncate: true; }
+  .ann-row-sub { font-size: 9px; color: #9ca3af; margin-top: 1px; }
+
+  /* B: 인라인 개선 */
+  .ann-card-b { padding: 6px 8px; border-bottom: 1px solid #f0e8e0; background: white; }
+  .ann-target { font-size: 9.5px; font-weight: 600; color: #6B3F26; background: #294C6720; border-radius: 3px; padding: 1px 5px; display: inline-block; margin-bottom: 3px; }
+  .ann-content { font-size: 9px; color: #4b5563; margin-bottom: 4px; }
+  .ann-btns { display: flex; gap: 3px; flex-wrap: wrap; }
+  .ann-btn-labeled { display: flex; align-items: center; gap: 2px; padding: 2px 6px; border: 1px solid #eeddd0; border-radius: 4px; font-size: 9px; color: #6B3F26; background: #fdf8f5; cursor: pointer; }
+  .ann-btn-labeled svg { width: 9px; height: 9px; }
+  .ann-btn-del { border-color: #fecaca; color: #ef4444; background: #fff5f5; }
+
+  /* C: 아코디언 확장 */
+  .ann-card-c { border-bottom: 1px solid #f0e8e0; background: white; }
+  .ann-card-c-header { padding: 6px 8px; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+  .ann-num { width: 16px; height: 16px; border-radius: 50%; background: #6B3F26; color: white; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ann-preview { font-size: 9.5px; color: #6B3F26; flex: 1; truncate: true; }
+  .ann-expand-icon { font-size: 9px; color: #9ca3af; }
+  .ann-card-c-body { padding: 8px 10px 10px 10px; background: #fdf8f5; border-top: 1px solid #eeddd0; display: flex; flex-direction: column; gap: 6px; }
+  .ann-field-row { display: flex; align-items: center; gap: 6px; }
+  .ann-field-label { font-size: 9px; color: #9ca3af; width: 36px; flex-shrink: 0; }
+  .ann-field-val { flex: 1; font-size: 9px; color: #374151; }
+  .ann-type-pills { display: flex; gap: 3px; }
+  .ann-pill { padding: 1px 5px; border-radius: 3px; font-size: 9px; border: 1px solid #eeddd0; color: #6B3F26; }
+  .ann-pill.active { background: #6B3F26; color: white; border-color: #6B3F26; }
+  .ann-action-row { display: flex; gap: 4px; margin-top: 2px; }
+  .ann-action { display: flex; align-items: center; gap: 2px; padding: 2px 7px; border-radius: 4px; font-size: 9px; font-weight: 500; border: 1px solid #eeddd0; color: #6B3F26; background: white; }
+  .ann-action.danger { border-color: #fecaca; color: #ef4444; }
+  .color-dots { display: flex; gap: 3px; }
+  .color-dot { width: 11px; height: 11px; border-radius: 50%; }
+  .color-dot.active { box-shadow: 0 0 0 2px white, 0 0 0 3px #374151; }
+</style>
+
+<div class="approach-grid">
+
+  <!-- ── A: 상단 툴바 ── -->
+  <div class="approach-card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="approach-header">
+      <span class="approach-label">A</span>
+      <span class="approach-title">상단 컨텍스트 툴바</span>
+      <span class="approach-desc">주석 선택 → 상단 툴바에 기능 집중</span>
+    </div>
+    <div class="mockup-area">
+      <div class="mock-app">
+        <div class="mock-text-panel">
+          <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">본문 텍스트</div>
+          <div class="mock-text">
+            사막을 건너는 자여,<br>
+            <span class="hl">그 뜨거운 모래 위에</span> 발자국을<br>
+            남기지 말라. 바람이<br>
+            <span class="hl2">모든 것을 지우리니</span>
+          </div>
+        </div>
+        <div class="mock-ann-panel">
+          <!-- 선택된 주석의 툴바 -->
+          <div class="mock-toolbar">
+            <span style="font-size:10px;color:rgba(255,255,255,0.7);margin-right:2px;">①</span>
+            <div class="tool-btn active">✏ 내용편집</div>
+            <div class="tool-sep"></div>
+            <div class="tool-btn">🎯 타겟변경</div>
+            <div class="tool-btn">✂ 잘라내기</div>
+            <div class="tool-btn" style="border-color:rgba(255,100,100,0.4);color:#fca5a5;">🗑</div>
+          </div>
+          <div class="mock-panel-header">
+            주석 목록 (2)
+          </div>
+          <div class="mock-ann-list-a">
+            <div class="ann-row sel">
+              <div class="ann-row-text">그 뜨거운 모래 위에</div>
+              <div class="ann-row-sub">사막의 무상함 — 밑줄</div>
+            </div>
+            <div class="ann-row">
+              <div class="ann-row-text">모든 것을 지우리니</div>
+              <div class="ann-row-sub">소멸의 불가피성 — 원형</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-cons-row">
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+        <div class="pro-item">버튼 레이블이 명확해 처음 사용자도 바로 이해</div>
+        <div class="pro-item">주석 목록이 간결하게 유지됨</div>
+        <div class="pro-item">툴바 공간이 넓어 기능 확장 용이</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+        <div class="con-item">주석 선택 → 툴바 클릭: 시선 이동 필요</div>
+        <div class="con-item">어떤 주석이 선택됐는지 시각적으로 연결 필요</div>
+        <div class="con-item">기존 코드 구조 변경이 가장 큼</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── B: 인라인 개선 ── -->
+  <div class="approach-card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="approach-header">
+      <span class="approach-label">B</span>
+      <span class="approach-title">인라인 버튼 + 레이블 개선</span>
+      <span class="approach-desc">현재 방식 유지, 아이콘→ 텍스트 버튼으로 교체</span>
+    </div>
+    <div class="mockup-area">
+      <div class="mock-app">
+        <div class="mock-text-panel">
+          <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">본문 텍스트</div>
+          <div class="mock-text">
+            사막을 건너는 자여,<br>
+            <span class="hl">그 뜨거운 모래 위에</span> 발자국을<br>
+            남기지 말라. 바람이<br>
+            <span class="hl2">모든 것을 지우리니</span>
+          </div>
+        </div>
+        <div class="mock-ann-panel">
+          <div class="mock-panel-header">주석 목록 (2)</div>
+          <div style="flex:1;overflow:hidden;">
+            <div class="ann-card-b">
+              <span class="ann-target">그 뜨거운 모래 위에</span>
+              <div class="ann-content">사막의 무상함을 나타냄</div>
+              <div class="ann-btns">
+                <div class="ann-btn-labeled">↑위로</div>
+                <div class="ann-btn-labeled">↓아래로</div>
+                <div class="ann-btn-labeled">🎯타겟변경</div>
+                <div class="ann-btn-labeled">✂잘라내기</div>
+                <div class="ann-btn-labeled ann-btn-del">삭제</div>
+              </div>
+            </div>
+            <div class="ann-card-b">
+              <span class="ann-target" style="background:#C44E4E20;">모든 것을 지우리니</span>
+              <div class="ann-content">소멸의 불가피성</div>
+              <div class="ann-btns">
+                <div class="ann-btn-labeled">↑위로</div>
+                <div class="ann-btn-labeled">↓아래로</div>
+                <div class="ann-btn-labeled">🎯타겟변경</div>
+                <div class="ann-btn-labeled">✂잘라내기</div>
+                <div class="ann-btn-labeled ann-btn-del">삭제</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-cons-row">
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+        <div class="pro-item">코드 변경 최소 — 버튼 스타일만 교체</div>
+        <div class="pro-item">주석별 버튼이 바로 보여 컨텍스트 명확</div>
+        <div class="pro-item">기능 발견이 쉬움</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+        <div class="con-item">주석이 많으면 버튼 행이 반복되어 복잡해 보임</div>
+        <div class="con-item">마커타입·색상 편집은 여전히 숨겨진 클릭</div>
+        <div class="con-item">각 카드가 세로로 길어져 스크롤 증가</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── C: 아코디언 카드 ── -->
+  <div class="approach-card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="approach-header">
+      <span class="approach-label">C</span>
+      <span class="approach-title">아코디언 카드 (추천)</span>
+      <span class="approach-desc">평소 간결 → 클릭 시 카드 확장, 모든 편집 노출</span>
+    </div>
+    <div class="mockup-area">
+      <div class="mock-app">
+        <div class="mock-text-panel">
+          <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">본문 텍스트</div>
+          <div class="mock-text">
+            사막을 건너는 자여,<br>
+            <span class="hl">그 뜨거운 모래 위에</span> 발자국을<br>
+            남기지 말라. 바람이<br>
+            <span class="hl2">모든 것을 지우리니</span>
+          </div>
+        </div>
+        <div class="mock-ann-panel">
+          <div class="mock-panel-header">주석 목록 (2)</div>
+          <div style="flex:1;overflow:hidden;">
+            <!-- 확장된 카드 -->
+            <div class="ann-card-c">
+              <div class="ann-card-c-header">
+                <div class="ann-num">1</div>
+                <span class="ann-preview">그 뜨거운 모래 위에</span>
+                <span class="ann-expand-icon">▲</span>
+              </div>
+              <div class="ann-card-c-body">
+                <div class="ann-field-row">
+                  <span class="ann-field-label">내용</span>
+                  <span class="ann-field-val" style="color:#1E2761;">사막의 무상함을 나타냄</span>
+                </div>
+                <div class="ann-field-row">
+                  <span class="ann-field-label">마커</span>
+                  <div class="ann-type-pills">
+                    <div class="ann-pill active">밑줄</div>
+                    <div class="ann-pill">원형</div>
+                    <div class="ann-pill">사각</div>
+                  </div>
+                </div>
+                <div class="ann-field-row">
+                  <span class="ann-field-label">색상</span>
+                  <div class="color-dots">
+                    <div class="color-dot active" style="background:#294C67;"></div>
+                    <div class="color-dot" style="background:#C44E4E;"></div>
+                    <div class="color-dot" style="background:#2B7A4B;"></div>
+                    <div class="color-dot" style="background:#7C4DFF;"></div>
+                  </div>
+                </div>
+                <div class="ann-action-row">
+                  <div class="ann-action">🎯 타겟변경</div>
+                  <div class="ann-action">✂ 잘라내기</div>
+                  <div class="ann-action danger">삭제</div>
+                </div>
+              </div>
+            </div>
+            <!-- 접힌 카드 -->
+            <div class="ann-card-c">
+              <div class="ann-card-c-header">
+                <div class="ann-num">2</div>
+                <span class="ann-preview">모든 것을 지우리니</span>
+                <span class="ann-expand-icon">▼</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pros-cons-row">
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+        <div class="pro-item">평소엔 목록이 간결, 필요할 때만 확장</div>
+        <div class="pro-item">확장 시 내용·마커·색상·액션이 한눈에 보임</div>
+        <div class="pro-item">처음 사용자가 클릭하면 모든 기능 발견</div>
+        <div class="pro-item">현재 숨겨진 색상·마커 편집도 자연스럽게 노출</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+        <div class="con-item">한 번에 하나만 펼쳐보임 (여러 주석 동시 비교 어려움)</div>
+        <div class="con-item">확장 상태 관리 코드 추가 필요</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:16px;padding:12px 16px;background:#fef9f5;border:1px solid #eeddd0;border-radius:8px;font-size:11px;color:#6B3F26;">
+  💡 <strong>현황 분석:</strong> 지금은 아이콘(🎯✂) 버튼에 title 툴팁만 있어서 처음 쓰는 사람이 기능을 파악하기 어렵고, 색상/마커 변경은 "클릭하면 나타나는" 숨겨진 UI라 발견성이 낮습니다.
+</div>
