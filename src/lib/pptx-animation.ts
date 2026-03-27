@@ -84,26 +84,25 @@ export function buildTimingXml(groups: AnimationGroup[]): string {
 
   let ctnId = 0;
 
-  /** Helper: build a single "fade" <p:par> node for one shape. */
+  /** Helper: build a single "appear" <p:par> node for one shape. */
   function appearNode(spid: number, nodeType: string): string {
-    const dur = 500; // fade duration in ms
     return (
       `<p:par>` +
       `<p:cTn id="${++ctnId}" fill="hold">` +
       `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
       `<p:childTnLst>` +
       `<p:par>` +
-      `<p:cTn id="${++ctnId}" presetID="10" presetClass="entr" presetSubtype="0" fill="hold" grpId="0" nodeType="${nodeType}" dur="${dur}">` +
+      `<p:cTn id="${++ctnId}" presetID="1" presetClass="entr" presetSubtype="0" fill="hold" grpId="0" nodeType="${nodeType}" dur="1">` +
       `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
       `<p:childTnLst>` +
-      `<p:animEffect transition="in" filter="fade">` +
+      `<p:set>` +
       `<p:cBhvr>` +
-      `<p:cTn id="${++ctnId}" dur="${dur}">` +
-      `<p:stCondLst><p:cond delay="0"/></p:stCondLst>` +
-      `</p:cTn>` +
+      `<p:cTn id="${++ctnId}" dur="1" fill="hold"/>` +
       `<p:tgtEl><p:spTgt spid="${spid}"/></p:tgtEl>` +
+      `<p:attrNameLst><p:attrName>style.visibility</p:attrName></p:attrNameLst>` +
       `</p:cBhvr>` +
-      `</p:animEffect>` +
+      `<p:to><p:strVal val="visible"/></p:to>` +
+      `</p:set>` +
       `</p:childTnLst>` +
       `</p:cTn>` +
       `</p:par>` +
@@ -160,7 +159,7 @@ export function buildTimingXml(groups: AnimationGroup[]): string {
   const bldEntries: string[] = [];
   for (const group of groups) {
     for (const mid of group.markerIds) {
-      bldEntries.push(`<p:bldP spid="${mid}" grpId="0" animBg="1"/>`);
+      bldEntries.push(`<p:bldP spid="${mid}" grpId="0"/>`);
     }
     bldEntries.push(`<p:bldP spid="${group.textId}" grpId="0"/>`);
   }
