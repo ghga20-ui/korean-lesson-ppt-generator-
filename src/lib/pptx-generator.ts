@@ -36,7 +36,6 @@ import {
   estimateTextPosition,
   getUnderlineSegments,
   getShapeGeometry,
-  preprocessAnnotations,
 } from "./pptx-geometry";
 import { injectAnimations } from "./pptx-animation";
 
@@ -368,22 +367,9 @@ export async function generatePptxBuffer(
   pptx.author = "lit-ppt";
   pptx.title = genre === "poetry" ? "문학 수업 PPT" : "문학 수업 PPT";
 
-  // Pre-process: prevent annotations from being split across visual lines
-  const textAreaWidth = s.slideWidth - TEXT_LEFT_MARGIN * 2;
-  const processedSlides = slides.map((slideData) => {
-    const result = preprocessAnnotations(
-      slideData.text,
-      slideData.annotations,
-      s.fontSize,
-      textAreaWidth,
-      getFontMetrics(s.fontFamily),
-    );
-    return { ...slideData, text: result.text, annotations: result.annotations };
-  });
-
   const slideShapeCounts: number[][] = [];
 
-  for (const slideData of processedSlides) {
+  for (const slideData of slides) {
     const counts = buildSlide(pptx, slideData, genre, s);
     slideShapeCounts.push(counts);
   }
