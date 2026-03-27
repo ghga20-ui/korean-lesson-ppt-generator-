@@ -162,8 +162,9 @@ function buildSlide(
         markerShapeCount++;
       }
 
-      const lastSeg = segments[segments.length - 1];
-      shapeBottomY = lastSeg.y;
+      // Use first segment for annotation text positioning so annotation
+      // appears below the first underline line (not the last).
+      shapeBottomY = segments[0].y;
       shapeLeftX = segments[0].x;
       shapeWidth = segments[0].w;
     } else if (annotation.markerType === "bracket") {
