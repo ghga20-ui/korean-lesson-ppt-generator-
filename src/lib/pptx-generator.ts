@@ -300,7 +300,12 @@ function buildSlide(
       const nextLineY = TEXT_TOP_MARGIN + (annotLine + 1) * lineStepInch
         - (annotLine + 1) * LINE_DRIFT_CORRECTION;
       const visibleTextH = settings.annotationFontSize / 72;
-      const anchorY = isMultiLine ? glyphBottomY + MULTI_LINE_ANNOTATION_OFFSET : Math.max(shapeBottomY, glyphBottomY);
+      // For underlines, annotLine is already based on the last segment (bottom line),
+      // so no extra offset is needed. Only apply MULTI_LINE_ANNOTATION_OFFSET for
+      // other marker types where annotLine is based on pos.y (top/first line).
+      const anchorY = (isMultiLine && annotation.markerType !== "underline")
+        ? glyphBottomY + MULTI_LINE_ANNOTATION_OFFSET
+        : Math.max(shapeBottomY, glyphBottomY);
       const gapBias = anchorY + (nextLineY - anchorY) * GAP_BIAS_FACTOR;
       annotTextY = Math.max(
         anchorY + ANNOTATION_Y_GAP,
