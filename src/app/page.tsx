@@ -47,7 +47,7 @@ export default function Home() {
             <Icon name="draw" size={28} />
           </span>
           <h1 className="text-4xl font-extrabold tracking-tight text-[#6B3F26]">
-            국어 수업 슬라이드 뚝딱!
+            국어 수업 슬라이드 제작 도구
           </h1>
         </div>
 

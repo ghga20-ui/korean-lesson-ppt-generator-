@@ -213,7 +213,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
   const handleExtractAnnotations = useCallback(async () => {
     if (!pdfFile || !fullText.trim()) return;
     setIsExtracting(true);
-    setExtractionProgress("PDF를 Gemini에 전송 중...");
+    setExtractionProgress("PDF를 AI에 전송 중...");
     setUnmatchedAnnotations([]);
 
     try {
@@ -256,7 +256,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
   const handleExtractAll = useCallback(async () => {
     if (!pdfFile) return;
     setIsExtracting(true);
-    setExtractionProgress("PDF를 Gemini에 전송 중...");
+    setExtractionProgress("PDF를 AI에 전송 중...");
     setUnmatchedAnnotations([]);
 
     try {
