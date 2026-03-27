@@ -12,7 +12,7 @@
 export const TEXT_LEFT_MARGIN = 0.5;
 
 /** Top margin for the main text area (inches). */
-export const TEXT_TOP_MARGIN = 0.35;
+export const TEXT_TOP_MARGIN = 0.2;
 
 /** Proportion of slide height reserved for the main text area. */
 export const TEXT_AREA_HEIGHT_RATIO = 0.65;
