@@ -6,7 +6,6 @@ import { DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
 import { splitText, splitSlideAt, mergeSlides } from "@/lib/slide-splitter";
 import { matchAnnotationsToText, distributeAnnotationsToSlides } from "@/lib/annotation-matcher";
 import { useHistory } from "@/hooks/useHistory";
-import { upload } from "@vercel/blob/client";
 
 // ---------------------------------------------------------------------------
 // Auto-save helpers
@@ -76,6 +75,47 @@ function readJsonFile(file: File): Promise<SavedProject> {
     reader.onerror = reject;
     reader.readAsText(file);
   });
+}
+
+// ---------------------------------------------------------------------------
+// PDF → Gemini File API 업로드 (브라우저에서 직접 Google에 업로드)
+// ---------------------------------------------------------------------------
+
+async function uploadPdfToGemini(
+  file: File,
+  onProgress: (msg: string) => void,
+): Promise<string> {
+  // 1. 서버에서 업로드 세션 URL 발급 (API 키는 서버에서만 사용)
+  onProgress("업로드 준비 중...");
+  const initRes = await fetch("/api/start-file-upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ size: file.size }),
+  });
+  if (!initRes.ok) {
+    const err = await initRes.json().catch(() => ({}));
+    throw new Error(err.error || "업로드 초기화 실패");
+  }
+  const { uploadUrl } = await initRes.json();
+
+  // 2. 브라우저 → Google에 직접 업로드 (Vercel 거치지 않음)
+  onProgress("PDF 업로드 중...");
+  const uploadRes = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/pdf",
+      "X-Goog-Upload-Command": "upload, finalize",
+      "X-Goog-Upload-Offset": "0",
+    },
+    body: file,
+  });
+  if (!uploadRes.ok) {
+    throw new Error(`PDF 업로드 실패 (${uploadRes.status})`);
+  }
+  const fileData = await uploadRes.json();
+  const fileUri = fileData.file?.uri;
+  if (!fileUri) throw new Error("파일 URI를 받지 못했습니다.");
+  return fileUri;
 }
 
 // ---------------------------------------------------------------------------
@@ -218,15 +258,11 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     setUnmatchedAnnotations([]);
 
     try {
-      setExtractionProgress("PDF 업로드 중...");
-      const blob = await upload(pdfFile.name, pdfFile, {
-        access: "public",
-        handleUploadUrl: "/api/upload-pdf",
-      });
+      const fileUri = await uploadPdfToGemini(pdfFile, setExtractionProgress);
 
       setExtractionProgress("AI 분석 중...");
       const formData = new FormData();
-      formData.append("blobUrl", blob.url);
+      formData.append("fileUri", fileUri);
       formData.append("mode", "C");
       formData.append("genre", genre);
       formData.append("userText", fullText);
@@ -270,15 +306,11 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     setUnmatchedAnnotations([]);
 
     try {
-      setExtractionProgress("PDF 업로드 중...");
-      const blob = await upload(pdfFile.name, pdfFile, {
-        access: "public",
-        handleUploadUrl: "/api/upload-pdf",
-      });
+      const fileUri = await uploadPdfToGemini(pdfFile, setExtractionProgress);
 
       setExtractionProgress("AI 분석 중...");
       const formData = new FormData();
-      formData.append("blobUrl", blob.url);
+      formData.append("fileUri", fileUri);
       formData.append("mode", "A");
       formData.append("genre", genre);
 

@@ -154,17 +154,18 @@ interface GeminiResponse {
 }
 
 async function callGeminiApi(
-  base64Data: string, prompt: string, apiKey: string,
+  pdfData: { base64: string } | { fileUri: string }, prompt: string, apiKey: string,
 ): Promise<{ text?: string; annotations?: Array<{ targetText: string; content: string; markerType: string }> }> {
+  const pdfPart = "fileUri" in pdfData
+    ? { fileData: { mimeType: "application/pdf", fileUri: pdfData.fileUri } }
+    : { inlineData: { mimeType: "application/pdf", data: pdfData.base64 } };
+
   const url = `${GEMINI_API_BASE}/${MODEL}:generateContent?key=${apiKey}`;
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{ parts: [
-        { inlineData: { mimeType: "application/pdf", data: base64Data } },
-        { text: prompt },
-      ]}],
+      contents: [{ parts: [pdfPart, { text: prompt }] }],
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: ANNOTATION_SCHEMA,
@@ -223,19 +224,21 @@ function quickMatch(sourceText: string, annotations: ExtractedAnnotation[]) {
 // ---------------------------------------------------------------------------
 
 export async function extractFromPdfServer(
-  pdfFile: File,
+  pdf: File | string, // File 또는 fileUri 문자열
   apiKey: string,
   options: { mode: "A" | "C"; genre: Genre; userText?: string },
 ): Promise<ExtractionResult> {
-  const arrayBuffer = await pdfFile.arrayBuffer();
-  const base64Data = Buffer.from(arrayBuffer).toString("base64");
+  const pdfData: { base64: string } | { fileUri: string } =
+    typeof pdf === "string"
+      ? { fileUri: pdf }
+      : { base64: Buffer.from(await pdf.arrayBuffer()).toString("base64") };
 
   // Round 1
   const prompt = options.mode === "C"
     ? buildModeCPrompt(options.userText || "", options.genre)
     : buildModeAPrompt(options.genre);
 
-  const round1Raw = await callGeminiApi(base64Data, prompt, apiKey);
+  const round1Raw = await callGeminiApi(pdfData, prompt, apiKey);
   const round1Annotations = parseAnnotations(round1Raw);
   const extractedText = round1Raw.text || "";
   const sourceText = options.mode === "C" ? (options.userText || "") : extractedText;
@@ -246,7 +249,7 @@ export async function extractFromPdfServer(
   // Round 2 (always)
   if (sourceText.length > 0) {
     const round2Prompt = buildRound2Prompt(sourceText, options.genre, round1Annotations, unmatched);
-    const round2Raw = await callGeminiApi(base64Data, round2Prompt, apiKey);
+    const round2Raw = await callGeminiApi(pdfData, round2Prompt, apiKey);
     const round2Annotations = parseAnnotations(round2Raw);
     return { text: extractedText, annotations: round2Annotations };
   }
