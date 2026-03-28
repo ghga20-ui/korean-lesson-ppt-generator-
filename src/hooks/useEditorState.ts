@@ -81,11 +81,13 @@ function readJsonFile(file: File): Promise<SavedProject> {
 // PDF → Gemini File API 업로드 (브라우저에서 직접 Google에 업로드)
 // ---------------------------------------------------------------------------
 
+const CHUNK_SIZE = 3 * 1024 * 1024; // 3MB (Vercel 4.5MB 한도 이하)
+
 async function uploadPdfToGemini(
   file: File,
   onProgress: (msg: string) => void,
 ): Promise<string> {
-  // 1. 서버에서 업로드 세션 URL 발급 (API 키는 서버에서만 사용)
+  // 1. 서버에서 Gemini 업로드 세션 URL 발급 (API 키는 서버에서만 사용)
   onProgress("업로드 준비 중...");
   const initRes = await fetch("/api/start-file-upload", {
     method: "POST",
@@ -98,24 +100,32 @@ async function uploadPdfToGemini(
   }
   const { uploadUrl } = await initRes.json();
 
-  // 2. 브라우저 → Google에 직접 업로드 (Vercel 거치지 않음)
-  onProgress("PDF 업로드 중...");
-  const uploadRes = await fetch(uploadUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/pdf",
-      "X-Goog-Upload-Command": "upload, finalize",
-      "X-Goog-Upload-Offset": "0",
-    },
-    body: file,
-  });
-  if (!uploadRes.ok) {
-    throw new Error(`PDF 업로드 실패 (${uploadRes.status})`);
+  // 2. PDF를 3MB 청크로 나눠 서버에 전달 → 서버가 Gemini에 포워딩
+  const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+  let offset = 0;
+
+  for (let i = 0; i < totalChunks; i++) {
+    const chunk = file.slice(offset, offset + CHUNK_SIZE);
+    const isLast = i === totalChunks - 1;
+    onProgress(`PDF 업로드 중... (${i + 1}/${totalChunks})`);
+
+    const formData = new FormData();
+    formData.append("uploadUrl", uploadUrl);
+    formData.append("offset", String(offset));
+    formData.append("chunk", chunk);
+    formData.append("isLast", String(isLast));
+
+    const res = await fetch("/api/upload-chunk", { method: "POST", body: formData });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `청크 업로드 실패 (${i + 1}/${totalChunks})`);
+    }
+    const data = await res.json();
+    if (isLast) return data.fileUri;
+    offset = data.nextOffset;
   }
-  const fileData = await uploadRes.json();
-  const fileUri = fileData.file?.uri;
-  if (!fileUri) throw new Error("파일 URI를 받지 못했습니다.");
-  return fileUri;
+
+  throw new Error("파일 URI를 받지 못했습니다.");
 }
 
 // ---------------------------------------------------------------------------
