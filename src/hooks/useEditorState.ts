@@ -6,6 +6,7 @@ import { DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
 import { splitText, splitSlideAt, mergeSlides } from "@/lib/slide-splitter";
 import { matchAnnotationsToText, distributeAnnotationsToSlides } from "@/lib/annotation-matcher";
 import { useHistory } from "@/hooks/useHistory";
+import { upload } from "@vercel/blob/client";
 
 // ---------------------------------------------------------------------------
 // Auto-save helpers
@@ -217,8 +218,15 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     setUnmatchedAnnotations([]);
 
     try {
+      setExtractionProgress("PDF 업로드 중...");
+      const blob = await upload(pdfFile.name, pdfFile, {
+        access: "public",
+        handleUploadUrl: "/api/upload-pdf",
+      });
+
+      setExtractionProgress("AI 분석 중...");
       const formData = new FormData();
-      formData.append("pdf", pdfFile);
+      formData.append("blobUrl", blob.url);
       formData.append("mode", "C");
       formData.append("genre", genre);
       formData.append("userText", fullText);
@@ -262,8 +270,15 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     setUnmatchedAnnotations([]);
 
     try {
+      setExtractionProgress("PDF 업로드 중...");
+      const blob = await upload(pdfFile.name, pdfFile, {
+        access: "public",
+        handleUploadUrl: "/api/upload-pdf",
+      });
+
+      setExtractionProgress("AI 분석 중...");
       const formData = new FormData();
-      formData.append("pdf", pdfFile);
+      formData.append("blobUrl", blob.url);
       formData.append("mode", "A");
       formData.append("genre", genre);
 
