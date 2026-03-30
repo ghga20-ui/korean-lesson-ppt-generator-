@@ -81,7 +81,7 @@ function readJsonFile(file: File): Promise<SavedProject> {
 // PDF → Gemini File API 업로드 (브라우저에서 직접 Google에 업로드)
 // ---------------------------------------------------------------------------
 
-const CHUNK_SIZE = 3 * 1024 * 1024; // 3MB (Vercel 4.5MB 한도 이하)
+const CHUNK_SIZE = 8 * 1024 * 1024; // 8MB (Gemini 청크 단위 요구사항)
 
 async function uploadPdfToGemini(
   file: File,
