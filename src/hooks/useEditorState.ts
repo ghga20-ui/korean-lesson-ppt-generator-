@@ -81,8 +81,6 @@ function readJsonFile(file: File): Promise<SavedProject> {
 // PDF → Gemini File API 업로드 (브라우저에서 직접 Google에 업로드)
 // ---------------------------------------------------------------------------
 
-const CHUNK_SIZE = 8 * 1024 * 1024; // 8MB (Gemini 청크 단위 요구사항)
-
 async function uploadPdfToGemini(
   file: File,
   onProgress: (msg: string) => void,
@@ -100,32 +98,27 @@ async function uploadPdfToGemini(
   }
   const { uploadUrl } = await initRes.json();
 
-  // 2. PDF를 3MB 청크로 나눠 서버에 전달 → 서버가 Gemini에 포워딩
-  const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-  let offset = 0;
+  // 2. 브라우저에서 직접 Google 업로드 URL로 전송 (Vercel 용량 제한 우회)
+  onProgress("PDF 업로드 중...");
+  const res = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/pdf",
+      "X-Goog-Upload-Command": "upload, finalize",
+      "X-Goog-Upload-Offset": "0",
+    },
+    body: file,
+  });
 
-  for (let i = 0; i < totalChunks; i++) {
-    const chunk = file.slice(offset, offset + CHUNK_SIZE);
-    const isLast = i === totalChunks - 1;
-    onProgress(`PDF 업로드 중... (${i + 1}/${totalChunks})`);
-
-    const formData = new FormData();
-    formData.append("uploadUrl", uploadUrl);
-    formData.append("offset", String(offset));
-    formData.append("chunk", chunk);
-    formData.append("isLast", String(isLast));
-
-    const res = await fetch("/api/upload-chunk", { method: "POST", body: formData });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `청크 업로드 실패 (${i + 1}/${totalChunks})`);
-    }
-    const data = await res.json();
-    if (isLast) return data.fileUri;
-    offset = data.nextOffset;
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`PDF 업로드 실패 (${res.status}): ${text.slice(0, 200)}`);
   }
 
-  throw new Error("파일 URI를 받지 못했습니다.");
+  const data = await res.json();
+  const fileUri = data.file?.uri;
+  if (!fileUri) throw new Error("파일 URI를 받지 못했습니다.");
+  return fileUri;
 }
 
 // ---------------------------------------------------------------------------
