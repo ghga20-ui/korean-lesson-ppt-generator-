@@ -246,13 +246,13 @@ export async function extractFromPdfServer(
   // Verification
   const { matched, unmatched } = quickMatch(sourceText, round1Annotations);
 
-  // Round 2 (always)
-  if (sourceText.length > 0) {
+  // Round 2 — 미매칭 주석이 있을 때만 실행 (타임아웃 방지)
+  if (sourceText.length > 0 && unmatched.length > 0) {
     const round2Prompt = buildRound2Prompt(sourceText, options.genre, round1Annotations, unmatched);
     const round2Raw = await callGeminiApi(pdfData, round2Prompt, apiKey);
     const round2Annotations = parseAnnotations(round2Raw);
     return { text: extractedText, annotations: round2Annotations };
   }
 
-  return { text: extractedText, annotations: round1Annotations };
+  return { text: extractedText, annotations: matched.length > 0 ? matched : round1Annotations };
 }

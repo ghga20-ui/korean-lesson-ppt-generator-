@@ -236,14 +236,21 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     try {
       const blobUrl = await uploadPdfToBlob(pdfFile, setExtractionProgress);
 
-      setExtractionProgress("AI 분석 중...");
+      setExtractionProgress("AI 분석 중... (1-2분 소요)");
       const formData = new FormData();
       formData.append("blobUrl", blobUrl);
       formData.append("mode", "C");
       formData.append("genre", genre);
       formData.append("userText", fullText);
 
-      const response = await fetch("/api/extract", { method: "POST", body: formData });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4 * 60 * 1000);
+      let response: Response;
+      try {
+        response = await fetch("/api/extract", { method: "POST", body: formData, signal: controller.signal });
+      } finally {
+        clearTimeout(timeoutId);
+      }
       if (!response.ok) {
         const text = await response.text().catch(() => "");
         let msg = `오류 (HTTP ${response.status})`;
@@ -284,13 +291,20 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     try {
       const blobUrl = await uploadPdfToBlob(pdfFile, setExtractionProgress);
 
-      setExtractionProgress("AI 분석 중...");
+      setExtractionProgress("AI 분석 중... (1-2분 소요)");
       const formData = new FormData();
       formData.append("blobUrl", blobUrl);
       formData.append("mode", "A");
       formData.append("genre", genre);
 
-      const response = await fetch("/api/extract", { method: "POST", body: formData });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4 * 60 * 1000);
+      let response: Response;
+      try {
+        response = await fetch("/api/extract", { method: "POST", body: formData, signal: controller.signal });
+      } finally {
+        clearTimeout(timeoutId);
+      }
       if (!response.ok) {
         const text = await response.text().catch(() => "");
         let msg = `오류 (HTTP ${response.status})`;

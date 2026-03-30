@@ -3,7 +3,7 @@ import { del } from "@vercel/blob";
 import type { Genre } from "@/lib/types";
 import { extractFromPdfServer } from "@/lib/gemini-server";
 
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
