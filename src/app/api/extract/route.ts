@@ -5,39 +5,6 @@ import { extractFromPdfServer } from "@/lib/gemini-server";
 
 export const maxDuration = 120;
 
-async function uploadBlobToGeminiFileApi(blobUrl: string, apiKey: string): Promise<string> {
-  // Vercel Blob에서 PDF 다운로드
-  const pdfRes = await fetch(blobUrl);
-  if (!pdfRes.ok) throw new Error(`Blob 다운로드 실패 (${pdfRes.status})`);
-  const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
-
-  // Gemini File API multipart 업로드 (서버 → Google, 용량 제한 없음)
-  const boundary = "GeminiUploadBoundary";
-  const meta = JSON.stringify({ file: { display_name: "document.pdf" } });
-  const body = Buffer.concat([
-    Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n--${boundary}\r\nContent-Type: application/pdf\r\n\r\n`),
-    pdfBuffer,
-    Buffer.from(`\r\n--${boundary}--\r\n`),
-  ]);
-
-  const uploadRes = await fetch(
-    `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=multipart&key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": `multipart/related; boundary=${boundary}` },
-      body,
-    }
-  );
-  if (!uploadRes.ok) {
-    const text = await uploadRes.text().catch(() => "");
-    throw new Error(`Gemini 업로드 실패 (${uploadRes.status}): ${text.slice(0, 200)}`);
-  }
-  const data = await uploadRes.json();
-  const fileUri = data.file?.uri;
-  if (!fileUri) throw new Error("Gemini File URI를 받지 못했습니다.");
-  return fileUri;
-}
-
 export async function POST(request: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -59,19 +26,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "mode, genre는 필수입니다." }, { status: 400 });
     }
 
-    let geminiFileUri: string;
+    let pdfInput: File | string;
 
     if (blobUrl) {
-      geminiFileUri = await uploadBlobToGeminiFileApi(blobUrl, apiKey);
+      // Vercel Blob에서 다운로드 → base64 inline으로 Gemini 전달 (File API 불필요)
+      const pdfRes = await fetch(blobUrl);
+      if (!pdfRes.ok) throw new Error(`Blob 다운로드 실패 (${pdfRes.status})`);
+      const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
+      pdfInput = new File([pdfBuffer], "document.pdf", { type: "application/pdf" });
       del(blobUrl).catch(() => {});
     } else if (fileUri) {
-      geminiFileUri = fileUri;
+      pdfInput = fileUri;
     } else {
       return NextResponse.json({ error: "blobUrl 또는 fileUri가 필요합니다." }, { status: 400 });
     }
 
     const result = await extractFromPdfServer(
-      geminiFileUri,
+      pdfInput,
       apiKey,
       { mode, genre, userText: userText || undefined },
     );
