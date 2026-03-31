@@ -1,6 +1,5 @@
 "use client";
 
-import { upload } from "@vercel/blob/client";
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { Genre, SlideData, InputMode, ExtractedAnnotation, Annotation, PptSettings } from "@/lib/types";
 import { DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
@@ -76,22 +75,6 @@ function readJsonFile(file: File): Promise<SavedProject> {
     reader.onerror = reject;
     reader.readAsText(file);
   });
-}
-
-// ---------------------------------------------------------------------------
-// PDF → Vercel Blob 업로드 (브라우저에서 직접, Vercel 용량 제한 우회)
-// ---------------------------------------------------------------------------
-
-async function uploadPdfToBlob(
-  file: File,
-  onProgress: (msg: string) => void,
-): Promise<string> {
-  onProgress("PDF 업로드 중...");
-  const blob = await upload(`pdfs/${Date.now()}-${file.name}`, file, {
-    access: "public",
-    handleUploadUrl: "/api/upload-pdf",
-  });
-  return blob.url;
 }
 
 // ---------------------------------------------------------------------------
@@ -230,15 +213,12 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
   const handleExtractAnnotations = useCallback(async () => {
     if (!pdfFile || !fullText.trim()) return;
     setIsExtracting(true);
-    setExtractionProgress("PDF를 AI에 전송 중...");
+    setExtractionProgress("AI 분석 중... (1-2분 소요)");
     setUnmatchedAnnotations([]);
 
     try {
-      const blobUrl = await uploadPdfToBlob(pdfFile, setExtractionProgress);
-
-      setExtractionProgress("AI 분석 중... (1-2분 소요)");
       const formData = new FormData();
-      formData.append("blobUrl", blobUrl);
+      formData.append("file", pdfFile);
       formData.append("mode", "C");
       formData.append("genre", genre);
       formData.append("userText", fullText);
@@ -285,15 +265,12 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
   const handleExtractAll = useCallback(async () => {
     if (!pdfFile) return;
     setIsExtracting(true);
-    setExtractionProgress("PDF를 AI에 전송 중...");
+    setExtractionProgress("AI 분석 중... (1-2분 소요)");
     setUnmatchedAnnotations([]);
 
     try {
-      const blobUrl = await uploadPdfToBlob(pdfFile, setExtractionProgress);
-
-      setExtractionProgress("AI 분석 중... (1-2분 소요)");
       const formData = new FormData();
-      formData.append("blobUrl", blobUrl);
+      formData.append("file", pdfFile);
       formData.append("mode", "A");
       formData.append("genre", genre);
 

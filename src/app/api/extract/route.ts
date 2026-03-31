@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { del } from "@vercel/blob";
 import type { Genre } from "@/lib/types";
 import { extractFromPdfServer } from "@/lib/gemini-server";
 
@@ -16,7 +15,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const formData = await request.formData();
-    const blobUrl = formData.get("blobUrl") as string | null;
+    const file = formData.get("file") as File | null;
     const fileUri = formData.get("fileUri") as string | null;
     const mode = formData.get("mode") as "A" | "C";
     const genre = formData.get("genre") as Genre;
@@ -28,17 +27,12 @@ export async function POST(request: NextRequest) {
 
     let pdfInput: File | string;
 
-    if (blobUrl) {
-      // Vercel Blob에서 다운로드 → base64 inline으로 Gemini 전달 (File API 불필요)
-      const pdfRes = await fetch(blobUrl);
-      if (!pdfRes.ok) throw new Error(`Blob 다운로드 실패 (${pdfRes.status})`);
-      const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
-      pdfInput = new File([pdfBuffer], "document.pdf", { type: "application/pdf" });
-      del(blobUrl).catch(() => {});
+    if (file) {
+      pdfInput = file;
     } else if (fileUri) {
       pdfInput = fileUri;
     } else {
-      return NextResponse.json({ error: "blobUrl 또는 fileUri가 필요합니다." }, { status: 400 });
+      return NextResponse.json({ error: "file 또는 fileUri가 필요합니다." }, { status: 400 });
     }
 
     const result = await extractFromPdfServer(
