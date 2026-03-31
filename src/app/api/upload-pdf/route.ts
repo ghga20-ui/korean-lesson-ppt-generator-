@@ -9,7 +9,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       request,
       onBeforeGenerateToken: async () => ({
         allowedContentTypes: ["application/pdf"],
-        maximumSizeInBytes: 50 * 1024 * 1024, // 50MB
+        maximumSizeInBytes: 200 * 1024 * 1024, // 200MB
+        addRandomSuffix: true,
       }),
       onUploadCompleted: async () => {},
     });

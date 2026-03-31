@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { upload } from "@vercel/blob/client";
 import type { Genre, SlideData, InputMode, ExtractedAnnotation, Annotation, PptSettings } from "@/lib/types";
 import { DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
 import { splitText, splitSlideAt, mergeSlides } from "@/lib/slide-splitter";
@@ -78,64 +79,26 @@ function readJsonFile(file: File): Promise<SavedProject> {
 }
 
 // ---------------------------------------------------------------------------
-// PDF → Gemini File API 청크 업로드 (Vercel 4.5MB 제한 우회)
+// PDF → Vercel Blob 업로드
 // ---------------------------------------------------------------------------
 
-const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB
-
-async function uploadPdfToGemini(
+async function uploadPdfToVercelBlob(
   file: File,
   onProgress: (msg: string) => void,
 ): Promise<string> {
-  // 1. 업로드 세션 시작
   onProgress("PDF 업로드 준비 중...");
-  const startRes = await fetch("/api/start-file-upload", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ size: file.size }),
+
+  const blob = await upload(`pdf-uploads/${Date.now()}-${file.name}`, file, {
+    access: "public",
+    contentType: file.type || "application/pdf",
+    handleUploadUrl: "/api/upload-pdf",
+    multipart: true,
+    onUploadProgress(progress) {
+      onProgress(`PDF 전송 중... (${Math.round(progress.percentage)}%)`);
+    },
   });
-  if (!startRes.ok) {
-    const err = await startRes.json().catch(() => ({}));
-    throw new Error(err.error || "업로드 세션 생성 실패");
-  }
-  const { uploadUrl } = await startRes.json();
 
-  // 2. 청크 단위로 업로드
-  const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-  let fileUri: string | null = null;
-
-  for (let i = 0; i < totalChunks; i++) {
-    const start = i * CHUNK_SIZE;
-    const end = Math.min(start + CHUNK_SIZE, file.size);
-    const chunk = file.slice(start, end);
-    const isLast = i === totalChunks - 1;
-
-    if (totalChunks > 1) {
-      onProgress(`PDF 전송 중... (${i + 1}/${totalChunks})`);
-    } else {
-      onProgress("PDF 전송 중...");
-    }
-
-    const formData = new FormData();
-    formData.append("uploadUrl", uploadUrl);
-    formData.append("offset", String(start));
-    formData.append("chunk", chunk);
-    formData.append("isLast", String(isLast));
-
-    const res = await fetch("/api/upload-chunk", { method: "POST", body: formData });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `청크 ${i + 1} 업로드 실패`);
-    }
-
-    if (isLast) {
-      const data = await res.json();
-      fileUri = data.fileUri;
-    }
-  }
-
-  if (!fileUri) throw new Error("파일 URI를 받지 못했습니다.");
-  return fileUri;
+  return blob.url;
 }
 
 // ---------------------------------------------------------------------------
@@ -278,11 +241,11 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     setUnmatchedAnnotations([]);
 
     try {
-      const fileUri = await uploadPdfToGemini(pdfFile, setExtractionProgress);
+      const blobUrl = await uploadPdfToVercelBlob(pdfFile, setExtractionProgress);
 
       setExtractionProgress("AI 분석 중... (1-2분 소요)");
       const formData = new FormData();
-      formData.append("fileUri", fileUri);
+      formData.append("blobUrl", blobUrl);
       formData.append("mode", "C");
       formData.append("genre", genre);
       formData.append("userText", fullText);
@@ -333,11 +296,11 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     setUnmatchedAnnotations([]);
 
     try {
-      const fileUri = await uploadPdfToGemini(pdfFile, setExtractionProgress);
+      const blobUrl = await uploadPdfToVercelBlob(pdfFile, setExtractionProgress);
 
       setExtractionProgress("AI 분석 중... (1-2분 소요)");
       const formData = new FormData();
-      formData.append("fileUri", fileUri);
+      formData.append("blobUrl", blobUrl);
       formData.append("mode", "A");
       formData.append("genre", genre);
 

@@ -3,6 +3,7 @@
  * Uses process.env.GEMINI_API_KEY — never exposed to the client.
  */
 import type { Genre, ExtractedAnnotation } from "./types";
+import { uploadPdfToGeminiFile } from "./gemini-file-upload";
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 const MODEL = "gemini-3.1-pro-preview";
@@ -262,7 +263,7 @@ export async function extractFromPdfServer(
   const pdfData: { base64: string } | { fileUri: string } =
     typeof pdf === "string"
       ? { fileUri: pdf }
-      : { base64: Buffer.from(await pdf.arrayBuffer()).toString("base64") };
+      : { fileUri: await uploadPdfToGeminiFile(pdf, apiKey) };
 
   // Round 1
   const prompt = options.mode === "C"
