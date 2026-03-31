@@ -155,35 +155,66 @@ interface GeminiResponse {
 
 async function callGeminiApi(
   pdfData: { base64: string } | { fileUri: string }, prompt: string, apiKey: string,
+  round: number = 1,
 ): Promise<{ text?: string; annotations?: Array<{ targetText: string; content: string; markerType: string }> }> {
   const pdfPart = "fileUri" in pdfData
     ? { fileData: { mimeType: "application/pdf", fileUri: pdfData.fileUri } }
     : { inlineData: { mimeType: "application/pdf", data: pdfData.base64 } };
 
   const url = `${GEMINI_API_BASE}/${MODEL}:generateContent?key=${apiKey}`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [pdfPart, { text: prompt }] }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: ANNOTATION_SCHEMA,
-        temperature: 0.1,
-      },
-    }),
-  });
+
+  // 서버 측 타임아웃: Vercel Function 제한(300s)보다 충분히 짧게 설정
+  const TIMEOUT_MS = 110_000; // 110초
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  const startTime = Date.now();
+  console.log(`[Gemini] Round ${round} 시작`);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [pdfPart, { text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: ANNOTATION_SCHEMA,
+          temperature: 0.1,
+        },
+      }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    if ((err as Error).name === "AbortError") {
+      console.error(`[Gemini] Round ${round} 타임아웃 (${elapsed}s)`);
+      throw new Error(`Gemini 응답 시간 초과 (${elapsed}초). PDF가 너무 크거나 서버가 바쁩니다. 잠시 후 다시 시도하세요.`);
+    }
+    console.error(`[Gemini] Round ${round} 네트워크 오류 (${elapsed}s):`, err);
+    throw new Error(`Gemini 연결 오류: ${(err as Error).message}`);
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+  console.log(`[Gemini] Round ${round} 응답 수신 (${elapsed}s) status=${response.status}`);
 
   if (!response.ok) {
     const status = response.status;
     if (status === 401 || status === 403) throw new Error("API 키가 유효하지 않습니다.");
     if (status === 429) throw new Error("요청 한도 초과. 잠시 후 다시 시도하세요.");
     const errorText = await response.text().catch(() => "");
-    throw new Error(`Gemini API 오류 (${status}): ${errorText || "알 수 없는 오류"}`);
+    console.error(`[Gemini] Round ${round} API 오류 (${status}):`, errorText);
+    throw new Error(`Gemini API 오류 (${status}): ${errorText.slice(0, 500) || "알 수 없는 오류"}`);
   }
 
   const data: GeminiResponse = await response.json();
-  if (data.error) throw new Error(`Gemini 오류: ${data.error.message}`);
+  if (data.error) {
+    console.error(`[Gemini] Round ${round} 응답 내 오류:`, data.error);
+    throw new Error(`Gemini 오류: ${data.error.message}`);
+  }
   const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!textContent) throw new Error("유효한 응답을 받지 못했습니다.");
   try { return JSON.parse(textContent); }
@@ -249,7 +280,7 @@ export async function extractFromPdfServer(
   // Round 2 — 미매칭 주석이 있을 때만 실행 (타임아웃 방지)
   if (sourceText.length > 0 && unmatched.length > 0) {
     const round2Prompt = buildRound2Prompt(sourceText, options.genre, round1Annotations, unmatched);
-    const round2Raw = await callGeminiApi(pdfData, round2Prompt, apiKey);
+    const round2Raw = await callGeminiApi(pdfData, round2Prompt, apiKey, 2);
     const round2Annotations = parseAnnotations(round2Raw);
     return { text: extractedText, annotations: round2Annotations };
   }
