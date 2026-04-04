@@ -9,10 +9,12 @@ export async function POST(request: NextRequest) {
     const pathname = `lit-ppt-${Date.now()}.${ext || "pdf"}`;
 
     // onUploadCompleted 없음 → Vercel CDN이 서버로 콜백하지 않음 → hang 없음
+    // 기본 validUntil은 30초 — 업로드 시작 전에 만료되므로 명시적으로 10분으로 설정
     const token = await generateClientTokenFromReadWriteToken({
       pathname,
       addRandomSuffix: false,
       maximumSizeInBytes: 50 * 1024 * 1024, // 50MB
+      validUntil: Date.now() + 10 * 60 * 1000, // 10분
     });
 
     return NextResponse.json({ token, pathname });
