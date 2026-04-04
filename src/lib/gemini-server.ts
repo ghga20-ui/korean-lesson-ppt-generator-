@@ -3,7 +3,7 @@
  * Uses process.env.GEMINI_API_KEY — never exposed to the client.
  */
 import type { Genre, ExtractedAnnotation } from "./types";
-import { uploadPdfToGeminiFile, waitForFileActiveByUri } from "./gemini-file-upload";
+import { waitForFileActiveByUri } from "./gemini-file-upload";
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 const MODEL = "gemini-3.1-pro-preview";
@@ -260,15 +260,15 @@ export async function extractFromPdfServer(
   apiKey: string,
   options: { mode: "A" | "C"; genre: Genre; userText?: string },
 ): Promise<ExtractionResult> {
-  let resolvedFileUri: string;
+  // File이면 inline base64, 문자열이면 fileUri (File API)
+  let pdfData: { base64: string } | { fileUri: string };
   if (typeof pdf === "string") {
-    // fileUri가 직접 전달된 경우 — 청크 업로드 완료 직후라 PROCESSING 상태일 수 있음
-    resolvedFileUri = pdf;
-    await waitForFileActiveByUri(resolvedFileUri, apiKey);
+    await waitForFileActiveByUri(pdf, apiKey);
+    pdfData = { fileUri: pdf };
   } else {
-    resolvedFileUri = await uploadPdfToGeminiFile(pdf, apiKey); // 내부에서 폴링 포함
+    const buffer = await pdf.arrayBuffer();
+    pdfData = { base64: Buffer.from(buffer).toString("base64") };
   }
-  const pdfData: { fileUri: string } = { fileUri: resolvedFileUri };
 
   // Round 1
   const prompt = options.mode === "C"
