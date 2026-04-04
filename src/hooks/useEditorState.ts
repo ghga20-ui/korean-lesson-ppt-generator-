@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { upload } from "@vercel/blob/client";
 import type { Genre, SlideData, InputMode, ExtractedAnnotation, Annotation, PptSettings } from "@/lib/types";
 import { DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
 import { splitText, splitSlideAt, mergeSlides } from "@/lib/slide-splitter";
@@ -79,25 +78,69 @@ function readJsonFile(file: File): Promise<SavedProject> {
 }
 
 // ---------------------------------------------------------------------------
-// PDF → Vercel Blob 업로드 (단일 업로드, multipart 없음)
+// PDF → Gemini File API 직접 업로드 (브라우저 → Google, Vercel 미경유)
+// Gemini 요구사항: 중간 청크는 8MB 배수, 마지막 청크는 임의 크기
 // ---------------------------------------------------------------------------
 
-async function uploadPdfToVercelBlob(
+const GEMINI_CHUNK_SIZE = 8 * 1024 * 1024; // 8MB
+
+async function uploadPdfDirectToGemini(
   file: File,
   onProgress: (msg: string) => void,
 ): Promise<string> {
   onProgress("PDF 업로드 준비 중...");
 
-  const blob = await upload(`pdf-uploads/${Date.now()}-${file.name}`, file, {
-    access: "public",
-    contentType: file.type || "application/pdf",
-    handleUploadUrl: "/api/upload-pdf",
-    onUploadProgress(progress) {
-      onProgress(`PDF 전송 중... (${Math.round(progress.percentage)}%)`);
-    },
+  // 1) 서버에서 Gemini 업로드 세션 URL 발급 (API 키는 서버에서만 사용)
+  const startRes = await fetch("/api/start-file-upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ size: file.size }),
   });
+  if (!startRes.ok) {
+    const err = await startRes.json().catch(() => ({})) as { error?: string };
+    throw new Error(err.error || "업로드 세션 시작 실패");
+  }
+  const { uploadUrl } = await startRes.json() as { uploadUrl: string };
 
-  return blob.url;
+  // 2) 브라우저에서 Google에 직접 업로드 (Vercel 4.5MB 한도 미적용)
+  const totalSize = file.size;
+  const totalChunks = Math.ceil(totalSize / GEMINI_CHUNK_SIZE);
+  let fileUri = "";
+
+  for (let i = 0; i < totalChunks; i++) {
+    const offset = i * GEMINI_CHUNK_SIZE;
+    const end = Math.min(offset + GEMINI_CHUNK_SIZE, totalSize);
+    const chunk = file.slice(offset, end);
+    const isLast = i === totalChunks - 1;
+    const command = isLast ? "upload, finalize" : "upload";
+
+    onProgress(`PDF 전송 중... (${Math.round((end / totalSize) * 100)}%)`);
+
+    const res = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Length": String(end - offset),
+        "X-Goog-Upload-Command": command,
+        "X-Goog-Upload-Offset": String(offset),
+      },
+      body: chunk,
+    });
+
+    // 308 Resume Incomplete = 중간 청크 정상 수신
+    if (!res.ok && res.status !== 308) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`Google 업로드 실패 (${res.status}): ${text.slice(0, 200)}`);
+    }
+
+    if (isLast) {
+      const data = await res.json() as { file?: { uri?: string } };
+      fileUri = data.file?.uri ?? "";
+    }
+  }
+
+  if (!fileUri) throw new Error("Gemini 파일 URI를 받지 못했습니다.");
+  return fileUri;
 }
 
 // ---------------------------------------------------------------------------
@@ -240,11 +283,11 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     setUnmatchedAnnotations([]);
 
     try {
-      const blobUrl = await uploadPdfToVercelBlob(pdfFile, setExtractionProgress);
+      const fileUri = await uploadPdfDirectToGemini(pdfFile, setExtractionProgress);
 
       setExtractionProgress("AI 분석 중... (1-2분 소요)");
       const formData = new FormData();
-      formData.append("blobUrl", blobUrl);
+      formData.append("fileUri", fileUri);
       formData.append("mode", "C");
       formData.append("genre", genre);
       formData.append("userText", fullText);
@@ -295,11 +338,11 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     setUnmatchedAnnotations([]);
 
     try {
-      const blobUrl = await uploadPdfToVercelBlob(pdfFile, setExtractionProgress);
+      const fileUri = await uploadPdfDirectToGemini(pdfFile, setExtractionProgress);
 
       setExtractionProgress("AI 분석 중... (1-2분 소요)");
       const formData = new FormData();
-      formData.append("blobUrl", blobUrl);
+      formData.append("fileUri", fileUri);
       formData.append("mode", "A");
       formData.append("genre", genre);
 
