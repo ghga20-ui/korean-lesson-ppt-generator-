@@ -1,4 +1,5 @@
 const GEMINI_FILE_UPLOAD_URL = "https://generativelanguage.googleapis.com/upload/v1beta/files";
+const GEMINI_FILE_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 
 export async function uploadPdfToGeminiFile(
   pdf: File,
@@ -54,10 +55,53 @@ export async function uploadPdfToGeminiFile(
 
   const data = await uploadResponse.json();
   const fileUri = data.file?.uri;
+  const fileName = data.file?.name; // e.g. "files/abc123"
 
-  if (!fileUri) {
+  if (!fileUri || !fileName) {
     throw new Error("Gemini did not return a file URI.");
   }
 
+  // 파일이 ACTIVE 상태가 될 때까지 폴링
+  await waitForFileActive(fileName, apiKey, fetchImpl);
+
   return fileUri;
+}
+
+/**
+ * Gemini File API: 파일이 PROCESSING → ACTIVE 상태가 될 때까지 폴링.
+ * ACTIVE 상태가 아니면 generateContent 호출 시 오류 발생.
+ */
+async function waitForFileActive(
+  fileName: string, // e.g. "files/abc123"
+  apiKey: string,
+  fetchImpl: typeof fetch = fetch,
+  maxWaitMs = 60_000,
+  intervalMs = 3_000,
+): Promise<void> {
+  const deadline = Date.now() + maxWaitMs;
+
+  while (Date.now() < deadline) {
+    const res = await fetchImpl(
+      `${GEMINI_FILE_API_BASE}/${fileName}?key=${apiKey}`,
+      { method: "GET" },
+    );
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`파일 상태 확인 실패 (${res.status}): ${text.slice(0, 200)}`);
+    }
+
+    const fileInfo = await res.json();
+    const state: string = fileInfo.state ?? "PROCESSING";
+
+    console.log(`[Gemini File] state=${state}, name=${fileName}`);
+
+    if (state === "ACTIVE") return;
+    if (state === "FAILED") throw new Error("Gemini 파일 처리에 실패했습니다. 다시 시도해주세요.");
+
+    // PROCESSING 상태면 대기 후 재시도
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+
+  throw new Error("Gemini 파일 처리 시간 초과 (60초). 다시 시도해주세요.");
 }
