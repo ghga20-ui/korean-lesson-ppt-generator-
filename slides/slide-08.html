@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=720">
+<title>Slide 08 — 사용 흐름</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 720px; height: 405px; overflow: hidden;
+    font-family: 'Pretendard Variable', Pretendard, sans-serif;
+    background: #FDFAF5;
+    color: #1C1C1E;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 56px;
+  }
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1B2A4A;
+    margin-bottom: 44px;
+    text-align: center;
+  }
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+  }
+  .step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .step-num {
+    width: 40px;
+    height: 40px;
+    background: #2E5BE8;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-box {
+    width: 100%;
+    padding: 16px 12px;
+    background: #FFFFFF;
+    border: 1px solid #E5E5EA;
+    border-top: 3px solid #2E5BE8;
+    text-align: center;
+  }
+  .step-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1B2A4A;
+    margin-bottom: 8px;
+  }
+  .step-desc {
+    font-size: 12px;
+    color: #6E6E73;
+    line-height: 1.6;
+  }
+  .arrow {
+    width: 32px;
+    flex-shrink: 0;
+    text-align: center;
+    color: #A0A8B8;
+    font-size: 20px;
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+  <h2>입력 → 생성 → 다운로드, 세 단계</h2>
+  <div class="flow">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-box">
+        <p class="step-title">텍스트 입력</p>
+        <p class="step-desc">작품 제목 · 본문 입력<br>주석 내용 작성 (선택)</p>
+      </div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-box">
+        <p class="step-title">자동 생성</p>
+        <p class="step-desc">연 분할 · 레이아웃 계산<br>주석 애니메이션 삽입</p>
+      </div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-box">
+        <p class="step-title">파일 다운로드</p>
+        <p class="step-desc">.pptx 즉시 다운로드<br>PowerPoint에서 바로 사용</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

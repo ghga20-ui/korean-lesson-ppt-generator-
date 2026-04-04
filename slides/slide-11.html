@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=720">
+<title>Slide 11 — 향후 계획</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 720px; height: 405px; overflow: hidden;
+    font-family: 'Pretendard Variable', Pretendard, sans-serif;
+    background: #FDFAF5;
+    color: #1C1C1E;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 72px;
+  }
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1B2A4A;
+    margin-bottom: 32px;
+  }
+  .roadmap {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .road-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 14px 0;
+    border-bottom: 1px solid #E5E5EA;
+  }
+  .road-item:last-child { border-bottom: none; }
+  .road-tag {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    letter-spacing: 0.04em;
+  }
+  .tag-now { background: #2E5BE8; color: #FFFFFF; }
+  .tag-next { background: #EEF2FD; color: #2E5BE8; }
+  .tag-future { background: #F5F5F7; color: #6E6E73; }
+  .road-content { flex: 1; }
+  .road-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1C1C1E;
+    margin-bottom: 2px;
+  }
+  .road-desc {
+    font-size: 12px;
+    color: #6E6E73;
+    line-height: 1.4;
+  }
+  .share-note {
+    margin-top: 28px;
+    padding: 10px 14px;
+    background: #EEF2FD;
+    border-left: 3px solid #2E5BE8;
+  }
+  .share-note p {
+    font-size: 13px;
+    color: #2E5BE8;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+  <h2>앞으로의 계획</h2>
+  <div class="roadmap">
+    <div class="road-item">
+      <span class="road-tag tag-now">현재</span>
+      <div class="road-content">
+        <p class="road-title">시 · 소설 수동 입력 + PPT 생성</p>
+        <p class="road-desc">텍스트 직접 입력, 주석 애니메이션 포함</p>
+      </div>
+    </div>
+    <div class="road-item">
+      <span class="road-tag tag-next">다음</span>
+      <div class="road-content">
+        <p class="road-title">PDF 교과서 자동 추출</p>
+        <p class="road-desc">교사용 교과서 PDF에서 작품·주석 자동 인식</p>
+      </div>
+    </div>
+    <div class="road-item">
+      <span class="road-tag tag-future">예정</span>
+      <div class="road-content">
+        <p class="road-title">문항 출제 도구 · 선택과목 상담 AI 챗봇</p>
+        <p class="road-desc">고교학점제 행정 자동화로 확장</p>
+      </div>
+    </div>
+  </div>
+  <div class="share-note">
+    <p>관심 있으신 선생님께 사용 링크를 공유해 드릴 수 있습니다</p>
+  </div>
+</body>
+</html>

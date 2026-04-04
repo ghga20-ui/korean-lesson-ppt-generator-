@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=720">
+<title>Slide 05 — 기능 1: 시 슬라이드</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 720px; height: 405px; overflow: hidden;
+    font-family: 'Pretendard Variable', Pretendard, sans-serif;
+    background: #FDFAF5;
+    color: #1C1C1E;
+    display: flex;
+    align-items: center;
+    padding: 0 56px;
+    gap: 48px;
+  }
+  .left { flex: 1; }
+  .feature-num {
+    font-size: 12px;
+    font-weight: 700;
+    color: #2E5BE8;
+    letter-spacing: 0.12em;
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1B2A4A;
+    line-height: 1.35;
+    margin-bottom: 20px;
+  }
+  ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  li {
+    font-size: 14px;
+    color: #3C3C3E;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .bullet { color: #2E5BE8; font-weight: 700; flex-shrink: 0; }
+
+  /* 시 슬라이드 미리보기 */
+  .preview {
+    width: 260px;
+    height: 290px;
+    background: #FFFFFF;
+    border: 1px solid #E5E5EA;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 24px 28px;
+    flex-shrink: 0;
+  }
+  .preview-title {
+    font-size: 10px;
+    font-weight: 600;
+    color: #6E6E73;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+  .poem-line {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1C1C1E;
+    line-height: 2.2;
+    letter-spacing: 0.02em;
+  }
+  .underline-mark {
+    border-bottom: 2px solid #E83030;
+  }
+</style>
+</head>
+<body>
+  <div class="left">
+    <p class="feature-num">FEATURE 01</p>
+    <h2>시 — 연(stanza) 단위<br>자동 분할</h2>
+    <ul>
+      <li><span class="bullet">—</span><p>연 구분을 인식해 슬라이드별 4~5행 배치</p></li>
+      <li><span class="bullet">—</span><p>글자 크기 40pt, 줄 간격 자동 계산</p></li>
+      <li><span class="bullet">—</span><p>주석 공간 자동 확보 (행 간격 1.5~2배)</p></li>
+      <li><span class="bullet">—</span><p>한컴산뜻돋움 폰트 — 교과서 분위기 유지</p></li>
+    </ul>
+  </div>
+  <div class="preview">
+    <p class="preview-title">생성 슬라이드 예시</p>
+    <p class="poem-line">내 고장 칠월은</p>
+    <p class="poem-line">청포도가 익어 가는 시절</p>
+    <p class="poem-line"> </p>
+    <p class="poem-line"><span class="underline-mark">이 마을 전설이 주저리주저리</span></p>
+    <p class="poem-line">열리고</p>
+  </div>
+</body>
+</html>

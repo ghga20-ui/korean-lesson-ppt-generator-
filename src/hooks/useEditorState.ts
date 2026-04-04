@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { put } from "@vercel/blob/client";
 import type { Genre, SlideData, InputMode, ExtractedAnnotation, Annotation, PptSettings } from "@/lib/types";
 import { DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
 import { splitText, splitSlideAt, mergeSlides } from "@/lib/slide-splitter";
@@ -212,70 +211,18 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     setStep("annotate");
   }, [fullText, genre, pptSettings, history]);
 
-  // PDF를 Vercel Blob에 업로드하고 URL 반환 (4.5MB Vercel 제한 우회)
-  const uploadPdfToBlob = useCallback(async (
-    file: File,
-    onProgress: (msg: string) => void,
-  ): Promise<string> => {
-    onProgress("PDF 업로드 준비 중...");
-    const tokenRes = await fetch("/api/blob-token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ext: "pdf" }),
-    });
-    if (!tokenRes.ok) {
-      const err = await tokenRes.json().catch(() => ({}));
-      throw new Error(err.error || "Blob 토큰 발급 실패");
-    }
-    const { token, pathname } = await tokenRes.json();
-
-    onProgress("PDF 업로드 중... 0%");
-    const blob = await put(pathname, file, {
-      access: "public",
-      token,
-      onUploadProgress: ({ percentage }) => {
-        onProgress(`PDF 업로드 중... ${Math.round(percentage)}%`);
-      },
-    });
-    return blob.url;
-  }, []);
-
-  // 파일 크기에 따라 formData 필드 결정 (소용량: file 직접, 대용량: blobUrl)
-  const DIRECT_LIMIT = 3.5 * 1024 * 1024; // 3.5MB
-
-  const buildExtractFormData = useCallback(async (
-    file: File,
-    extra: Record<string, string>,
-    onProgress: (msg: string) => void,
-  ): Promise<FormData> => {
-    const formData = new FormData();
-    Object.entries(extra).forEach(([k, v]) => formData.append(k, v));
-
-    if (file.size <= DIRECT_LIMIT) {
-      // 소용량: Vercel Function이 직접 받을 수 있음
-      onProgress("PDF 전송 중...");
-      formData.append("file", file);
-    } else {
-      // 대용량: Vercel Blob 경유
-      const blobUrl = await uploadPdfToBlob(file, onProgress);
-      onProgress("AI 분석 시작...");
-      formData.append("blobUrl", blobUrl);
-    }
-    return formData;
-  }, [uploadPdfToBlob]);
-
   const handleExtractAnnotations = useCallback(async () => {
     if (!pdfFile || !fullText.trim()) return;
     setIsExtracting(true);
-    setExtractionProgress("PDF를 AI에 전송 중...");
+    setExtractionProgress("PDF 전송 중...");
     setUnmatchedAnnotations([]);
 
     try {
-      const formData = await buildExtractFormData(
-        pdfFile,
-        { mode: "C", genre, userText: fullText },
-        setExtractionProgress,
-      );
+      const formData = new FormData();
+      formData.append("file", pdfFile);
+      formData.append("mode", "C");
+      formData.append("genre", genre);
+      formData.append("userText", fullText);
 
       setExtractionProgress("AI가 주석을 분석 중... (최대 2분 소요)");
       const controller = new AbortController();
@@ -315,20 +262,19 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
       setIsExtracting(false);
       setExtractionProgress("");
     }
-  }, [pdfFile, fullText, genre, pptSettings, history, buildExtractFormData]);
+  }, [pdfFile, fullText, genre, pptSettings, history]);
 
   const handleExtractAll = useCallback(async () => {
     if (!pdfFile) return;
     setIsExtracting(true);
-    setExtractionProgress("PDF를 AI에 전송 중...");
+    setExtractionProgress("PDF 전송 중...");
     setUnmatchedAnnotations([]);
 
     try {
-      const formData = await buildExtractFormData(
-        pdfFile,
-        { mode: "A", genre },
-        setExtractionProgress,
-      );
+      const formData = new FormData();
+      formData.append("file", pdfFile);
+      formData.append("mode", "A");
+      formData.append("genre", genre);
 
       setExtractionProgress("AI가 원문과 주석을 추출 중... (최대 2분 소요)");
       const controller = new AbortController();
@@ -372,7 +318,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
       setIsExtracting(false);
       setExtractionProgress("");
     }
-  }, [pdfFile, genre, pptSettings, history, buildExtractFormData]);
+  }, [pdfFile, genre, pptSettings, history]);
 
   const handleUpdateSlide = useCallback(
     (updatedSlide: SlideData) => {
