@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/pdf",
+        "Content-Length": String(chunkBuffer.byteLength),
         "X-Goog-Upload-Command": command,
         "X-Goog-Upload-Offset": String(offset),
       },

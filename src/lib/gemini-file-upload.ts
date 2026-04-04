@@ -69,10 +69,10 @@ export async function uploadPdfToGeminiFile(
 
 /**
  * Gemini File API: 파일이 PROCESSING → ACTIVE 상태가 될 때까지 폴링.
- * ACTIVE 상태가 아니면 generateContent 호출 시 오류 발생.
+ * fileName = "files/abc123" 형식
  */
 async function waitForFileActive(
-  fileName: string, // e.g. "files/abc123"
+  fileName: string,
   apiKey: string,
   fetchImpl: typeof fetch = fetch,
   maxWaitMs = 60_000,
@@ -99,9 +99,25 @@ async function waitForFileActive(
     if (state === "ACTIVE") return;
     if (state === "FAILED") throw new Error("Gemini 파일 처리에 실패했습니다. 다시 시도해주세요.");
 
-    // PROCESSING 상태면 대기 후 재시도
     await new Promise((r) => setTimeout(r, intervalMs));
   }
 
   throw new Error("Gemini 파일 처리 시간 초과 (60초). 다시 시도해주세요.");
+}
+
+/**
+ * fileUri("https://generativelanguage.googleapis.com/v1beta/files/abc123")로
+ * 파일이 ACTIVE 상태가 될 때까지 폴링. 청크 업로드 완료 후 서버에서 호출.
+ */
+export async function waitForFileActiveByUri(
+  fileUri: string,
+  apiKey: string,
+): Promise<void> {
+  // URI에서 "files/abc123" 부분 추출
+  const match = fileUri.match(/(files\/[^?/]+)/);
+  if (!match) {
+    console.warn(`[Gemini File] URI에서 파일명 추출 불가: ${fileUri} — 폴링 건너뜀`);
+    return;
+  }
+  await waitForFileActive(match[1], apiKey);
 }
