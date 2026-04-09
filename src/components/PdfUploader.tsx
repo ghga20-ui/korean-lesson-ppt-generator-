@@ -168,7 +168,7 @@ export default function PdfUploader({ file, onFileChange }: PdfUploaderProps) {
             type="text"
             value={pageRange}
             onChange={(e) => { setPageRange(e.target.value); setError(""); setExtractedInfo(""); }}
-            placeholder={`예: 15-18 (1~${totalPages})`}
+            placeholder={`예: 15-18 (1-${totalPages})`}
             className="min-w-0 flex-1 rounded-lg border border-[#EEDDD0] px-3 py-1.5 text-xs text-[#6B3F26] placeholder-[#6B3F26]/40 outline-none focus:border-[#6B3F26]"
             onKeyDown={(e) => { if (e.key === "Enter") handleExtractPages(); }}
           />
