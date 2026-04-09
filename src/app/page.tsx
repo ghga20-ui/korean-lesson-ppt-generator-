@@ -256,7 +256,7 @@ export default function Home() {
       </div>
       </div>
       {/* ── 발표 자료 상세 섹션 ── */}
-      <section className="w-full bg-white px-16 py-20">
+      <section className="w-full bg-white px-4 py-16 sm:px-8 sm:py-20 lg:px-16">
         {/* 섹션 헤더 */}
         <div className="mb-4 flex items-center gap-2">
           <span className="h-px flex-1 bg-[#EEDDD0]" />
