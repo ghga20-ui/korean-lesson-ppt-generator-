@@ -1,82 +1,104 @@
-# 국어 수업 PPT 생성기
+# 국어 수업 슬라이드 제작 도구
 
-교과서 PDF에서 주석을 추출하여 수업용 PPT를 자동 생성하는 웹 애플리케이션입니다.
+고등학교 국어 수업용 PPT 초안을 자동 생성하는 웹 애플리케이션입니다.  
+교과서 본문을 붙여넣으면 슬라이드로 분할하고, 주석(밑줄·도형)과 클릭 애니메이션이 포함된 `.pptx` 파일을 생성합니다.
 
 ## 주요 기능
 
-- **PDF OCR 추출**: 교사용 교과서 PDF에서 주석/해설을 자동 추출 (Gemini AI)
-- **3가지 입력 모드**:
-  - **PDF 전체 추출 (A)**: PDF에서 텍스트 + 주석 모두 추출
-  - **텍스트 + PDF 주석 (C)**: 텍스트 직접 입력 + PDF에서 주석만 추출 (권장)
-  - **직접 입력 (B)**: 텍스트와 주석을 수동 입력
-- **주석 편집기**: 마커 유형(밑줄, 원형, 사각형, 세모, 꺾쇠), 색상, 순서 편집
-- **클릭 애니메이션**: PPT에서 클릭할 때마다 마커 → 주석 순서대로 등장
-- **운문/산문 지원**: 시(연/행 단위 분할) / 소설(문장 경계 자동 분할)
+- **운문 / 산문 자동 분할**: 시는 연·행 단위, 소설은 글자 수 기준으로 슬라이드 자동 분할
+- **주석 편집기**: 텍스트 선택 → 마커 유형(밑줄·원·사각형·세모·꺾쇠) + 색상 + 내용 설정
+- **클릭 애니메이션**: 마커 도형 → 주석 텍스트 순서로 클릭할 때마다 등장
+- **PDF 주석 추출**: 교사용 교과서 PDF에서 Gemini AI로 주석 자동 추출 (Mode A/C)
+- **옛한글 지원**: 나눔바른고딕 옛한글 폰트 내장 — 아래아 포함 조합 음절 정상 렌더링
+- **슬라이드 병합/분할**: 편집 중 슬라이드 합치거나 나누기 가능
+- **실행 취소/다시 실행**: Ctrl+Z / Ctrl+Y
+- **프로젝트 저장/불러오기**: JSON 파일로 작업 내용 보존
+
+## 입력 모드
+
+| 모드 | 설명 |
+|------|------|
+| **A — PDF 전체 추출** | 교사용 교과서 PDF에서 본문 + 주석 전부 추출 |
+| **B — 직접 입력** | 본문 텍스트 직접 붙여넣기, 주석 수동 추가 |
+| **C — 텍스트 + PDF 주석** | 본문은 직접 입력, 주석만 PDF에서 추출 (권장) |
 
 ## 기술 스택
 
-- **Next.js 16** (App Router)
-- **React 19** + TypeScript
-- **Tailwind CSS 4**
-- **pptxgenjs** (PPTX 생성)
-- **pdf-lib** (PDF 페이지 추출)
-- **Gemini API** (AI 주석 추출)
+- **Next.js** (App Router) + TypeScript
+- **Tailwind CSS**
+- **pptxgenjs** — PPTX 생성
+- **pdf-lib** — PDF 페이지 처리
+- **Gemini API** — PDF 주석 OCR 추출 (서버 사이드)
+- **@vercel/blob** — PDF 업로드 임시 저장
+- **나눔바른고딕 옛한글** — 옛한글 렌더링 폰트 (로컬 호스팅)
+- **Railway** — 배포
 
 ## 설치 및 실행
 
 ```bash
-# 의존성 설치
 npm install
-
-# 환경 변수 설정
-# .env.local 파일에 Gemini API 키 추가
-echo "GEMINI_API_KEY=your-api-key-here" > .env.local
-
-# 개발 서버 실행
 npm run dev
 ```
 
-http://localhost:3000 에서 접속합니다.
+환경 변수 설정 (`.env.local`):
 
-## 사용 방법
+```
+GEMINI_API_KEY=your-api-key-here
+```
 
-1. 홈페이지에서 **운문 / 산문** 텍스트 유형 선택
-2. 입력 모드 선택 후 텍스트 입력 or PDF 업로드
-3. **슬라이드 분할** → 자동으로 적정 분량 분할
-4. 편집기에서 주석 확인/수정 (마커 유형, 색상, 순서 등)
-5. **PPT 생성** → .pptx 파일 다운로드
+> PDF 주석 추출(Mode A/C) 기능에만 필요합니다.
 
 ## 프로젝트 구조
 
 ```
 src/
 ├── app/
-│   ├── page.tsx              # 홈 (텍스트 유형 선택)
-│   ├── editor/page.tsx       # 에디터 페이지
-│   ├── api/
-│   │   ├── extract/          # Gemini 추출 API
-│   │   ├── generate-pptx/    # PPTX 생성 API
-│   │   └── generate-html/    # HTML 프리젠테이션 API
-│   └── globals.css
+│   ├── page.tsx                # 홈 (텍스트 유형 선택)
+│   ├── editor/page.tsx         # 에디터 페이지
+│   └── api/
+│       ├── extract/            # Gemini 주석 추출
+│       ├── generate-pptx/      # PPTX 생성
+│       ├── generate-html/      # HTML 프레젠테이션
+│       └── upload-pdf/         # PDF 업로드 처리
 ├── components/
-│   ├── AnnotationEditor.tsx  # 주석 편집기
-│   ├── AnnotateStep.tsx      # 편집 단계 UI
-│   ├── InputStep.tsx         # 입력 단계 UI
-│   ├── ModeSelector.tsx      # 입력 모드 선택
-│   ├── PdfUploader.tsx       # PDF 업로드
-│   └── ApiKeyInput.tsx       # API 키 입력
+│   ├── AnnotateStep.tsx        # 슬라이드 목록 + 편집 레이아웃
+│   ├── AnnotationEditor.tsx    # 주석 편집기 (선택·마커·순서·요약)
+│   ├── BatchEditPanel.tsx      # 주석 일괄 편집
+│   ├── InputStep.tsx           # 텍스트 입력 단계
+│   ├── ModeSelector.tsx        # 입력 모드 선택
+│   └── PdfUploader.tsx         # PDF 업로드 UI
 ├── hooks/
-│   └── useEditorState.ts     # 에디터 상태 관리
+│   ├── useEditorState.ts       # 에디터 전체 상태 관리
+│   ├── useHistory.ts           # 실행 취소/다시 실행
+│   ├── useKeyboardShortcuts.ts # 단축키
+│   └── usePanelResize.ts       # 패널 너비 드래그 조절
 └── lib/
-    ├── types.ts              # 타입 정의
-    ├── pptx-generator.ts     # PPTX 생성 코어
-    ├── pptx-geometry.ts      # 위치 계산
-    ├── pptx-animation.ts     # 애니메이션 XML
-    ├── pptx-constants.ts     # 상수 정의
-    ├── slide-splitter.ts     # 슬라이드 분할
-    ├── annotation-matcher.ts # 주석 매칭
-    ├── html-generator.ts     # HTML 프리젠테이션
-    ├── gemini.ts             # Gemini API (클라이언트)
-    ├── gemini-server.ts      # Gemini API (서버)
-    └── font-metrics.ts       # 폰트 메트릭스
+    ├── types.ts                # 타입 정의
+    ├── pptx-generator.ts       # PPTX 생성 코어
+    ├── pptx-geometry.ts        # 텍스트 위치·줄 계산
+    ├── pptx-animation.ts       # 클릭 애니메이션 XML
+    ├── pptx-constants.ts       # 폰트·슬라이드 상수
+    ├── slide-splitter.ts       # 슬라이드 자동 분할
+    ├── annotation-matcher.ts   # 주석↔텍스트 매칭
+    ├── gemini-server.ts        # Gemini API 서버 호출
+    └── font-metrics.ts         # 폰트 메트릭스 계산
+
+NanumBarunGothicYetHangul/
+└── NanumBarunGothic-YetHangul.otf   # 옛한글 지원 폰트
 ```
+
+## 단축키
+
+| 단축키 | 기능 |
+|--------|------|
+| `←` / `→` | 이전/다음 슬라이드 |
+| `Ctrl+Z` | 실행 취소 |
+| `Ctrl+Y` | 다시 실행 |
+| `Ctrl+S` | 프로젝트 저장 (JSON) |
+| `Ctrl+Enter` | PPT 생성 |
+
+## 사용 시 참고
+
+- 생성된 `.pptx`는 **초안**입니다. PowerPoint에서 열어 세부 조정 후 사용하세요.
+- PPT 본문 폰트는 **한컴산뜻돋움 Bold**로 생성됩니다. 해당 폰트가 설치된 환경에서 열어야 레이아웃이 정확합니다.
+- **옛한글 입력**: 브라우저 IME 한계로 직접 입력이 어렵습니다. HWP에서 작성 후 복사·붙여넣기 하세요.
