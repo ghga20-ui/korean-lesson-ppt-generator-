@@ -22,7 +22,8 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* 옛한글(아래아 등) 지원: Arial 글리프 없을 때 Noto Serif KR로 fallback */
+  font-family: Arial, Helvetica, var(--font-noto-serif-kr), sans-serif;
 }
 
 /* Global: all buttons get pointer cursor */
