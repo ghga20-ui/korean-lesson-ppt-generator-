@@ -110,7 +110,7 @@ export default function AnnotateStep({
                   슬라이드 {index + 1}
                 </span>
                 <span
-                  className={`truncate text-xs ${isActive ? "text-[#6B3F26]/70" : "text-[#6B3F26]/50"
+                  className={`kor-text truncate text-xs ${isActive ? "text-[#6B3F26]/70" : "text-[#6B3F26]/50"
                     }`}
                 >
                   {firstLine}

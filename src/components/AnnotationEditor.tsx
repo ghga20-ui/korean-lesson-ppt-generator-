@@ -675,7 +675,7 @@ export default function AnnotationEditor({
             >
               <div className="mb-3">
                 <span className="text-xs text-[#6B3F26]/50">선택된 텍스트:</span>
-                <p className="mt-1 truncate rounded bg-[#EEDDD0]/20 px-2 py-1 text-xs text-[#6B3F26]">
+                <p className="kor-text mt-1 truncate rounded bg-[#EEDDD0]/20 px-2 py-1 text-xs text-[#6B3F26]">
                   {popup.selectedText}
                 </p>
               </div>
@@ -732,7 +732,7 @@ export default function AnnotationEditor({
                   value={popupContent}
                   onChange={(e) => setPopupContent(e.target.value)}
                   placeholder="주석을 입력하세요..."
-                  className="h-16 w-full resize-none rounded-lg border border-[#EEDDD0] px-2 py-1.5 text-xs text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none focus:border-[#6B3F26]"
+                  className="kor-text h-16 w-full resize-none rounded-lg border border-[#EEDDD0] px-2 py-1.5 text-xs text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none focus:border-[#6B3F26]"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
@@ -776,7 +776,7 @@ export default function AnnotationEditor({
               value={summaryContent}
               onChange={(e) => setSummaryContent(e.target.value)}
               placeholder="이 슬라이드의 요약을 입력하세요..."
-              className="flex-1 rounded-lg border border-[#EEDDD0] px-3 py-1.5 text-xs text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none focus:border-[#6B3F26]"
+              className="kor-text flex-1 rounded-lg border border-[#EEDDD0] px-3 py-1.5 text-xs text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none focus:border-[#6B3F26]"
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSaveSummary();
               }}
@@ -910,7 +910,7 @@ export default function AnnotationEditor({
                       </span>
 
                       {/* 요약 정보 */}
-                      <div className="min-w-0 flex-1">
+                      <div className="kor-text min-w-0 flex-1">
                         <div className="mb-0.5 flex items-center gap-1.5">
                           <span
                             className="inline-block h-2.5 w-2.5 flex-shrink-0 rounded-full border border-white shadow-sm"
@@ -983,7 +983,7 @@ export default function AnnotationEditor({
                           <textarea
                             value={editingContent}
                             onChange={(e) => setEditingContent(e.target.value)}
-                            className="w-full resize-none rounded-lg border border-[#eeddd0] px-2.5 py-1.5 text-sm text-[#1E2761] outline-none focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]/20"
+                            className="kor-text w-full resize-none rounded-lg border border-[#eeddd0] px-2.5 py-1.5 text-sm text-[#1E2761] outline-none focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]/20"
                             rows={2}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" && !e.shiftKey) {
