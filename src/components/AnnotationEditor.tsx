@@ -651,13 +651,13 @@ export default function AnnotationEditor({
               value={editingText}
               onChange={(e) => setEditingText(e.target.value)}
               autoFocus
-              className="h-full min-h-64 w-full resize-none rounded-lg border border-emerald-300 bg-emerald-50/30 p-3 text-base leading-relaxed text-[#1E2761] focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+              className="kor-text h-full min-h-64 w-full resize-none rounded-lg border border-emerald-300 bg-emerald-50/30 p-3 text-base leading-relaxed text-[#1E2761] focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
             />
           ) : (
           <div
             ref={textRef}
             onMouseUp={handleTextMouseUp}
-            className={`whitespace-pre-wrap text-base leading-relaxed text-[#1E2761] selection:bg-[#EEDDD0] ${isSplitMode ? "cursor-crosshair selection:bg-transparent" : "cursor-text"}`}
+            className={`kor-text whitespace-pre-wrap text-base leading-relaxed text-[#1E2761] selection:bg-[#EEDDD0] ${isSplitMode ? "cursor-crosshair selection:bg-transparent" : "cursor-text"}`}
           >
             {renderHighlightedText()}
           </div>

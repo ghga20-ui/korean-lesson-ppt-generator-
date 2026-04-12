@@ -69,7 +69,7 @@ export default function InputStep({
                   ? "교과서 본문을 붙여넣으세요...\n\n연/단락 사이에 빈 줄을 넣어주세요."
                   : "교과서 본문을 붙여넣으세요..."
               }
-              className="min-h-[400px] w-full flex-1 resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
+              className="kor-text min-h-[400px] w-full flex-1 resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
             />
 
             <div className="flex items-center justify-between">
@@ -100,7 +100,7 @@ export default function InputStep({
                   ? "교과서 본문을 붙여넣으세요...\n\n연/단락 사이에 빈 줄을 넣어주세요."
                   : "교과서 본문을 붙여넣으세요..."
               }
-              className="min-h-[300px] w-full resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
+              className="kor-text min-h-[300px] w-full resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
             />
 
             <div className="flex flex-col gap-3">
@@ -155,7 +155,7 @@ export default function InputStep({
                   <textarea
                     value={fullText}
                     onChange={(e) => onFullTextChange(e.target.value)}
-                    className="min-h-[300px] w-full resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
+                    className="kor-text min-h-[300px] w-full resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
                   />
                 </div>
                 <div className="flex items-center justify-between">
