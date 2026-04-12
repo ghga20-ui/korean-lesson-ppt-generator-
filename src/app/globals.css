@@ -25,9 +25,9 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* 옛한글(아래아 등) 지원 — 본문 입력칸·슬라이드 텍스트 표시 영역에만 적용 */
+/* 옛한글(아래아 포함 조합 음절) 지원 — 본문 입력칸·슬라이드 텍스트 표시 영역에만 적용 */
 .kor-text {
-  font-family: Arial, Helvetica, var(--font-noto-serif-kr), sans-serif;
+  font-family: var(--font-nanum-yet-hangul), Arial, Helvetica, sans-serif;
 }
 
 /* Global: all buttons get pointer cursor */
