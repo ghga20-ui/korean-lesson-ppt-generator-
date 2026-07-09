@@ -46,3 +46,6 @@ next-env.d.ts
 /.claude/
 
 .vercel
+
+# subagent-driven-development scratch
+.superpowers/
