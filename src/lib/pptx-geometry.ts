@@ -95,7 +95,8 @@ function baselineAtLine(line: number, settings: PptSettings, metrics: FontMetric
     TEXT_TOP_MARGIN +
     line * lineStepInch -
     line * LINE_DRIFT_CORRECTION +
-    (BASELINE_OFFSET_EM + BASELINE_LS_COEF * settings.lineSpacing) * emInch
+    (BASELINE_OFFSET_EM + BASELINE_LS_COEF * settings.lineSpacing) * emInch +
+    (metrics.baselineAdjustEm ?? 0) * emInch
   );
 }
 
@@ -195,7 +196,7 @@ export function estimateTextPosition(
 
   const startBaseline = baselineAtLine(startLine, settings, metrics);
   const endBaseline = baselineAtLine(endLine, settings, metrics);
-  const glyphTop = startBaseline - CAP_HEIGHT_EM * emInch;
+  const glyphTop = startBaseline - (metrics.capHeightEm ?? CAP_HEIGHT_EM) * emInch;
 
   let w: number;
   if (startLine === endLine) {
