@@ -82,6 +82,67 @@
       "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry", "fontFamily": "맑은 고딕" },
       "invariant": "underline_gap",
       "params": { "expectedBars": 1, "gapMinEm": 0.0, "gapMaxEm": 0.30 }
+    },
+    {
+      "name": "novel-circle-enclosure",
+      "why": "산문 28pt(보간된 기본 크기)에서 원형 도형이 글자를 감싸는 상·하 여백 회귀 — 렌더 러너에 없던 enclosure 불변식의 첫 산문 셀",
+      "text": "구보는 다시 걷기로 한다. 여름 한낮의 뙤약볕이 그에게 현기증을 주었다.",
+      "target": "현기증",
+      "markerType": "circle",
+      "settings": { "fontSize": 28, "lineSpacing": 1.8, "genre": "novel" },
+      "invariant": "enclosure",
+      "params": { "topMinEm": 0.10, "topMaxEm": 0.50, "botMinEm": 0.10, "botMaxEm": 0.50 }
+    },
+    {
+      "name": "novel-rectangle-enclosure",
+      "why": "산문 28pt에서 사각형 도형이 글자를 감싸는 상·하 여백 회귀 (rectangle pad 0.12em, x 0.08em)",
+      "text": "구보는 다시 걷기로 한다. 여름 한낮의 뙤약볕이 그에게 현기증을 주었다.",
+      "target": "뙤약볕",
+      "markerType": "rectangle",
+      "settings": { "fontSize": 28, "lineSpacing": 1.8, "genre": "novel" },
+      "invariant": "enclosure",
+      "params": { "topMinEm": 0.03, "topMaxEm": 0.40, "botMinEm": 0.05, "botMaxEm": 0.40 }
+    },
+    {
+      "name": "novel-triangle-enclosure",
+      "why": "산문 28pt에서 삼각형 도형이 글자를 감싸는 상·하 여백 회귀 (triangle top 0.38em / bottom 0.10em)",
+      "text": "구보는 다시 걷기로 한다. 여름 한낮의 뙤약볕이 그에게 현기증을 주었다.",
+      "target": "구보",
+      "markerType": "triangle",
+      "settings": { "fontSize": 28, "lineSpacing": 1.8, "genre": "novel" },
+      "invariant": "enclosure",
+      "params": { "topMinEm": 0.25, "topMaxEm": 0.70, "botMinEm": 0.03, "botMaxEm": 0.40 }
+    },
+    {
+      "name": "novel-bracket-pair",
+      "why": "산문 28pt에서 「 」 브라켓 쌍 배치·스케일 회귀 — 지금껏 산문 브라켓은 렌더된 적 없다",
+      "text": "구보는 다시 걷기로 한다. 여름 한낮의 뙤약볕이 그에게 현기증을 주었다.",
+      "target": "여름 한낮",
+      "markerType": "bracket",
+      "settings": { "fontSize": 28, "lineSpacing": 1.8, "genre": "novel" },
+      "invariant": "bracket_pair",
+      "params": {}
+    },
+    {
+      "name": "novel-summary-box",
+      "why": "산문 28pt에서 하단 요약 상자 존재·위치 회귀 — 지금껏 산문 summary는 렌더된 적 없다",
+      "text": "구보는 다시 걷기로 한다. 여름 한낮의 뙤약볕이 그에게 현기증을 주었다.",
+      "target": "주었다",
+      "markerType": "summary",
+      "content": "구보의 신경 쇠약을 보여 주는 도입",
+      "settings": { "fontSize": 28, "lineSpacing": 1.8, "genre": "novel" },
+      "invariant": "summary_box",
+      "params": { "minWidthIn": 6.0, "minYRatio": 0.6 }
+    },
+    {
+      "name": "poetry-circle-enclosure-control",
+      "why": "새 enclosure 불변식 자체의 대조군 — 검증된 시 36pt 원형 셀. 불변식이 틀리면 이 알려진 정상 셀이 잡아낸다",
+      "text": "나 보기가 역겨워 가실 때에는",
+      "target": "역겨워",
+      "markerType": "circle",
+      "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry" },
+      "invariant": "enclosure",
+      "params": { "topMinEm": 0.10, "topMaxEm": 0.50, "botMinEm": 0.10, "botMaxEm": 0.50 }
     }
   ]
 }

@@ -190,12 +190,33 @@ def inv_bracket_pair(case, glyph, marker, em, p):
     return True, " ".join(msgs)
 
 
+def inv_enclosure(case, glyph, marker, em, p):
+    """원/사각/삼각 도형이 글자 상자를 감싼다 — 상·하 여백을 em 단위로 검증.
+
+    케이스가 content를 생략하므로 마커는 도형만 유채색이다(글자 잉크는 무채색).
+    도형 획은 기하 경로 위에 중심 정렬돼 실측 잉크가 경로보다 ~반획 바깥으로 번진다.
+    """
+    g = glyph["target"]
+    box = marker["bbox"]
+    if not box:
+        return False, "도형 미검출"
+    top = (g["y0"] - box["y0"]) / em      # 양수 = 도형이 글자 위로 여백
+    bot = (box["y1"] - g["y1"]) / em      # 양수 = 도형이 글자 아래로 여백
+    msg = f"top={top:+.3f}em bot={bot:+.3f}em"
+    if not (p["topMinEm"] <= top <= p["topMaxEm"]):
+        return False, f"상단 여백 {top:+.3f}em ∉ [{p['topMinEm']}, {p['topMaxEm']}] " + msg
+    if not (p["botMinEm"] <= bot <= p["botMaxEm"]):
+        return False, f"하단 여백 {bot:+.3f}em ∉ [{p['botMinEm']}, {p['botMaxEm']}] " + msg
+    return True, msg
+
+
 INVARIANTS = {
     "underline_gap": inv_underline_gap,
     "underline_gap_and_cover": inv_underline_gap_and_cover,
     "underline_x_cover": inv_underline_x_cover,
     "summary_box": inv_summary_box,
     "bracket_pair": inv_bracket_pair,
+    "enclosure": inv_enclosure,
 }
 
 
