@@ -20,6 +20,18 @@
 - Mode B(직접 입력)와 PPTX/HTML 생성은 키 없이 완전 동작해야 한다.
 - 커밋 메시지는 기존 관례(한국어, `feat:`/`fix:`/`docs:`/`chore:` 접두사)를 따른다.
 
+### 기존 오류 베이스라인 (2026-07-09 Task 3 시점 실측)
+
+새 태스크는 이 베이스라인을 **늘리지 않는 것**이 게이트다. 0으로 만드는 것이 아니다.
+
+- `npx tsc --noEmit` → 오류 1건: `test/gemini-file-upload.test.ts(4,39): error TS5097`. **Task 7에서 파일 삭제로 사라진다.**
+- `npm run lint` → 오류 3건, 경고 10건. 오류는 전부 이번 작업과 무관한 기존 파일:
+  - `src/components/AnnotationEditor.tsx:141` — setState synchronously within an effect
+  - `src/hooks/useHistory.ts:66` / `:67` — Cannot access refs during render
+- `npm test` → Task 3 완료 시점 7 passed.
+
+**주의:** Task 5는 `InputStep.tsx`를, Task 6은 `useEditorState.ts`를 수정한다. 두 파일 모두 현재 lint **경고**는 있으나 **오류는 없다** — 수정 후에도 오류를 만들지 말 것.
+
 ---
 
 ### Task 1: CORS 스파이크 — File API 브라우저 업로드 가능 여부 판정
@@ -660,7 +672,7 @@ Expected: PASS (api-key-storage 7 + gemini-client 8)
 - [ ] **Step 5: lint/타입 확인**
 
 Run: `npx tsc --noEmit; npm run lint`
-Expected: `test/gemini-file-upload.test.ts(4,39): error TS5097` **한 줄만** 출력된다. 이것은 Task 7에서 해당 파일을 삭제하며 사라지는 기존 오류다. 새 파일(`src/lib/gemini-client.ts`, `src/lib/gemini-client.test.ts`)에서 오류가 나면 고칠 것. lint는 오류 없음.
+Expected: 위 "기존 오류 베이스라인"과 **동일**해야 한다 — tsc 오류 1건(TS5097), lint 오류 3건·경고 10건. 새 파일(`src/lib/gemini-client.ts`, `src/lib/gemini-client.test.ts`)에서 오류가 하나라도 나면 고칠 것.
 
 - [ ] **Step 6: Commit**
 
@@ -1003,7 +1015,7 @@ const handleExtractAll = useCallback(async () => {
 - [ ] **Step 3: 타입/테스트/린트 확인**
 
 Run: `npx tsc --noEmit; npm test; npm run lint`
-Expected: tsc는 `test/gemini-file-upload.test.ts(4,39): error TS5097` 한 줄만 (Task 7에서 제거될 기존 오류). 테스트·lint는 전부 통과.
+Expected: "기존 오류 베이스라인"과 동일 (tsc 오류 1건, lint 오류 3건·경고 10건). 테스트는 전부 통과. `useEditorState.ts`에 새 lint 오류를 만들지 말 것.
 
 - [ ] **Step 4: E2E 수동 검증 (실제 키 + 실제 PDF)**
 
