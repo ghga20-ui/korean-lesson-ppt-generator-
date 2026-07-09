@@ -53,10 +53,10 @@ export default function InputStep({
     <div className="flex-1 overflow-y-auto">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-10">
         <div>
-          <h2 className="mb-2 text-2xl font-bold text-[#6B3F26]">
+          <h2 className="mb-2 text-2xl font-bold text-[#16202B]">
             텍스트 입력
           </h2>
-          <p className="text-sm text-[#6B3F26]/60">
+          <p className="text-sm text-[#5B6470]">
             {genre === "poetry"
               ? "텍스트를 입력하세요. 연/단락 사이는 빈 줄로 구분합니다."
               : "텍스트를 입력하세요. 적정 분량으로 자동 분할됩니다."}
@@ -73,7 +73,7 @@ export default function InputStep({
         {inputMode !== "B" && !hasApiKey && (
           <div className="flex items-center justify-between rounded-xl border-2 border-amber-300 bg-amber-50 px-4 py-3">
             <p className="text-sm text-amber-800">
-              PDF 주석 추출에는 본인의 Gemini API 키(무료 발급)가 필요합니다.
+              PDF에서 주석을 가져오려면 본인의 Gemini 키가 필요합니다. 발급은 무료이고 1분이면 됩니다.
             </p>
             <button
               onClick={() => setIsKeySettingsOpen(true)}
@@ -87,7 +87,7 @@ export default function InputStep({
           <div className="flex justify-end">
             <button
               onClick={() => setIsKeySettingsOpen(true)}
-              className="flex items-center gap-1 text-xs text-[#6B3F26]/50 hover:text-[#6B3F26]"
+              className="flex items-center gap-1 text-xs text-[#5B6470] hover:text-[#16202B]"
             >
               <KeyRound className="h-3 w-3" /> API 키 설정
             </button>
@@ -105,11 +105,11 @@ export default function InputStep({
                   ? "교과서 본문을 붙여넣으세요...\n\n연/단락 사이에 빈 줄을 넣어주세요."
                   : "교과서 본문을 붙여넣으세요..."
               }
-              className="kor-text min-h-[400px] w-full flex-1 resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
+              className="kor-text min-h-[400px] w-full flex-1 resize-y rounded-xl border border-[#E4E1DA]/60 bg-white p-5 text-base leading-relaxed text-[#16202B] placeholder-[#7C8492] outline-none shadow-inner transition-all hover:border-[#E4E1DA] focus:border-[#294C67] focus:ring-1 focus:ring-[#294C67]"
             />
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-[#6B3F26]/60">
+              <span className="text-sm text-[#5B6470]">
                 {fullText.length > 0
                   ? `${fullText.length}자 / ${fullText.split("\n").length}줄`
                   : ""}
@@ -117,7 +117,7 @@ export default function InputStep({
               <button
                 onClick={onSplit}
                 disabled={!fullText.trim()}
-                className="rounded-xl bg-[#6B3F26] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6B3F26]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-xl bg-[#294C67] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#21405A] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
               >
                 슬라이드 분할
               </button>
@@ -136,18 +136,18 @@ export default function InputStep({
                   ? "교과서 본문을 붙여넣으세요...\n\n연/단락 사이에 빈 줄을 넣어주세요."
                   : "교과서 본문을 붙여넣으세요..."
               }
-              className="kor-text min-h-[300px] w-full resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
+              className="kor-text min-h-[300px] w-full resize-y rounded-xl border border-[#E4E1DA]/60 bg-white p-5 text-base leading-relaxed text-[#16202B] placeholder-[#7C8492] outline-none shadow-inner transition-all hover:border-[#E4E1DA] focus:border-[#294C67] focus:ring-1 focus:ring-[#294C67]"
             />
 
             <div className="flex flex-col gap-3">
-              <label className="text-sm font-medium text-[#6B3F26]">
+              <label className="text-sm font-medium text-[#16202B]">
                 교사용 교과서 PDF 업로드
               </label>
               <PdfUploader file={pdfFile} onFileChange={onPdfFileChange} />
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-[#6B3F26]/60">
+              <span className="text-sm text-[#5B6470]">
                 {fullText.length > 0
                   ? `${fullText.length}자 / ${fullText.split("\n").length}줄`
                   : ""}
@@ -156,16 +156,16 @@ export default function InputStep({
                 <button
                   onClick={onSplit}
                   disabled={!fullText.trim()}
-                  className="rounded-xl border border-[#6B3F26]/40 px-6 py-3 text-base font-semibold text-[#6B3F26] transition-all hover:-translate-y-0.5 hover:border-[#6B3F26] hover:bg-[#6B3F26]/5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-xl border border-[#294C67]/40 px-6 py-3 text-base font-semibold text-[#16202B] transition-all hover:-translate-y-0.5 hover:border-[#294C67] hover:bg-[#294C67]/5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  주석 없이 분할
+                  주석 없이 나누기
                 </button>
                 <button
                   onClick={onExtractAnnotations}
                   disabled={!fullText.trim() || !pdfFile || isExtracting || !hasApiKey}
-                  className="rounded-xl bg-[#6B3F26] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6B3F26]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-xl bg-[#294C67] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#21405A] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  {isExtracting ? "추출 중..." : "주석 추출 + 분할"}
+                  {isExtracting ? "추출 중..." : "PDF에서 주석 가져오기"}
                 </button>
               </div>
             </div>
@@ -176,7 +176,7 @@ export default function InputStep({
         {inputMode === "A" && (
           <>
             <div className="flex flex-col gap-3">
-              <label className="text-sm font-medium text-[#6B3F26]">
+              <label className="text-sm font-medium text-[#16202B]">
                 교사용 교과서 PDF 업로드
               </label>
               <PdfUploader file={pdfFile} onFileChange={onPdfFileChange} />
@@ -185,25 +185,25 @@ export default function InputStep({
             {fullText && (
               <>
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[#6B3F26]">
+                  <label className="mb-2 block text-sm font-medium text-[#16202B]">
                     추출된 텍스트 (확인/수정 후 분할하세요)
                   </label>
                   <textarea
                     value={fullText}
                     onChange={(e) => onFullTextChange(e.target.value)}
-                    className="kor-text min-h-[300px] w-full resize-y rounded-xl border border-[#EEDDD0]/60 bg-white p-5 text-base leading-relaxed text-[#6B3F26] outline-none shadow-inner transition-all hover:border-[#EEDDD0] focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]"
+                    className="kor-text min-h-[300px] w-full resize-y rounded-xl border border-[#E4E1DA]/60 bg-white p-5 text-base leading-relaxed text-[#16202B] outline-none shadow-inner transition-all hover:border-[#E4E1DA] focus:border-[#294C67] focus:ring-1 focus:ring-[#294C67]"
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#6B3F26]/60">
+                  <span className="text-sm text-[#5B6470]">
                     {`${fullText.length}자 / ${fullText.split("\n").length}줄`}
                   </span>
                   <button
                     onClick={onSplit}
                     disabled={!fullText.trim()}
-                    className="rounded-xl bg-[#6B3F26] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6B3F26]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-xl bg-[#294C67] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#21405A] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    슬라이드 분할
+                    슬라이드로 나누기
                   </button>
                 </div>
               </>
@@ -214,9 +214,9 @@ export default function InputStep({
                 <button
                   onClick={onExtractAll}
                   disabled={!pdfFile || isExtracting || !hasApiKey}
-                  className="rounded-xl bg-[#6B3F26] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6B3F26]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-xl bg-[#294C67] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#21405A] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  {isExtracting ? "추출 중..." : "텍스트 & 주석 추출"}
+                  {isExtracting ? "추출 중..." : "PDF에서 본문·주석 가져오기"}
                 </button>
               </div>
             )}
@@ -229,21 +229,21 @@ export default function InputStep({
             <div className="flex w-72 flex-col items-center gap-5 rounded-2xl bg-white px-8 py-8 shadow-2xl">
               {/* Spinner */}
               <div className="relative flex h-14 w-14 items-center justify-center">
-                <div className="absolute inset-0 animate-spin rounded-full border-4 border-[#EEDDD0] border-t-[#6B3F26]" />
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="22" height="22" fill="#6B3F26" aria-hidden="true">
+                <div className="absolute inset-0 animate-spin rounded-full border-4 border-[#E4E1DA] border-t-[#294C67]" />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="22" height="22" fill="#294C67" aria-hidden="true">
                   <path d="M240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
                 </svg>
               </div>
               {/* Message */}
               <div className="flex flex-col items-center gap-1 text-center">
-                <p className="text-sm font-semibold text-[#6B3F26]">
+                <p className="text-sm font-semibold text-[#16202B]">
                   {extractionProgress || "처리 중..."}
                 </p>
-                <p className="text-xs text-[#6B3F26]/50">잠시만 기다려 주세요</p>
+                <p className="text-xs text-[#5B6470]">잠시만 기다려 주세요</p>
               </div>
               {/* Progress bar (indeterminate) */}
-              <div className="h-1 w-full overflow-hidden rounded-full bg-[#EEDDD0]">
-                <div className="h-full w-1/3 animate-[progressSlide_1.4s_ease-in-out_infinite] rounded-full bg-[#6B3F26]" />
+              <div className="h-1 w-full overflow-hidden rounded-full bg-[#E4E1DA]">
+                <div className="h-full w-1/3 animate-[progressSlide_1.4s_ease-in-out_infinite] rounded-full bg-[#294C67]" />
               </div>
             </div>
           </div>

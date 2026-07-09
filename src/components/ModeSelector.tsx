@@ -10,14 +10,14 @@ interface ModeSelectorProps {
 }
 
 const MODES: { value: InputMode; label: string; desc: string; recommended?: boolean }[] = [
-  { value: "C", label: "텍스트 + PDF 주석", desc: "(추천)텍스트 입력 후 PDF에서 주석 추출", recommended: true },
-  { value: "A", label: "PDF 전체 추출", desc: "PDF에서 텍스트와 주석 모두 추출" },
+  { value: "C", label: "텍스트 + PDF 주석", desc: "(추천) 텍스트 입력 후 PDF에서 주석 가져오기", recommended: true },
+  { value: "A", label: "PDF 전체 추출", desc: "PDF에서 본문과 주석 모두 가져오기" },
   { value: "B", label: "직접 입력", desc: "텍스트와 주석을 수동으로 입력" },
 ];
 
 export default function ModeSelector({ mode, onChange, hasApiKey }: ModeSelectorProps) {
   return (
-    <div className="flex gap-1 rounded-xl bg-[#EEDDD0]/30 p-1">
+    <div className="flex gap-1 rounded-xl bg-[#EDEAE3] p-1">
       {MODES.map((m) => {
         const isActive = mode === m.value;
         const needsKey = m.value !== "B" && !hasApiKey;
@@ -27,10 +27,10 @@ export default function ModeSelector({ mode, onChange, hasApiKey }: ModeSelector
             onClick={() => onChange(m.value)}
             className={`relative flex-1 rounded-lg px-3 py-2 text-center text-sm transition-all ${
               isActive
-                ? "bg-white font-semibold text-[#6B3F26] shadow-sm ring-1 ring-[#EEDDD0]/50"
+                ? "bg-[#E8EFF5] font-semibold text-[#16202B] shadow-sm ring-1 ring-[#C9D6E2]"
                 : m.recommended
-                  ? "border border-[#6B3F26]/20 text-[#6B3F26] hover:bg-white/50"
-                  : "text-[#6B3F26]/70 hover:bg-white/50"
+                  ? "border border-[#294C67]/20 text-[#16202B] hover:bg-white/50"
+                  : "text-[#5B6470] hover:bg-white/50"
             }`}
           >
             <div className="flex items-center justify-center gap-1">
@@ -41,7 +41,7 @@ export default function ModeSelector({ mode, onChange, hasApiKey }: ModeSelector
             </div>
             <div
               className={`text-xs ${
-                isActive ? "text-[#6B3F26]/60" : "text-[#6B3F26]/50"
+                isActive ? "text-[#5B6470]" : "text-[#5B6470]"
               }`}
             >
               {m.desc}

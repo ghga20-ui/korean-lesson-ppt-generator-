@@ -48,7 +48,7 @@ export default function ApiKeySettings({ open, onClose, onSaved }: ApiKeySetting
     const ok = await validateApiKey(key);
     setIsValidating(false);
     if (!ok) {
-      setError("키가 유효하지 않습니다. Google AI Studio에서 발급한 키인지 확인해주세요.");
+      setError("이 키로는 요청할 수 없습니다. Google AI Studio에서 발급한 키인지 확인해 주세요.");
       return;
     }
     setApiKey(key);
@@ -71,17 +71,17 @@ export default function ApiKeySettings({ open, onClose, onSaved }: ApiKeySetting
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="flex items-center gap-2 text-lg font-bold text-[#6B3F26]">
+          <h3 className="flex items-center gap-2 text-lg font-bold text-[#16202B]">
             <KeyRound className="h-5 w-5" /> Gemini API 키 설정
           </h3>
-          <button onClick={onClose} className="rounded-lg p-1 text-[#6B3F26]/50 hover:bg-[#EEDDD0]/30">
+          <button onClick={onClose} className="rounded-lg p-1 text-[#5B6470] hover:bg-[#EDEAE3]">
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* 발급 가이드 */}
-        <div className="rounded-xl bg-[#EEDDD0]/20 p-3 text-xs leading-relaxed text-[#6B3F26]/80">
-          <p className="mb-1 font-semibold text-[#6B3F26]">무료 키 발급 방법 (1분)</p>
+        <div className="rounded-xl bg-[#F3F1EC] p-3 text-xs leading-relaxed text-[#5B6470]">
+          <p className="mb-1 font-semibold text-[#16202B]">무료 키 발급 방법 (1분)</p>
           <ol className="list-inside list-decimal space-y-0.5">
             <li>Google AI Studio에 구글 계정으로 로그인</li>
             <li>&ldquo;API 키 만들기&rdquo; 클릭</li>
@@ -91,7 +91,7 @@ export default function ApiKeySettings({ open, onClose, onSaved }: ApiKeySetting
             href="https://aistudio.google.com/apikey"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-flex items-center gap-1 font-medium text-[#6B3F26] underline"
+            className="mt-2 inline-flex items-center gap-1 font-medium text-[#16202B] underline"
           >
             Google AI Studio 열기 <ExternalLink className="h-3 w-3" />
           </a>
@@ -99,24 +99,24 @@ export default function ApiKeySettings({ open, onClose, onSaved }: ApiKeySetting
 
         {/* 키 입력 */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-[#6B3F26]">API 키</label>
+          <label className="text-xs font-medium text-[#16202B]">API 키</label>
           <input
             type="password"
             autoComplete="off"
             value={keyInput}
             onChange={(e) => { setKeyInput(e.target.value); setError(""); }}
             placeholder="AIza..."
-            className="w-full rounded-lg border border-[#EEDDD0] px-3 py-2 text-sm text-[#6B3F26] outline-none focus:border-[#6B3F26]"
+            className="w-full rounded-lg border border-[#E4E1DA] px-3 py-2 text-sm text-[#16202B] outline-none focus:border-[#294C67]"
           />
         </div>
 
         {/* 모델 선택 */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-[#6B3F26]">모델</label>
+          <label className="text-xs font-medium text-[#16202B]">모델</label>
           <select
             value={modelId}
             onChange={(e) => setModel(e.target.value)}
-            className="w-full rounded-lg border border-[#EEDDD0] px-3 py-2 text-sm text-[#6B3F26] outline-none focus:border-[#6B3F26]"
+            className="w-full rounded-lg border border-[#E4E1DA] px-3 py-2 text-sm text-[#16202B] outline-none focus:border-[#294C67]"
           >
             {GEMINI_MODELS.map((m) => (
               <option key={m.id} value={m.id}>{m.label}</option>
@@ -124,7 +124,7 @@ export default function ApiKeySettings({ open, onClose, onSaved }: ApiKeySetting
           </select>
         </div>
 
-        <p className="text-[11px] leading-relaxed text-[#6B3F26]/50">
+        <p className="text-[11px] leading-relaxed text-[#5B6470]">
           키는 이 브라우저에만 저장되며 저희 서버로 전송되지 않습니다.
           PDF와 키는 브라우저에서 Google로 직접 전송됩니다.
         </p>
@@ -134,14 +134,14 @@ export default function ApiKeySettings({ open, onClose, onSaved }: ApiKeySetting
         <div className="flex items-center justify-between">
           <button
             onClick={handleClear}
-            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-[#6B3F26]/50 hover:bg-red-50 hover:text-red-500"
+            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-[#5B6470] hover:bg-red-50 hover:text-red-500"
           >
             <Trash2 className="h-3.5 w-3.5" /> 키 삭제
           </button>
           <button
             onClick={handleSave}
             disabled={isValidating}
-            className="flex items-center gap-1.5 rounded-xl bg-[#6B3F26] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#6B3F26]/90 disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-xl bg-[#294C67] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#21405A] disabled:opacity-40"
           >
             {saved ? <><Check className="h-4 w-4" /> 저장됨</> : isValidating ? "키 확인 중..." : "저장"}
           </button>

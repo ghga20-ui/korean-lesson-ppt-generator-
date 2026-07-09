@@ -32,17 +32,17 @@ function EditorInner({ genre }: { genre: Genre }) {
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-white">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-[#EEDDD0] bg-[#6B3F26] px-6 py-3">
+      <header className="flex items-center justify-between border-b border-[#E4E1DA] bg-[#294C67] px-6 py-3">
         <button
           onClick={() => router.push("/")}
-          className="text-sm text-[#EEDDD0] transition-colors hover:text-white"
+          className="text-sm text-[#D9E2EA] transition-colors hover:text-white"
         >
           &larr; 처음으로
         </button>
         <h1 className="text-lg font-semibold text-white">
           국어 수업 슬라이드 제작 도구
         </h1>
-        <span className="rounded-full bg-[#EEDDD0]/20 px-3 py-1 text-sm text-[#EEDDD0]">
+        <span className="rounded-full bg-white/15 px-3 py-1 text-sm text-[#D9E2EA]">
           {GENRE_LABELS[genre]}
         </span>
       </header>
@@ -101,7 +101,7 @@ function EditorInner({ genre }: { genre: Genre }) {
 
       {/* Toast notification */}
       {editor.toast && (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-[#6B3F26] px-5 py-2.5 text-sm font-medium text-white shadow-lg transition-all">
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-[#16202B] px-5 py-2.5 text-sm font-medium text-white shadow-lg transition-all">
           {editor.toast}
         </div>
       )}
@@ -114,7 +114,7 @@ export default function EditorPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-white">
-          <span className="text-[#6B3F26]/60">로딩 중...</span>
+          <span className="text-[#5B6470]">로딩 중...</span>
         </div>
       }
     >

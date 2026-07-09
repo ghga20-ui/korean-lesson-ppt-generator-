@@ -62,7 +62,7 @@ export default function BatchEditPanel({ annotations, onBatchUpdate }: BatchEdit
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="rounded-lg border border-[#EEDDD0] px-3 py-1.5 text-xs text-[#6B3F26] transition-colors hover:bg-[#EEDDD0]/20"
+        className="rounded-lg border border-[#E4E1DA] px-3 py-1.5 text-xs text-[#16202B] transition-colors hover:bg-[#F3F1EC]"
       >
         일괄 편집
       </button>
@@ -79,14 +79,14 @@ export default function BatchEditPanel({ annotations, onBatchUpdate }: BatchEdit
   ];
 
   return (
-    <div className="rounded-xl border border-[#EEDDD0] bg-[#EEDDD0]/10 p-3">
+    <div className="rounded-xl border border-[#E4E1DA] bg-[#F3F1EC] p-3">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold text-[#6B3F26]">
+        <span className="text-xs font-semibold text-[#16202B]">
           일괄 편집 ({selectedIds.size}/{annotations.length} 선택)
         </span>
         <button
           onClick={() => { setIsOpen(false); setSelectedIds(new Set()); }}
-          className="text-xs text-[#6B3F26]/50 hover:text-[#6B3F26]"
+          className="text-xs text-[#5B6470] hover:text-[#16202B]"
         >
           닫기
         </button>
@@ -94,12 +94,12 @@ export default function BatchEditPanel({ annotations, onBatchUpdate }: BatchEdit
 
       {/* Select all */}
       <div className="mb-2">
-        <label className="flex cursor-pointer items-center gap-2 text-xs text-[#6B3F26]">
+        <label className="flex cursor-pointer items-center gap-2 text-xs text-[#16202B]">
           <input
             type="checkbox"
             checked={selectedIds.size === annotations.length && annotations.length > 0}
             onChange={selectAll}
-            className="h-3.5 w-3.5 rounded border-[#EEDDD0] accent-[#6B3F26]"
+            className="h-3.5 w-3.5 rounded border-[#E4E1DA] accent-[#294C67]"
           />
           전체 선택
         </label>
@@ -110,13 +110,13 @@ export default function BatchEditPanel({ annotations, onBatchUpdate }: BatchEdit
         {annotations.map((ann) => (
           <label
             key={ann.id}
-            className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-xs text-[#6B3F26] hover:bg-white"
+            className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-xs text-[#16202B] hover:bg-white"
           >
             <input
               type="checkbox"
               checked={selectedIds.has(ann.id)}
               onChange={() => toggleSelection(ann.id)}
-              className="h-3 w-3 rounded border-[#EEDDD0] accent-[#6B3F26]"
+              className="h-3 w-3 rounded border-[#E4E1DA] accent-[#294C67]"
             />
             <span className="truncate">&ldquo;{ann.targetText.slice(0, 15)}&rdquo; → {ann.content.slice(0, 15)}</span>
           </label>
@@ -124,10 +124,10 @@ export default function BatchEditPanel({ annotations, onBatchUpdate }: BatchEdit
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex flex-col gap-2 border-t border-[#EEDDD0]/50 pt-2">
+        <div className="flex flex-col gap-2 border-t border-[#E4E1DA]/50 pt-2">
           {/* Color change */}
           <div>
-            <span className="mb-1 block text-[10px] text-[#6B3F26]/60">색상 변경</span>
+            <span className="mb-1 block text-[10px] text-[#5B6470]">색상 변경</span>
             <div className="flex gap-1">
               {PRESET_COLORS.map((c) => (
                 <button
@@ -143,13 +143,13 @@ export default function BatchEditPanel({ annotations, onBatchUpdate }: BatchEdit
 
           {/* Marker type change */}
           <div>
-            <span className="mb-1 block text-[10px] text-[#6B3F26]/60">마커 변경</span>
+            <span className="mb-1 block text-[10px] text-[#5B6470]">마커 변경</span>
             <div className="flex flex-wrap gap-1">
               {MARKER_TYPES.map((m) => (
                 <button
                   key={m.value}
                   onClick={() => applyMarkerType(m.value)}
-                  className="rounded border border-[#EEDDD0] px-2 py-0.5 text-[10px] text-[#6B3F26] transition-colors hover:bg-white"
+                  className="rounded border border-[#E4E1DA] px-2 py-0.5 text-[10px] text-[#16202B] transition-colors hover:bg-white"
                 >
                   {m.label}
                 </button>

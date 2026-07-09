@@ -595,8 +595,8 @@ export default function AnnotationEditor({
   return (
     <div className="flex h-full flex-col gap-0 lg:flex-row">
       {/* Text display with annotations */}
-      <div className="flex min-h-0 flex-1 flex-col border-r border-[#EEDDD0]/50">
-        <div className="border-b border-[#EEDDD0]/50 px-6 py-2">
+      <div className="flex min-h-0 flex-1 flex-col border-r border-[#E4E1DA]/50">
+        <div className="border-b border-[#E4E1DA]/50 px-6 py-2">
           {isTextEditMode ? (
             <div className="flex items-center justify-between rounded-lg bg-emerald-50 border border-emerald-300 px-3 py-1.5 shadow-sm">
               <span className="text-xs font-semibold text-emerald-800">✏ 텍스트 편집 중 — 완료 후 저장됩니다</span>
@@ -633,7 +633,7 @@ export default function AnnotationEditor({
             </div>
           ) : (
             <div className="flex items-center justify-between w-full">
-              <span className="text-xs font-medium text-[#6B3F26]/60">
+              <span className="text-xs font-medium text-[#5B6470]">
                 텍스트를 선택하여 주석을 추가하세요
               </span>
               <button
@@ -657,7 +657,7 @@ export default function AnnotationEditor({
           <div
             ref={textRef}
             onMouseUp={handleTextMouseUp}
-            className={`kor-text whitespace-pre-wrap text-base leading-relaxed text-[#1E2761] selection:bg-[#EEDDD0] ${isSplitMode ? "cursor-crosshair selection:bg-transparent" : "cursor-text"}`}
+            className={`kor-text whitespace-pre-wrap text-base leading-relaxed text-[#1E2761] selection:bg-[#E8EFF5] ${isSplitMode ? "cursor-crosshair selection:bg-transparent" : "cursor-text"}`}
           >
             {renderHighlightedText()}
           </div>
@@ -667,22 +667,22 @@ export default function AnnotationEditor({
           {popup && (
             <div
               ref={popupRef}
-              className="absolute z-50 w-72 rounded-xl border border-[#EEDDD0] bg-white p-4 shadow-xl"
+              className="absolute z-50 w-72 rounded-xl border border-[#E4E1DA] bg-white p-4 shadow-xl"
               style={{
                 left: `${Math.max(0, popup.x - 144)}px`,
                 top: `${popup.y}px`,
               }}
             >
               <div className="mb-3">
-                <span className="text-xs text-[#6B3F26]/50">선택된 텍스트:</span>
-                <p className="kor-text mt-1 truncate rounded bg-[#EEDDD0]/20 px-2 py-1 text-xs text-[#6B3F26]">
+                <span className="text-xs text-[#5B6470]">선택된 텍스트:</span>
+                <p className="kor-text mt-1 truncate rounded bg-[#F3F1EC] px-2 py-1 text-xs text-[#16202B]">
                   {popup.selectedText}
                 </p>
               </div>
 
               {/* Marker type selector */}
               <div className="mb-3">
-                <span className="mb-1 block text-xs text-[#6B3F26]/50">
+                <span className="mb-1 block text-xs text-[#5B6470]">
                   표시 유형:
                 </span>
                 <div className="flex gap-1">
@@ -692,8 +692,8 @@ export default function AnnotationEditor({
                       onClick={() => setPopupMarkerType(type)}
                       className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${
                         popupMarkerType === type
-                          ? `${MARKER_COLORS[type]} ${MARKER_BORDER_COLORS[type]} border-2 text-[#6B3F26]`
-                          : "border-[#EEDDD0] text-[#6B3F26]/50 hover:border-[#6B3F26]/30"
+                          ? `${MARKER_COLORS[type]} ${MARKER_BORDER_COLORS[type]} border-2 text-[#16202B]`
+                          : "border-[#E4E1DA] text-[#5B6470] hover:border-[#294C67]/30"
                       }`}
                     >
                       {MARKER_LABELS[type]}
@@ -704,7 +704,7 @@ export default function AnnotationEditor({
 
               {/* Color palette */}
               <div className="mb-3">
-                <span className="mb-1 block text-xs text-[#6B3F26]/50">
+                <span className="mb-1 block text-xs text-[#5B6470]">
                   색상:
                 </span>
                 <div className="flex gap-1.5">
@@ -725,14 +725,14 @@ export default function AnnotationEditor({
 
               {/* Annotation content */}
               <div className="mb-3">
-                <span className="mb-1 block text-xs text-[#6B3F26]/50">
+                <span className="mb-1 block text-xs text-[#5B6470]">
                   주석 내용:
                 </span>
                 <textarea
                   value={popupContent}
                   onChange={(e) => setPopupContent(e.target.value)}
                   placeholder="주석을 입력하세요..."
-                  className="kor-text h-16 w-full resize-none rounded-lg border border-[#EEDDD0] px-2 py-1.5 text-xs text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none focus:border-[#6B3F26]"
+                  className="kor-text h-16 w-full resize-none rounded-lg border border-[#E4E1DA] px-2 py-1.5 text-xs text-[#16202B] placeholder-[#7C8492] outline-none focus:border-[#294C67]"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
@@ -746,14 +746,14 @@ export default function AnnotationEditor({
               <div className="flex gap-2">
                 <button
                   onClick={() => setPopup(null)}
-                  className="flex-1 rounded-lg border border-[#EEDDD0] px-3 py-1.5 text-xs text-[#6B3F26]/60 transition-colors hover:bg-[#EEDDD0]/20"
+                  className="flex-1 rounded-lg border border-[#E4E1DA] px-3 py-1.5 text-xs text-[#5B6470] transition-colors hover:bg-[#F3F1EC]"
                 >
                   취소
                 </button>
                 <button
                   onClick={handleAddAnnotation}
                   disabled={!popupContent.trim()}
-                  className="flex-1 rounded-lg bg-[#6B3F26] px-3 py-1.5 text-xs font-semibold text-white transition-all hover:bg-[#6B3F26]/90 disabled:opacity-40"
+                  className="flex-1 rounded-lg bg-[#294C67] px-3 py-1.5 text-xs font-semibold text-white transition-all hover:bg-[#21405A] disabled:opacity-40"
                 >
                   추가
                 </button>
@@ -763,9 +763,9 @@ export default function AnnotationEditor({
         </div>
 
         {/* Summary input */}
-        <div className="flex-shrink-0 border-t border-[#EEDDD0]/50 px-6 py-3">
+        <div className="flex-shrink-0 border-t border-[#E4E1DA]/50 px-6 py-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-[#6B3F26]/50">▶ 슬라이드 요약</span>
+            <span className="text-xs font-medium text-[#5B6470]">▶ 슬라이드 요약</span>
             {slide.annotations.some((a) => a.markerType === "summary") && (
               <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] text-slate-600">저장됨</span>
             )}
@@ -776,14 +776,14 @@ export default function AnnotationEditor({
               value={summaryContent}
               onChange={(e) => setSummaryContent(e.target.value)}
               placeholder="이 슬라이드의 요약을 입력하세요..."
-              className="kor-text flex-1 rounded-lg border border-[#EEDDD0] px-3 py-1.5 text-xs text-[#6B3F26] placeholder-[#6B3F26]/50 outline-none focus:border-[#6B3F26]"
+              className="kor-text flex-1 rounded-lg border border-[#E4E1DA] px-3 py-1.5 text-xs text-[#16202B] placeholder-[#7C8492] outline-none focus:border-[#294C67]"
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSaveSummary();
               }}
             />
             <button
               onClick={handleSaveSummary}
-              className="rounded-lg bg-[#6B3F26] px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-[#6B3F26]/90"
+              className="rounded-lg bg-[#294C67] px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-[#21405A]"
             >
               {slide.annotations.some((a) => a.markerType === "summary") ? "수정" : "추가"}
             </button>
@@ -791,7 +791,7 @@ export default function AnnotationEditor({
         </div>
 
         {/* Slide controls */}
-        <div className="flex flex-shrink-0 items-center justify-between gap-2 border-t border-[#EEDDD0]/50 px-6 py-3">
+        <div className="flex flex-shrink-0 items-center justify-between gap-2 border-t border-[#E4E1DA]/50 px-6 py-3">
           <div className="flex items-center gap-2">
             <button
               onClick={handleStartSplitMode}
@@ -806,11 +806,11 @@ export default function AnnotationEditor({
           <div className="flex items-center gap-2">
             <div className="w-20 h-1.5 rounded-full bg-gray-200 overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all ${isOverflow ? "bg-red-500" : isWarning ? "bg-amber-400" : "bg-[#6B3F26]/40"}`}
+                className={`h-full rounded-full transition-all ${isOverflow ? "bg-red-500" : isWarning ? "bg-amber-400" : "bg-[#294C67]/40"}`}
                 style={{ width: `${Math.min(100, overflowRatio * 100)}%` }}
               />
             </div>
-            <span className={`text-xs font-medium tabular-nums ${isOverflow ? "text-red-600" : isWarning ? "text-amber-600" : "text-[#6B3F26]/60"}`}>
+            <span className={`text-xs font-medium tabular-nums ${isOverflow ? "text-red-600" : isWarning ? "text-amber-600" : "text-[#5B6470]"}`}>
               {usedLines}/{maxLines}줄
             </span>
             {isOverflow && (
@@ -822,14 +822,14 @@ export default function AnnotationEditor({
             <button
               onClick={onMergePrev}
               disabled={isFirstSlide}
-              className="rounded-lg border border-[#EEDDD0] bg-white px-3 py-1.5 text-xs text-[#6B3F26] transition-colors hover:bg-[#EEDDD0]/20 disabled:opacity-30"
+              className="rounded-lg border border-[#E4E1DA] bg-white px-3 py-1.5 text-xs text-[#16202B] transition-colors hover:bg-[#F3F1EC] disabled:opacity-30"
             >
               ↑ 이전과 병합
             </button>
             <button
               onClick={onMergeNext}
               disabled={isLastSlide}
-              className="rounded-lg border border-[#EEDDD0] bg-white px-3 py-1.5 text-xs text-[#6B3F26] transition-colors hover:bg-[#EEDDD0]/20 disabled:opacity-30"
+              className="rounded-lg border border-[#E4E1DA] bg-white px-3 py-1.5 text-xs text-[#16202B] transition-colors hover:bg-[#F3F1EC] disabled:opacity-30"
             >
               ↓ 다음과 병합
             </button>
@@ -840,19 +840,19 @@ export default function AnnotationEditor({
       {/* Resize handle: text area ↔ annotation list */}
       <div
         onMouseDown={startAnnotationPanelDrag}
-        className="group relative z-10 hidden lg:flex w-1.5 flex-shrink-0 cursor-col-resize items-center justify-center bg-transparent transition-colors hover:bg-[#6B3F26]/10 active:bg-[#6B3F26]/20"
+        className="group relative z-10 hidden lg:flex w-1.5 flex-shrink-0 cursor-col-resize items-center justify-center bg-transparent transition-colors hover:bg-[#294C67]/10 active:bg-[#294C67]/20"
         title="드래그하여 너비 조절"
       >
-        <div className="h-10 w-px rounded-full bg-[#EEDDD0] transition-colors group-hover:bg-[#6B3F26]/40" />
+        <div className="h-10 w-px rounded-full bg-[#E4E1DA] transition-colors group-hover:bg-[#294C67]/40" />
       </div>
 
       {/* Right panel: annotation list */}
       <div
-        className="flex min-h-0 flex-col border-t border-[#EEDDD0]/50 lg:border-t-0 lg:flex-shrink-0"
+        className="flex min-h-0 flex-col border-t border-[#E4E1DA]/50 lg:border-t-0 lg:flex-shrink-0"
         style={{ width: annotationPanelWidth }}
       >
-        <div className="flex items-center justify-between border-b border-[#EEDDD0]/50 px-4 py-2">
-          <span className="text-xs font-semibold text-[#6B3F26]">
+        <div className="flex items-center justify-between border-b border-[#E4E1DA]/50 px-4 py-2">
+          <span className="text-xs font-semibold text-[#16202B]">
             주석 목록 ({slide.annotations.length})
           </span>
           {slide.annotations.length > 0 && (
@@ -862,15 +862,15 @@ export default function AnnotationEditor({
         <div className="flex-1 overflow-y-auto">
           {displayAnnotations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <span className="mb-2 text-2xl text-[#6B3F26]/20">+</span>
-              <p className="text-xs text-[#6B3F26]/60">
+              <span className="mb-2 text-2xl text-[#C9CDD4]">+</span>
+              <p className="text-xs text-[#5B6470]">
                 텍스트를 선택하여
                 <br />
                 주석을 추가하세요
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-[#EEDDD0]/30">
+            <ul className="divide-y divide-[#E4E1DA]/30">
               {displayAnnotations.map((ann) => {
                 const isExpanded = expandedAnnotationId === ann.id;
                 return (
@@ -883,7 +883,7 @@ export default function AnnotationEditor({
                     onDragEnd={handleDragEnd}
                     className={`relative transition-all
                       ${draggedId === ann.id ? "opacity-30" : "opacity-100"}
-                      ${isExpanded ? "bg-[#fdf8f5]" : "bg-white"}
+                      ${isExpanded ? "bg-[#E8EFF5]" : "bg-white"}
                     `}
                   >
                     {dragOverId === ann.id && draggedId !== ann.id && (
@@ -892,7 +892,7 @@ export default function AnnotationEditor({
 
                     {/* ── 닫힌 헤더 (항상 표시) ── */}
                     <div
-                      className="flex cursor-pointer items-start gap-2 px-3 py-2.5 hover:bg-[#EEDDD0]/10"
+                      className="flex cursor-pointer items-start gap-2 px-3 py-2.5 hover:bg-[#F3F1EC]"
                       onClick={() => handleExpandCard(ann)}
                     >
                       {/* 드래그 핸들 */}
@@ -905,7 +905,7 @@ export default function AnnotationEditor({
                       </div>
 
                       {/* 번호 배지 */}
-                      <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#6B3F26] text-[10px] font-bold text-white">
+                      <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#294C67] text-[10px] font-bold text-white">
                         {ann.order}
                       </span>
 
@@ -936,7 +936,7 @@ export default function AnnotationEditor({
 
                     {/* ── 열린 편집 영역 ── */}
                     {isExpanded && (
-                      <div className="border-t border-[#eeddd0] px-4 pb-3 pt-3 flex flex-col gap-3">
+                      <div className="border-t border-[#E4E1DA] px-4 pb-3 pt-3 flex flex-col gap-3">
                         {/* 마커 유형 */}
                         <div>
                           <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-[#9ca3af]">마커 유형</p>
@@ -947,8 +947,8 @@ export default function AnnotationEditor({
                                 onClick={() => changeMarkerType(ann.id, type)}
                                 className={`rounded border px-2 py-0.5 text-[11px] font-medium transition-colors ${
                                   ann.markerType === type
-                                    ? "border-[#6B3F26] bg-[#6B3F26] text-white"
-                                    : "border-[#eeddd0] text-[#6B3F26]/60 hover:border-[#6B3F26]/40 hover:text-[#6B3F26]"
+                                    ? "border-[#294C67] bg-[#294C67] text-white"
+                                    : "border-[#E4E1DA] text-[#5B6470] hover:border-[#294C67]/40 hover:text-[#16202B]"
                                 }`}
                               >
                                 {MARKER_LABELS[type]}
@@ -983,7 +983,7 @@ export default function AnnotationEditor({
                           <textarea
                             value={editingContent}
                             onChange={(e) => setEditingContent(e.target.value)}
-                            className="kor-text w-full resize-none rounded-lg border border-[#eeddd0] px-2.5 py-1.5 text-sm text-[#1E2761] outline-none focus:border-[#6B3F26] focus:ring-1 focus:ring-[#6B3F26]/20"
+                            className="kor-text w-full resize-none rounded-lg border border-[#E4E1DA] px-2.5 py-1.5 text-sm text-[#1E2761] outline-none focus:border-[#294C67] focus:ring-1 focus:ring-[#294C67]/20"
                             rows={2}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" && !e.shiftKey) {
@@ -999,19 +999,19 @@ export default function AnnotationEditor({
                         <div className="flex flex-wrap gap-1.5">
                           <button
                             onClick={() => saveEditContent(ann.id)}
-                            className="rounded-lg bg-[#6B3F26] px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#6B3F26]/90"
+                            className="rounded-lg bg-[#294C67] px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#21405A]"
                           >
                             저장
                           </button>
                           <button
                             onClick={() => { setRetargetingId(ann.id); setExpandedAnnotationId(null); }}
-                            className="rounded-lg border border-[#eeddd0] px-3 py-1 text-xs text-[#6B3F26] transition-colors hover:bg-[#eeddd0]/30"
+                            className="rounded-lg border border-[#E4E1DA] px-3 py-1 text-xs text-[#16202B] transition-colors hover:bg-[#EDEAE3]"
                           >
                             타겟변경
                           </button>
                           <button
                             onClick={() => { onCutAnnotation(ann); setExpandedAnnotationId(null); }}
-                            className="rounded-lg border border-[#eeddd0] px-3 py-1 text-xs text-[#6B3F26] transition-colors hover:bg-[#eeddd0]/30"
+                            className="rounded-lg border border-[#E4E1DA] px-3 py-1 text-xs text-[#16202B] transition-colors hover:bg-[#EDEAE3]"
                           >
                             다른 슬라이드로
                           </button>

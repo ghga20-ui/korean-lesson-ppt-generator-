@@ -363,7 +363,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast("PPT 파일이 다운로드되었습니다");
+      showToast("PPT를 내보냈습니다");
     } catch (error) {
       alert(error instanceof Error ? error.message : "PPT 생성 중 오류가 발생했습니다");
     } finally {
