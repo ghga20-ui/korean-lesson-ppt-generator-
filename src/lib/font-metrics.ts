@@ -50,7 +50,9 @@ export const FONT_METRICS: Record<string, FontMetrics> = {
     punctuation: 0.28,
     bracket: 0.33,
     fullwidth: 1.0,
-    lineStepRatio: 1.25,
+    // 실측 교정(2026-07): 36pt/ls1.8에서 4줄 렌더의 밑줄-글자 간격이
+    // 줄당 +2.7px 벌어짐 → 실제 스텝 역산 1.219. 기존 1.25는 미검증 추정값.
+    lineStepRatio: 1.22,
   },
   "나눔고딕": {
     name: "나눔고딕",

@@ -176,6 +176,29 @@ def horizontal_bars(pts, min_width=20, max_height=8):
     return out
 
 
+def components(pts, min_size=25):
+    """연결 성분별 bbox 목록 (x0 순 정렬). 브라켓 「」 분리 검증용."""
+    pset = set(pts)
+    seen = set()
+    out = []
+    for p in pts:
+        if p in seen:
+            continue
+        stack = [p]
+        seen.add(p)
+        comp = []
+        while stack:
+            x, y = stack.pop()
+            comp.append((x, y))
+            for q in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if q in pset and q not in seen:
+                    seen.add(q)
+                    stack.append(q)
+        if len(comp) >= min_size:
+            out.append(bbox(comp))
+    return sorted(out, key=lambda b: b["x0"])
+
+
 def target_bbox(prefix_png, upto_png):
     """
     접두사만 담은 렌더와 대상까지 담은 렌더의 글자 마스크를 차분해
@@ -195,7 +218,7 @@ def target_bbox(prefix_png, upto_png):
         for x in range(w):
             if is_body(pb[x, y]) and not is_body(pa[x, y]):
                 pts.append((x, y))
-    return bbox(pts)
+    return {"bbox": bbox(pts), "bands": line_boxes(pts)}
 
 
 def main():
@@ -208,7 +231,9 @@ def main():
     if a.mode == "target":
         if not a.prefix_png:
             raise SystemExit("--prefix-png 필요")
-        sys.stdout.write(json.dumps({"target": target_bbox(a.prefix_png, a.png)}))
+        t = target_bbox(a.prefix_png, a.png)
+        # "target"은 bbox (기존 sweep 스크립트 호환), "targetBands"는 줄별 상자
+        sys.stdout.write(json.dumps({"target": t["bbox"], "targetBands": t["bands"]}))
         return
 
     im = Image.open(a.png).convert("RGB")
@@ -224,6 +249,7 @@ def main():
             "bbox": bbox(m),
             "lines": line_boxes(m),
             "bars": horizontal_bars(m),
+            "components": components(m),
         }
 
     sys.stdout.write(json.dumps(out, ensure_ascii=False))

@@ -1,0 +1,87 @@
+{
+  "comment": "Tier-2 게이트 케이스. run_cases.py가 렌더+접두사 프로빙으로 invariant를 평가한다. 옛한글 케이스 금지(OfficeCLI 네이티브 렌더가 고자모 shaping을 재현하지 못함).",
+  "cases": [
+    {
+      "name": "explicit-newline-underline-two-segments",
+      "why": "명시적 \\n을 걸치는 밑줄은 줄마다 세그먼트를 낸다 (getUnderlineSegments 다중 세그먼트 경로)",
+      "text": "나 보기가 역겨워\n가실 때에는",
+      "target": "역겨워\n가실",
+      "markerType": "underline",
+      "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry" },
+      "invariant": "underline_gap",
+      "params": { "expectedBars": 2, "gapMaxEm": 0.25 }
+    },
+    {
+      "name": "summary-marker-baseline",
+      "why": "summary 마커는 스윕이 전혀 측정하지 않았다 — 하단 요약 상자 존재·위치 회귀",
+      "text": "나 보기가 역겨워\n가실 때에는",
+      "target": "때에는",
+      "markerType": "summary",
+      "content": "이별의 상황을 가정한 화자의 다짐",
+      "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry" },
+      "invariant": "summary_box",
+      "params": { "minWidthIn": 6.0, "minYRatio": 0.6 }
+    },
+    {
+      "name": "novel-genre-underline-strike",
+      "why": "PROSE_UNDERLINE_Y_CORRECTION(-0.05in) 삭제의 수용 증거 — 산문 28pt에서 밑줄이 글자를 관통하지 않는다",
+      "text": "구보는 다시 걷기로 한다. 여름 한낮의 뙤약볕이 그에게 현기증을 주었다.",
+      "target": "현기증",
+      "markerType": "underline",
+      "settings": { "fontSize": 28, "lineSpacing": 1.8, "genre": "novel" },
+      "invariant": "underline_gap",
+      "params": { "expectedBars": 1, "gapMaxEm": 0.25 }
+    },
+    {
+      "name": "single-char-bracket-at-first-char",
+      "why": "텍스트 첫 글자 + 단일 글자 대상 + 브라켓: 루프 경계와 브라켓 기호 스케일 (본문 크기 추종)",
+      "text": "구보는 다시 걷기로 한다.",
+      "target": "구",
+      "markerType": "bracket",
+      "settings": { "fontSize": 44, "lineSpacing": 1.8, "genre": "novel" },
+      "invariant": "bracket_pair",
+      "params": {}
+    },
+    {
+      "name": "last-char-of-text-with-visible-annotation",
+      "why": "텍스트 마지막 글자 주석: 인덱스 경계(i < endIndex)와 마지막 줄 배치",
+      "text": "나 보기가 역겨워 가실 때에는 말없이 보내리",
+      "target": "리",
+      "markerType": "underline",
+      "content": "종결 어미",
+      "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry" },
+      "invariant": "underline_gap_and_cover",
+      "params": { "expectedBars": 1, "gapMaxEm": 0.25, "coverEm": 0.2 }
+    },
+    {
+      "name": "bracket-spanning-newline",
+      "why": "「가 첫 줄, 」가 둘째 줄 — 두 estimateTextPosition 경로와 endPos.baseline 앵커",
+      "text": "나 보기가 역겨워\n가실 때에는",
+      "target": "역겨워\n가실",
+      "markerType": "bracket",
+      "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry" },
+      "invariant": "bracket_pair",
+      "params": { "multiline": true }
+    },
+    {
+      "name": "fontfamily-ignored-malgun-width",
+      "why": "REQUIRED — metrics 스레딩 증명. 맑은 고딕(hangul 1.0em)에서 밑줄 폭이 실제 자간을 추종한다 (기존: 한컴 0.932em 강제 → 10자에 0.68em 부족)",
+      "text": "가나다라마바사아자차카타파하",
+      "target": "가나다라마바사아자차",
+      "markerType": "underline",
+      "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry", "fontFamily": "맑은 고딕" },
+      "invariant": "underline_x_cover",
+      "params": { "rightShortMaxEm": 0.15, "rightOverMaxEm": 0.6, "gapMinEm": -0.15, "gapMaxEm": 0.35 }
+    },
+    {
+      "name": "fontfamily-ignored-malgun-linestep",
+      "why": "맑은 고딕 다중 줄 배치 회귀. 이 게이트의 첫 실행이 lineStepRatio 1.25(미검증 추정)를 반증해 1.22로 실측 교정했다. metrics 스레딩 자체의 증명은 width 게이트가 담당.",
+      "text": "첫째 줄입니다\n둘째 줄입니다\n셋째 줄입니다\n넷째 줄 대상입니다",
+      "target": "대상",
+      "markerType": "underline",
+      "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry", "fontFamily": "맑은 고딕" },
+      "invariant": "underline_gap",
+      "params": { "expectedBars": 1, "gapMinEm": 0.0, "gapMaxEm": 0.30 }
+    }
+  ]
+}

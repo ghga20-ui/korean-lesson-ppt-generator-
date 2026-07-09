@@ -8,7 +8,8 @@
     "start": "next start -p ${PORT:-3000} -H 0.0.0.0",
     "lint": "eslint",
     "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "golden:render": "python scripts/golden/run_cases.py 3000"
   },
   "dependencies": {
     "jszip": "^3.10.1",
