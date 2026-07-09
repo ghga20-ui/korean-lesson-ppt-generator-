@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>방향 A — 교정지</title>
+<style>
+  :root {
+    --paper:   #FBFAF7;
+    --ink:     #16202B;
+    --blue:    #294C67;
+    --pencil:  #5B6470;
+    --red:     #A6362F;
+    --tint:    #E8EFF5;
+    --rule:    #E3E1DB;
+    --panel:   #FFFFFF;
+
+    --sans: "Pretendard", -apple-system, "Segoe UI", "맑은 고딕", "Malgun Gothic", sans-serif;
+    --serif: "Ridibatang", "Nanum Myeongjo", "바탕", "Batang", serif;
+    --mono: "IBM Plex Mono", ui-monospace, "Consolas", monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  /* ---------------- chrome ---------------- */
+  header {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--panel);
+  }
+  .brand {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .genre {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--pencil);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+  header .spacer { flex: 1; }
+  .ghost {
+    font: inherit;
+    color: var(--pencil);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+  }
+  .ghost:hover { background: var(--tint); color: var(--blue); }
+
+  /* ---------------- shell ---------------- */
+  .shell {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr) 300px;
+    height: calc(100% - 52px);
+  }
+
+  /* ---------------- slide list ---------------- */
+  aside.slides {
+    border-right: 1px solid var(--rule);
+    background: var(--panel);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .slides-head {
+    padding: 14px 16px 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--pencil);
+    text-transform: uppercase;
+  }
+  .slide-list { overflow-y: auto; flex: 1; padding: 0 8px; }
+  .slide-item {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    display: block;
+    color: var(--ink);
+    font: inherit;
+  }
+  .slide-item:hover { background: var(--paper); }
+  .slide-item[aria-current="true"] {
+    background: var(--tint);
+    box-shadow: inset 2px 0 0 var(--blue);
+  }
+  .slide-item .n {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--pencil);
+  }
+  .slide-item[aria-current="true"] .n { color: var(--blue); }
+  .slide-item .excerpt {
+    display: block;
+    margin-top: 3px;
+    font-family: var(--serif);
+    font-size: 13px;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .slide-item .count {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--pencil);
+  }
+
+  .slides-foot {
+    border-top: 1px solid var(--rule);
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+  }
+  .btn {
+    font: inherit;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 11px 12px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .btn-primary { background: var(--blue); color: #fff; }      /* 9.04:1 */
+  .btn-primary:hover { background: #21405a; }
+  .btn-secondary { background: var(--panel); color: var(--blue); border-color: var(--blue); }
+  .btn-secondary:hover { background: var(--tint); }
+  .hint {
+    font-size: 11px;
+    color: var(--pencil);
+    text-align: center;
+    line-height: 1.6;
+  }
+  kbd {
+    font-family: var(--mono);
+    font-size: 10px;
+    border: 1px solid var(--rule);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 1px 4px;
+    background: var(--panel);
+  }
+
+  /* ---------------- reading pane ---------------- */
+  main {
+    position: relative;
+    overflow: auto;
+    min-width: 0;
+    padding: 40px 28px 40px 44px;
+  }
+  .pane-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 0 auto 26px;
+    width: min(38ch, 100%);
+  }
+  .pane-head .idx { white-space: nowrap; }
+  .pane-head h1 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--pencil);
+  }
+  .pane-head .idx {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--blue);
+  }
+
+  .prose {
+    font-family: var(--serif);
+    font-size: 21px;
+    line-height: 2.5;      /* 여백 주석이 앉을 자리 */
+    color: var(--ink);
+    width: min(38ch, 100%);   /* 슬라이드 한 장의 실제 분량에 가깝다 */
+    margin-inline: auto;      /* 책 페이지처럼 앉히고, 남는 폭은 지시선의 통로가 된다 */
+    position: relative;
+  }
+
+  /* marker styles — the teacher's-edition ink */
+  .mk { position: relative; cursor: pointer; }
+  .mk[data-state="hidden"] { --shown: 0; }
+  .mk[data-state="shown"]  { --shown: 1; }
+
+  /* An absolutely-positioned ::after only underlines the first line box.
+     A background gradient with box-decoration-break: clone paints every line. */
+  .mk-underline {
+    background-image: linear-gradient(var(--blue), var(--blue));
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: calc(var(--shown, 1) * 100%) 2px;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    padding-bottom: 2px;
+    transition: background-size .42s cubic-bezier(.22,.61,.36,1);
+  }
+  .mk-circle {
+    padding: 0 .18em;
+  }
+  .mk-circle::before {
+    content: "";
+    position: absolute;
+    inset: -.28em -.05em;
+    border: 2px solid var(--red);
+    border-radius: 50%;
+    opacity: var(--shown, 1);
+    transform: scale(calc(.88 + .12 * var(--shown, 1)));
+    transition: opacity .3s ease, transform .38s cubic-bezier(.22,.61,.36,1);
+  }
+  .mk-bracket::before { content: "「"; color: var(--blue); opacity: var(--shown,1); transition: opacity .3s; }
+  .mk-bracket::after  { content: "」"; color: var(--blue); opacity: var(--shown,1); transition: opacity .3s; }
+
+  /* leader lines drawn into this svg */
+  #leaders {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;   /* an <svg> without this keeps its 300x150 intrinsic size */
+    pointer-events: none;
+    overflow: visible;
+  }
+  #leaders path {
+    fill: none;
+    stroke: #CFCBC2;
+    stroke-width: 1;
+    transition: stroke .15s;
+  }
+  #leaders path.active { stroke: var(--blue); stroke-width: 1.5; }
+
+  /* ---------------- margin ---------------- */
+  aside.margin {
+    border-left: 1px solid var(--rule);
+    background: var(--panel);
+    overflow-y: auto;
+    padding: 40px 18px;
+    position: relative;
+  }
+  .margin-head {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--pencil);
+    margin-bottom: 18px;
+  }
+  .note {
+    position: relative;
+    padding: 10px 12px 11px 34px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .note:hover { background: var(--paper); }
+  .note[data-state="hidden"] { opacity: .32; }
+  .note[data-state="shown"]  { opacity: 1; transition: opacity .3s ease; }
+  .note.active { background: var(--tint); }
+
+  .note .ord {
+    position: absolute;
+    left: 10px; top: 11px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 10px;
+    display: grid;
+    place-items: center;
+  }
+  .note.is-red .ord { background: var(--red); }
+  .note .body {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+  .note .target {
+    display: block;
+    font-family: var(--serif);
+    font-size: 12px;
+    color: var(--pencil);
+    margin-bottom: 3px;
+  }
+  .badge {
+    display: inline-block;
+    margin-top: 6px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .03em;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    color: var(--pencil);
+  }
+  .badge.ai { border-color: #C9D6E2; color: var(--blue); background: var(--tint); }
+
+  /* ---------------- rehearsal state ---------------- */
+  body.rehearsing .prose { color: var(--ink); }
+  body.rehearsing .note[data-state="hidden"] { opacity: .18; }
+
+  .status {
+    position: fixed;
+    left: 50%; bottom: 22px;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
+  .status.on { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  @media (max-width: 1100px) {
+    .shell { grid-template-columns: 200px minmax(0,1fr); }
+    aside.margin { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="brand">국어 수업 슬라이드</span>
+  <span class="genre">산문 · 소설가 구보씨의 일일</span>
+  <span class="spacer"></span>
+  <button class="ghost">저장</button>
+  <button class="ghost">불러오기</button>
+  <button class="ghost">API 키 설정</button>
+</header>
+
+<div class="shell">
+
+  <aside class="slides">
+    <div class="slides-head">슬라이드 15</div>
+    <div class="slide-list">
+      <button class="slide-item" aria-current="true">
+        <span class="n">01</span>
+        <span class="excerpt">구보는 다시 걷기로 한다.</span>
+        <span class="count">주석 3</span>
+      </button>
+      <button class="slide-item">
+        <span class="n">02</span>
+        <span class="excerpt">어머니를 따라 일갓집에 갔다 와서</span>
+        <span class="count">주석 3</span>
+      </button>
+      <button class="slide-item">
+        <span class="n">03</span>
+        <span class="excerpt">밤을 새워 읽던 소설책들.</span>
+        <span class="count">주석 3</span>
+      </button>
+      <button class="slide-item">
+        <span class="n">04</span>
+        <span class="excerpt">그는 저, 불결한 고물상들을</span>
+        <span class="count">주석 4</span>
+      </button>
+      <button class="slide-item">
+        <span class="n">05</span>
+        <span class="excerpt">그가 읽지 않은 것은 오직 서해의</span>
+        <span class="count">주석 4</span>
+      </button>
+      <button class="slide-item">
+        <span class="n">06</span>
+        <span class="excerpt">그리운 옛 시절, 그리운 옛 동무</span>
+        <span class="count">주석 4</span>
+      </button>
+    </div>
+    <div class="slides-foot">
+      <button class="btn btn-secondary" id="rehearse">리허설 ▶</button>
+      <button class="btn btn-primary">PPT 내보내기</button>
+      <p class="hint"><kbd>R</kbd> 리허설 · <kbd>Ctrl</kbd>+<kbd>Enter</kbd> 내보내기</p>
+    </div>
+  </aside>
+
+  <main>
+    <div class="pane-head">
+      <span class="idx">01 / 15</span>
+      <h1>선택하면 여백에 주석이 붙습니다</h1>
+    </div>
+
+    <svg id="leaders" aria-hidden="true"></svg>
+
+    <div class="prose" id="prose">
+      <span class="mk mk-circle" data-note="n1" data-state="shown">구보</span>는 다시 걷기로 한다.
+      <span class="mk mk-underline" data-note="n2" data-state="shown">여름 한낮의 뙤약볕이 맨머릿바람의 그에게 현기증을 주었다.</span>
+      그는 그곳에 더 그렇게 서 있을 수 없다.
+      <span class="mk mk-bracket" data-note="n3" data-state="shown">신경 쇠약</span>.
+      그러나 물론, 쇠약한 것은 그의 신경뿐이 아니다.
+    </div>
+  </main>
+
+  <aside class="margin" id="margin">
+    <div class="margin-head">여백 주석 3</div>
+
+    <div class="note is-red" data-note="n1" data-state="shown">
+      <span class="ord">1</span>
+      <div class="body">
+        <span class="target">구보</span>
+        일제 강점기의 무기력한 지식인을 상징함.
+        <span class="badge ai">AI 추출</span>
+      </div>
+    </div>
+
+    <div class="note" data-note="n2" data-state="shown">
+      <span class="ord">2</span>
+      <div class="body">
+        <span class="target">여름 한낮의 뙤약볕이…</span>
+        현재형 서술 → ① 현장감을 느끼게 함 ② 독자가 인물과 함께 걷는 듯한 효과.
+        <span class="badge ai">AI 추출</span>
+      </div>
+    </div>
+
+    <div class="note" data-note="n3" data-state="shown">
+      <span class="ord">3</span>
+      <div class="body">
+        <span class="target">신경 쇠약</span>
+        신경뿐 아니라 신체도 쇠약하여 일을 하기 어려운 자신을 자조함.
+        <span class="badge">직접 입력</span>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<div class="status" id="status">리허설 중 — 클릭하면 다음</div>
+
+<script>
+  const prose  = document.getElementById('prose');
+  const svg    = document.getElementById('leaders');
+  const margin = document.getElementById('margin');
+  const status = document.getElementById('status');
+
+  const marks = [...document.querySelectorAll('.mk')];
+  const notes = [...document.querySelectorAll('.note')];
+
+  /* ---- leader lines: connect each span to its margin note ---- */
+  function drawLeaders() {
+    const main = prose.closest('main');
+    const mainBox = main.getBoundingClientRect();
+    svg.innerHTML = '';
+    marks.forEach(mk => {
+      const note = notes.find(n => n.dataset.note === mk.dataset.note);
+      if (!note) return;
+
+      // Use the LAST line box of the span, so a span that wraps is met at its end.
+      const rects = mk.getClientRects();
+      const r = rects[rects.length - 1];
+      const nr = note.getBoundingClientRect();
+      if (!r) return;
+
+      const proseRight = prose.getBoundingClientRect().right;
+
+      // A short tick from the span to the column edge, then a curve through the gutter.
+      // Starting at the column edge keeps every leader out of the text.
+      const tickX = proseRight - mainBox.left + main.scrollLeft + 8;
+      const y1 = r.bottom - mainBox.top + main.scrollTop - 3;
+      const x2 = nr.left + 6 - mainBox.left + main.scrollLeft;
+      const y2 = nr.top + 20 - mainBox.top + main.scrollTop;
+
+      const startX = Math.min(r.right - mainBox.left + main.scrollLeft + 2, tickX);
+      const mid = tickX + (x2 - tickX) * 0.5;
+      const d = `M ${startX} ${y1} L ${tickX} ${y1} C ${mid} ${y1}, ${mid} ${y2}, ${x2} ${y2}`;
+
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', d);
+      p.dataset.note = mk.dataset.note;
+      svg.appendChild(p);
+    });
+  }
+
+  /* ---- hover pairing: the relationship becomes spatial ---- */
+  function setActive(id, on) {
+    marks.forEach(m => { if (m.dataset.note === id) m.style.background = on ? 'var(--tint)' : ''; });
+    notes.forEach(n => n.classList.toggle('active', on && n.dataset.note === id));
+    svg.querySelectorAll('path').forEach(p => p.classList.toggle('active', on && p.dataset.note === id));
+  }
+  [...marks, ...notes].forEach(el => {
+    el.addEventListener('mouseenter', () => setActive(el.dataset.note, true));
+    el.addEventListener('mouseleave', () => setActive(el.dataset.note, false));
+  });
+
+  /* ---- rehearsal: play the classroom click sequence ---- */
+  let step = -1;
+  const order = ['n1', 'n2', 'n3'];
+
+  function setState(id, state) {
+    document.querySelectorAll(`[data-note="${id}"]`).forEach(el => el.dataset.state = state);
+  }
+  function reset(state) { order.forEach(id => setState(id, state)); }
+
+  function startRehearsal() {
+    document.body.classList.add('rehearsing');
+    reset('hidden');
+    step = -1;
+    status.classList.add('on');
+    advance();
+  }
+  function advance() {
+    step++;
+    if (step >= order.length) return endRehearsal();
+    setState(order[step], 'shown');
+    status.textContent = `리허설 ${step + 1} / ${order.length} — 클릭하면 다음`;
+  }
+  function endRehearsal() {
+    document.body.classList.remove('rehearsing');
+    status.classList.remove('on');
+    reset('shown');
+    step = -1;
+  }
+
+  document.getElementById('rehearse').addEventListener('click', (e) => {
+    e.stopPropagation();
+    startRehearsal();
+  });
+  document.addEventListener('click', () => {
+    if (document.body.classList.contains('rehearsing')) advance();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'r' || e.key === 'R') startRehearsal();
+    if (e.key === 'Escape') endRehearsal();
+  });
+
+  window.addEventListener('resize', drawLeaders);
+  document.fonts && document.fonts.ready.then(drawLeaders);
+  drawLeaders();
+  setTimeout(drawLeaders, 60);
+</script>
+</body>
+</html>
