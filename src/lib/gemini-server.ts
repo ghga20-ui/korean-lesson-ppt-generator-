@@ -222,6 +222,27 @@ async function callGeminiApi(
   catch { throw new Error("응답 형식 오류입니다."); }
 }
 
+async function callGeminiApiWithRetry(
+  pdfData: { base64: string } | { fileUri: string },
+  prompt: string,
+  apiKey: string,
+  round: number = 1,
+): Promise<{ text?: string; annotations?: Array<{ targetText: string; content: string; markerType: string }> }> {
+  try {
+    return await callGeminiApi(pdfData, prompt, apiKey, round);
+  } catch (err) {
+    const msg = (err as Error).message ?? "";
+    // elapsed time in timeout message is 110+ seconds → matches /(\d{3,}\.\d/
+    const isTimeout = /\(\d{3,}\.\d/.test(msg);
+    if (isTimeout) {
+      console.log(`[Gemini] Round ${round} 타임아웃 — 3초 후 재시도`);
+      await new Promise(r => setTimeout(r, 3_000));
+      return callGeminiApi(pdfData, prompt, apiKey, round);
+    }
+    throw err;
+  }
+}
+
 function parseAnnotations(
   raw: { annotations?: Array<{ targetText: string; content: string; markerType: string }> },
 ): ExtractedAnnotation[] {
@@ -275,7 +296,7 @@ export async function extractFromPdfServer(
     ? buildModeCPrompt(options.userText || "", options.genre)
     : buildModeAPrompt(options.genre);
 
-  const round1Raw = await callGeminiApi(pdfData, prompt, apiKey);
+  const round1Raw = await callGeminiApiWithRetry(pdfData, prompt, apiKey);
   const round1Annotations = parseAnnotations(round1Raw);
   const extractedText = round1Raw.text || "";
   const sourceText = options.mode === "C" ? (options.userText || "") : extractedText;
@@ -286,7 +307,7 @@ export async function extractFromPdfServer(
   // Round 2 — 미매칭 주석이 있을 때만 실행 (타임아웃 방지)
   if (sourceText.length > 0 && unmatched.length > 0) {
     const round2Prompt = buildRound2Prompt(sourceText, options.genre, round1Annotations, unmatched);
-    const round2Raw = await callGeminiApi(pdfData, round2Prompt, apiKey, 2);
+    const round2Raw = await callGeminiApiWithRetry(pdfData, round2Prompt, apiKey, 2);
     const round2Annotations = parseAnnotations(round2Raw);
     return { text: extractedText, annotations: round2Annotations };
   }
