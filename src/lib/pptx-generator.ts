@@ -17,8 +17,6 @@ import {
   MARKER_COLOR,
   UNDERLINE_LINE_WIDTH,
   SHAPE_LINE_WIDTH,
-  SHAPE_Y_OFFSET,
-  BRACKET_SYMBOL_FONT_SIZE,
   ANNOTATION_Y_GAP,
   ANNOTATION_TEXT_HEIGHT,
   MIN_ANNOTATION_WIDTH,
@@ -26,9 +24,12 @@ import {
   SUMMARY_BORDER_COLOR,
   SUMMARY_BOX_HEIGHT,
   SUMMARY_BOX_BOTTOM_OFFSET,
-  GLYPH_Y_OFFSET_BRACKET_TOP,
-  GLYPH_Y_OFFSET_BRACKET_BOTTOM,
   LINE_DRIFT_CORRECTION,
+  BASELINE_OFFSET_EM,
+  BASELINE_LS_COEF,
+  BRACKET_X_INSET_EM,
+  BRACKET_OPEN_RISE_EM,
+  BRACKET_CLOSE_DROP_EM,
   MULTI_LINE_ANNOTATION_OFFSET,
   GAP_BIAS_FACTOR,
 } from "./pptx-constants";
@@ -84,7 +85,6 @@ function getShapeType(
 function buildSlide(
   pptx: PptxGenJS,
   slideData: SlideData,
-  genre: Genre,
   settings: PptSettings,
 ): number[] {
   const slide = pptx.addSlide();
@@ -148,7 +148,6 @@ function buildSlide(
         annotation.startIndex,
         annotation.endIndex,
         settings,
-        genre,
       );
 
       for (const seg of segments) {
@@ -174,16 +173,18 @@ function buildSlide(
       const endPos = estimateTextPosition(
         slideData.text, annotation.endIndex - 1, annotation.endIndex, settings,
       );
-      const symbolSize = BRACKET_SYMBOL_FONT_SIZE / 72;
-      const brs = settings.fontSize / 36;
+      // 기호는 본문과 같은 크기로 스케일한다. 고정 36pt는 44pt 본문에서
+      // 왜소해지고 24pt 본문을 압도했다(실측: 잉크 높이가 본문 크기와 무관하게 ~21px).
+      const emInch = settings.fontSize / 72;
+      const symbolSize = emInch;
 
-      // 「 above-left of the start position
+      // 「 — 시작 글자의 잉크 top 좌상단
       slide.addText("「", {
-        x: startPos.x - 0.22,
-        y: startPos.y + SHAPE_Y_OFFSET + GLYPH_Y_OFFSET_BRACKET_TOP * brs,
+        x: startPos.x - BRACKET_X_INSET_EM * emInch,
+        y: startPos.y - BRACKET_OPEN_RISE_EM * emInch,
         w: symbolSize,
         h: symbolSize,
-        fontSize: BRACKET_SYMBOL_FONT_SIZE,
+        fontSize: settings.fontSize,
         fontFace: settings.fontFamily,
         bold: true,
         color,
@@ -193,13 +194,13 @@ function buildSlide(
         margin: 0,
       });
 
-      // 」 below-right of the end position
+      // 」 — 끝 글자의 baseline 우하단
       slide.addText("」", {
-        x: endPos.x + endPos.w - 0.22,
-        y: endPos.y + endPos.h + SHAPE_Y_OFFSET + GLYPH_Y_OFFSET_BRACKET_BOTTOM * brs,
+        x: endPos.x + endPos.w - BRACKET_X_INSET_EM * emInch,
+        y: endPos.baseline + BRACKET_CLOSE_DROP_EM * emInch - symbolSize,
         w: symbolSize,
         h: symbolSize,
-        fontSize: BRACKET_SYMBOL_FONT_SIZE,
+        fontSize: settings.fontSize,
         fontFace: settings.fontFamily,
         bold: true,
         color,
@@ -210,7 +211,7 @@ function buildSlide(
       });
 
       markerShapeCount = 2;
-      shapeBottomY = endPos.y + endPos.h + SHAPE_Y_OFFSET + 0.02 + symbolSize * 0.65;
+      shapeBottomY = endPos.baseline + BRACKET_CLOSE_DROP_EM * emInch;
       shapeLeftX = startPos.x;
       shapeWidth = pos.w;
     } else if (annotation.markerType === "summary") {
@@ -232,7 +233,7 @@ function buildSlide(
       shapeLeftX = summaryBoxX;
       shapeWidth = summaryBoxW;
     } else {
-      const geom = getShapeGeometry(annotation.markerType, pos, settings.fontSize, genre);
+      const geom = getShapeGeometry(annotation.markerType, pos, settings.fontSize);
       const shapeType = getShapeType(annotation.markerType, pptx);
       slide.addShape(shapeType, {
         x: geom.x,
@@ -273,26 +274,21 @@ function buildSlide(
     // not the shape bottom, so all marker types produce the same text Y.
     const lineStepInch =
       (settings.fontSize * metrics.lineStepRatio * settings.lineSpacing) / 72;
-    const lineHeightInch = (settings.fontSize * settings.lineSpacing) / 72;
-    const charHeightInch = settings.fontSize / 72;
+    const emInch = settings.fontSize / 72;
     const totalLines = slideData.text.split("\n").length;
 
-    // Determine which line the annotation sits on
-    let annotLine: number;
-    if (annotation.markerType === "underline") {
-      annotLine = Math.round(
-        (shapeBottomY - lineHeightInch - TEXT_TOP_MARGIN) / lineStepInch,
-      );
-    } else {
-      annotLine = Math.round((pos.y - TEXT_TOP_MARGIN) / lineStepInch);
-    }
-    const spanLines = Math.max(1, Math.round((pos.h) / charHeightInch));
-    const isMultiLine = spanLines > 1;
+    // 밑줄은 마지막 줄(끝 세그먼트) 아래, 나머지는 시작 줄 아래에 주석을 단다.
+    const annotLine =
+      annotation.markerType === "underline" ? pos.endLine : pos.startLine;
+    const isMultiLine = pos.endLine > pos.startLine;
     const isLastLine = annotLine >= totalLines - 1;
 
-    // Consistent glyph bottom reference (independent of shape padding)
+    // Consistent glyph bottom reference: baseline(annotLine).
     const glyphBottomY =
-      TEXT_TOP_MARGIN + annotLine * lineStepInch + charHeightInch + SHAPE_Y_OFFSET;
+      TEXT_TOP_MARGIN +
+      annotLine * lineStepInch -
+      annotLine * LINE_DRIFT_CORRECTION +
+      (BASELINE_OFFSET_EM + BASELINE_LS_COEF * settings.lineSpacing) * emInch;
 
     let annotTextY: number;
     if (isLastLine) {
@@ -376,7 +372,7 @@ export async function generatePptxBuffer(
   const slideShapeCounts: number[][] = [];
 
   for (const slideData of slides) {
-    const counts = buildSlide(pptx, slideData, genre, s);
+    const counts = buildSlide(pptx, slideData, s);
     slideShapeCounts.push(counts);
   }
 

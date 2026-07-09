@@ -27,25 +27,29 @@ export const MAIN_TEXT_COLOR = "222222";
 /** Slide background colour (white). */
 export const SLIDE_BG_COLOR = "FFFFFF";
 
-/** Font family for all text. */
-export const FONT_FAMILY = "한컴산뜻돋움";
-
 /** Font size for annotation text (pt). */
 export const ANNOTATION_FONT_SIZE = 28;
 
-/**
- * Empirically calibrated line-step ratio for PowerPoint rendering.
- * PowerPoint's actual line-to-line distance is slightly smaller than
- * FONT_LINE_HEIGHT_RATIO predicts, causing cumulative Y drift on later lines.
- * Tuned to eliminate per-line drift across 4+ lines of text.
- */
-export const PPT_LINE_STEP_RATIO = 1.22;
+// ---------------------------------------------------------------------------
+// Baseline 모델
+//
+// 실제 PowerPoint 렌더 42셀(scripts/golden/data/*.json)을 최소제곱 적합한
+// 글자 배치 모델. fontSize 24~44pt x lineSpacing 1.2~2.2 전 구간에서
+// 최대 잔차 2.3px(px/inch=96.02 기준).
+//
+//   baseline(line) = TEXT_TOP_MARGIN
+//                  + (BASELINE_OFFSET_EM + BASELINE_LS_COEF * lineSpacing) * em
+//                  + line * lineStep - line * LINE_DRIFT_CORRECTION
+//   em = fontSize / 72 [in],  lineStep = fontSize * metrics.lineStepRatio * lineSpacing / 72
+//
+// 한글은 받침 아래 디센더가 없어 글자 잉크 바닥 ~= baseline.
+// ---------------------------------------------------------------------------
 
-/**
- * Font line-height ratio: (usWinAscent + usWinDescent) / unitsPerEm.
- * Read from 한컴산뜻돋움 Bold font file: (1000 + 300) / 1000 = 1.3.
- */
-export const FONT_LINE_HEIGHT_RATIO = 1.3;
+export const BASELINE_OFFSET_EM = 0.130;
+export const BASELINE_LS_COEF = 0.896;
+
+/** baseline 위 한글 잉크 높이(보수적 최대). 실측 0.844~0.903em. */
+export const CAP_HEIGHT_EM = 0.90;
 
 // ---------------------------------------------------------------------------
 // Marker / Annotation Shapes
@@ -60,18 +64,29 @@ export const UNDERLINE_LINE_WIDTH = 3;
 /** Line width for circle / rectangle / triangle / bracket shapes (pt). */
 export const SHAPE_LINE_WIDTH = 3;
 
-/** Padding around circle / rectangle shapes (inches). */
-export const SHAPE_PADDING = 0.08;
+// ---------------------------------------------------------------------------
+// 마커 오프셋 (전부 em 비율 — 절대 인치는 폰트 크기가 바뀌면 틀어진다)
+// ---------------------------------------------------------------------------
 
 /**
- * Vertical offset applied to all marker shapes so they align with the
- * actual glyph body instead of the top of the text line box.
- * PowerPoint text rendering places glyphs below pos.y due to internal leading.
+ * 밑줄 stroke의 baseline 아래 오프셋(em).
+ * 소유자 실물 관측: 기존 0.083em은 "조금 높다" → 0.16em으로 하강.
+ * 렌더된 bar 상단이 글자 바닥에서 0.12~0.17em 아래에 균일하게 앉는다.
  */
-export const SHAPE_Y_OFFSET = 0.04;
+export const UNDERLINE_GAP_EM = 0.16;
 
-/** Font size for bracket symbols 「」 (pt). */
-export const BRACKET_SYMBOL_FONT_SIZE = 36;
+/** 감싸기 도형 패딩(em). */
+export const RECT_PAD_EM = 0.12;
+export const RECT_PAD_X_EM = 0.08;
+export const CIRCLE_PAD_EM = 0.22; // 타원은 모서리 여유 필요(수평=수직)
+export const TRIANGLE_TOP_PAD_EM = 0.38; // apex 공간
+export const TRIANGLE_BOTTOM_PAD_EM = 0.10;
+export const TRIANGLE_PAD_X_EM = 0.10;
+
+/** 브라켓 「」 — 본문 크기로 스케일되는 텍스트 글리프. */
+export const BRACKET_X_INSET_EM = 0.44;
+export const BRACKET_OPEN_RISE_EM = 0.20;
+export const BRACKET_CLOSE_DROP_EM = 0.05;
 
 // ---------------------------------------------------------------------------
 // Annotation Text Positioning
@@ -102,44 +117,13 @@ export const SUMMARY_BOX_HEIGHT = 0.55;
 /** Bottom offset of the summary box from slide bottom (inches). */
 export const SUMMARY_BOX_BOTTOM_OFFSET = 0.2;
 
-// ---------------------------------------------------------------------------
-// Per-Font Y-Offset Calibration
-// ---------------------------------------------------------------------------
-
 /**
- * Glyph vertical offset for circle/rectangle/triangle markers.
- * This value is calibrated at 36pt font size; scale proportionally
- * for other sizes via: offset * (fontSize / 36).
- */
-export const GLYPH_Y_OFFSET_CIRCLE = 0.34;
-export const GLYPH_Y_OFFSET_RECTANGLE = 0.34;
-export const GLYPH_Y_OFFSET_TRIANGLE = 0.22;
-export const GLYPH_Y_OFFSET_BRACKET_TOP = 0.28;
-export const GLYPH_Y_OFFSET_BRACKET_BOTTOM = -0.24;
-
-/**
- * Underline Y positioning: base offset from text top (inches).
- * Added to the line step to position the underline below each text line.
- */
-export const UNDERLINE_Y_BASE_OFFSET = 0.40;
-
-/**
- * Per-line cumulative Y drift correction.
+ * Per-line cumulative Y drift correction (inches).
  * Subtracted as `lineNumber * LINE_DRIFT_CORRECTION` from Y positions
  * to compensate for PowerPoint's line spacing rounding.
+ * 알려진 잔차: fs44 · 2번째 줄에서 ~2px 과보정 (허용치 0.25em 대비 무해).
  */
 export const LINE_DRIFT_CORRECTION = 0.015;
-
-/**
- * Prose (novel) underline Y correction (inches). Negative = up.
- */
-export const PROSE_UNDERLINE_Y_CORRECTION = -0.05;
-
-/**
- * Prose (novel) shape (circle / rectangle / triangle) Y correction (inches).
- * Slightly less negative than underline so shapes sit a bit lower. Negative = up.
- */
-export const PROSE_SHAPE_Y_CORRECTION = -0.02;
 
 /**
  * Multi-line annotation vertical offset (inches).
