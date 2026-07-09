@@ -256,6 +256,8 @@ export function mergeSlides(
   const separator = "\n";
   const firstLen = first.text.length + separator.length;
 
+  // 두 슬라이드 모두 order가 1부터 매겨져 있으므로, 그대로 이으면 값이 중복된다.
+  // 클릭 애니메이션은 order로 등장 순서를 정한다 — 병합 후 다시 매긴다.
   const merged: SlideData = {
     id: first.id,
     text: first.text + separator + second.text,
@@ -266,7 +268,7 @@ export function mergeSlides(
         startIndex: a.startIndex + firstLen,
         endIndex: a.endIndex + firstLen,
       })),
-    ],
+    ].map((a, i) => ({ ...a, order: i + 1 })),
   };
 
   const newSlides = [...slides];

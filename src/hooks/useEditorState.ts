@@ -22,6 +22,12 @@ interface SavedProject {
   slides: SlideData[];
   currentSlideIndex: number;
   savedAt: string;
+  /** 이 필드가 없던 시절의 저장 파일을 그대로 열 수 있어야 하므로 optional. */
+  pptSettings?: PptSettings;
+}
+
+function defaultSettingsFor(genre: Genre): PptSettings {
+  return genre === "poetry" ? { ...DEFAULT_POETRY_SETTINGS } : { ...DEFAULT_NOVEL_SETTINGS };
 }
 
 function loadSavedProject(genre: Genre): SavedProject | null {
@@ -150,9 +156,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [clipboardAnnotation, setClipboardAnnotation] = useState<Annotation | null>(null);
-  const [pptSettings, setPptSettings] = useState<PptSettings>(
-    genre === "poetry" ? { ...DEFAULT_POETRY_SETTINGS } : { ...DEFAULT_NOVEL_SETTINGS }
-  );
+  const [pptSettings, setPptSettings] = useState<PptSettings>(() => defaultSettingsFor(genre));
   const [inputMode, setInputMode] = useState<InputMode>("C");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -170,10 +174,10 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     if (step !== "annotate" || slides.length === 0) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      saveProject({ genre, fullText, slides, currentSlideIndex, savedAt: new Date().toISOString() });
+      saveProject({ genre, fullText, slides, currentSlideIndex, pptSettings, savedAt: new Date().toISOString() });
     }, SAVE_DEBOUNCE_MS);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [slides, currentSlideIndex, step, genre, fullText]);
+  }, [slides, currentSlideIndex, step, genre, fullText, pptSettings]);
 
   // ---- Restore on mount --------------------------------------------------
   useEffect(() => {
@@ -184,6 +188,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
         setFullText(saved.fullText);
         setSlides(saved.slides);
         setCurrentSlideIndex(saved.currentSlideIndex);
+        setPptSettings(saved.pptSettings ?? defaultSettingsFor(genre));
         history.reset(saved.slides);
         setStep("annotate");
       } else {
@@ -455,15 +460,16 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
 
   // ---- Export / Import ---------------------------------------------------
   const exportProject = useCallback(() => {
-    downloadJson({ genre, fullText, slides, currentSlideIndex, savedAt: new Date().toISOString() });
+    downloadJson({ genre, fullText, slides, currentSlideIndex, pptSettings, savedAt: new Date().toISOString() });
     showToast("프로젝트가 저장되었습니다");
-  }, [genre, fullText, slides, currentSlideIndex, showToast]);
+  }, [genre, fullText, slides, currentSlideIndex, pptSettings, showToast]);
 
   const importProject = useCallback(async (file: File) => {
     try {
       const data = await readJsonFile(file);
       setFullText(data.fullText);
       setSlides(data.slides);
+      setPptSettings(data.pptSettings ?? defaultSettingsFor(genre));
       history.reset(data.slides);
       setCurrentSlideIndex(data.currentSlideIndex || 0);
       setStep("annotate");
@@ -471,7 +477,7 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
     } catch {
       alert("잘못된 프로젝트 파일입니다.");
     }
-  }, [history, showToast]);
+  }, [history, showToast, genre]);
 
   return {
     // State
