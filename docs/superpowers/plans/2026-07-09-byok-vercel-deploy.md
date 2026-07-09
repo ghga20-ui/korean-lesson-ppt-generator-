@@ -110,6 +110,18 @@ Expected: `200` (더미 바이트라 파일 처리는 FAILED여도 무방 — CO
 - Step 3 File API 업로드 세션 → **CORS 차단**. 콘솔: `Access to fetch ... blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present`.
 - Step 4는 업로드 URL 미획득으로 수행 불가.
 
+**근본 원인 (Task 9 프로덕션 검증 중 정밀 규명):** 엔드포인트가 브라우저를 통째로 막는 것이 아니다. `curl`로 확인한 결과 —
+
+| 요청 | 결과 |
+|------|------|
+| `OPTIONS /upload/v1beta/files` (쿼리 없음) | 200 + `Access-Control-Allow-Origin` |
+| `OPTIONS /upload/v1beta/files?key=...&uploadType=resumable` | **403, CORS 헤더 없음** |
+| `OPTIONS /v1beta/models/...:generateContent?key=...` | 200 + `Access-Control-Allow-Origin` |
+
+즉 업로드 엔드포인트는 **preflight(OPTIONS)에 API 키가 쿼리스트링으로 붙으면 403을 반환**하고, 그래서 브라우저가 실제 요청을 보내지 못한다. `generateContent`는 같은 조건에서 정상 통과하므로 인라인 경로는 안전하다. (설령 preflight를 우회해도 `X-Goog-Upload-URL` 응답 헤더가 `Access-Control-Expose-Headers`에 없어 JS가 업로드 URL을 읽을 수 없다 — 이중으로 불가능하다.)
+
+결론은 그대로 `FILE_API_SUPPORTED = false`.
+
 결론: File API 분기를 **제거**한다. Task 4는 `FILE_API_SUPPORTED = false`, `uploadPdfToGeminiFile` import 없이 구현하고, Task 7에서 `gemini-file-upload.ts`를 삭제한다. 12MB 초과 PDF는 "페이지 범위를 더 좁게 추출" 안내 메시지로 거부한다.
 
 ---
@@ -1166,6 +1178,8 @@ git push origin main
 - HTTPS 프로덕션 오리진에서 Gemini CORS 호출 정상 여부
 - PPTX 다운로드 정상 여부 (`/api/generate-pptx` Vercel 함수)
 - 시크릿 창(키 없음)에서 Mode B 완주
+
+**배포 결과 (2026-07-09 완료):** `https://project1-ppt-generator.vercel.app` (Vercel 프로젝트 `sejunparks-projects-fcff9bbd/project1-ppt-generator`, GitHub 자동 배포 연결). 환경변수 0개로 빌드 성공. 프로덕션 검증 통과 — 삭제된 라우트 5개 전부 404, 키 없이 Mode B + PPTX(52KB) 완주, 실물 1.9MB 교과서 PDF로 Mode A 추출 시 `generateContent` 직접 호출 1회·동일 오리진 호출은 `/api/generate-pptx` 뿐, 15슬라이드 + 주석 6개, PPTX 68KB 유효 OOXML.
 
 - [ ] **Step 4: README에 배포 URL 추가 후 커밋·푸시**
 
