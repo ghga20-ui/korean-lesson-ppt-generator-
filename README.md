@@ -28,10 +28,9 @@
 - **Tailwind CSS**
 - **pptxgenjs** — PPTX 생성
 - **pdf-lib** — PDF 페이지 처리
-- **Gemini API** — PDF 주석 OCR 추출 (서버 사이드)
-- **@vercel/blob** — PDF 업로드 임시 저장
+- **Gemini API** — PDF 주석 추출 (브라우저에서 본인 키로 직접 호출, BYOK)
 - **나눔바른고딕 옛한글** — 옛한글 렌더링 폰트 (로컬 호스팅)
-- **Railway** — 배포
+- **Vercel** — 배포
 
 ## 설치 및 실행
 
@@ -40,13 +39,15 @@ npm install
 npm run dev
 ```
 
-환경 변수 설정 (`.env.local`):
+## API 키 (PDF 주석 추출용)
 
-```
-GEMINI_API_KEY=your-api-key-here
-```
+PDF 주석 추출(Mode A/C)은 본인의 Gemini API 키가 필요합니다 — 서버에 키를 두지 않는 BYOK 방식입니다.
 
-> PDF 주석 추출(Mode A/C) 기능에만 필요합니다.
+1. [Google AI Studio](https://aistudio.google.com/apikey)에서 무료 키 발급
+2. 앱 입력 화면의 **키 설정** 버튼에 붙여넣기
+3. 키는 브라우저(localStorage)에만 저장되며 서버로 전송되지 않습니다
+
+> 직접 입력(Mode B)과 PPT 생성은 키 없이 사용할 수 있습니다.
 
 ## 프로젝트 구조
 
@@ -56,13 +57,12 @@ src/
 │   ├── page.tsx                # 홈 (텍스트 유형 선택)
 │   ├── editor/page.tsx         # 에디터 페이지
 │   └── api/
-│       ├── extract/            # Gemini 주석 추출
 │       ├── generate-pptx/      # PPTX 생성
-│       ├── generate-html/      # HTML 프레젠테이션
-│       └── upload-pdf/         # PDF 업로드 처리
+│       └── generate-html/      # HTML 프레젠테이션
 ├── components/
 │   ├── AnnotateStep.tsx        # 슬라이드 목록 + 편집 레이아웃
 │   ├── AnnotationEditor.tsx    # 주석 편집기 (선택·마커·순서·요약)
+│   ├── ApiKeySettings.tsx      # Gemini API 키 입력/저장 모달
 │   ├── BatchEditPanel.tsx      # 주석 일괄 편집
 │   ├── InputStep.tsx           # 텍스트 입력 단계
 │   ├── ModeSelector.tsx        # 입력 모드 선택
@@ -80,7 +80,9 @@ src/
     ├── pptx-constants.ts       # 폰트·슬라이드 상수
     ├── slide-splitter.ts       # 슬라이드 자동 분할
     ├── annotation-matcher.ts   # 주석↔텍스트 매칭
-    ├── gemini-server.ts        # Gemini API 서버 호출
+    ├── gemini-client.ts        # 브라우저에서 Gemini API 직접 호출 (BYOK)
+    ├── api-key-storage.ts      # API 키·모델 localStorage 저장
+    ├── gemini-models.ts        # 선택 가능한 Gemini 모델 목록
     └── font-metrics.ts         # 폰트 메트릭스 계산
 
 NanumBarunGothicYetHangul/
