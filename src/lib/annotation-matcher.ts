@@ -14,15 +14,20 @@ function normalize(text: string): string {
 }
 
 /**
- * Try to find targetText in fullText. Returns start index or -1.
+ * Try to find targetText in fullText at or after `from`. Returns start index or -1.
  * First tries exact match, then normalized match.
+ *
+ * `from` lets the caller walk successive occurrences: the teacher's edition
+ * annotates repeated words (구보, 그) separately, and each annotation must land
+ * on its own occurrence rather than all piling onto the first.
  */
 function findInText(
   fullText: string,
-  targetText: string
+  targetText: string,
+  from: number = 0
 ): { start: number; end: number } | null {
   // Exact match
-  const exactIdx = fullText.indexOf(targetText);
+  const exactIdx = fullText.indexOf(targetText, from);
   if (exactIdx !== -1) {
     return { start: exactIdx, end: exactIdx + targetText.length };
   }
@@ -32,15 +37,30 @@ function findInText(
   const normTarget = normalize(targetText);
   if (!normTarget) return null;
 
-  const normIdx = normFull.indexOf(normTarget);
-  if (normIdx === -1) return null;
+  // Walk every normalized occurrence and keep the first one that starts at or
+  // after `from` in the ORIGINAL string. Normalized and original indices differ
+  // wherever whitespace was collapsed, so the check must happen after mapping.
+  for (let normIdx = normFull.indexOf(normTarget); normIdx !== -1; normIdx = normFull.indexOf(normTarget, normIdx + 1)) {
+    const span = mapNormSpanToOriginal(fullText, normIdx, normTarget.length);
+    if (span && span.start >= from) return span;
+  }
 
-  // Map normalized index back to original index
+  return null;
+}
+
+/**
+ * Map a span in the normalized string back to indices in the original string.
+ */
+function mapNormSpanToOriginal(
+  fullText: string,
+  normIdx: number,
+  normTargetLen: number
+): { start: number; end: number } | null {
   let normPos = 0;
   let origStart = -1;
   let origEnd = -1;
 
-  for (let i = 0; i < fullText.length && normPos <= normIdx + normTarget.length; i++) {
+  for (let i = 0; i < fullText.length && normPos <= normIdx + normTargetLen; i++) {
     const ch = fullText[i];
     // Skip extra whitespace in original (normalized collapses to single space)
     if (/\s/.test(ch)) {
@@ -49,7 +69,7 @@ function findInText(
       while (j < fullText.length && /\s/.test(fullText[j])) j++;
       if (normPos === normIdx) origStart = i;
       normPos++; // one space in normalized
-      if (normPos === normIdx + normTarget.length) {
+      if (normPos === normIdx + normTargetLen) {
         origEnd = j > i + 1 ? i + 1 : j;
         break;
       }
@@ -57,14 +77,9 @@ function findInText(
       continue;
     }
 
-    // Normalize quotes
-    let normCh = ch;
-    if (ch === "\u2018" || ch === "\u2019") normCh = "'";
-    else if (ch === "\u201C" || ch === "\u201D") normCh = '"';
-
     if (normPos === normIdx) origStart = i;
     normPos++;
-    if (normPos === normIdx + normTarget.length) {
+    if (normPos === normIdx + normTargetLen) {
       origEnd = i + 1;
       break;
     }
@@ -93,9 +108,17 @@ export function matchAnnotationsToText(
   const matched: Annotation[] = [];
   const unmatched: ExtractedAnnotation[] = [];
 
+  // Annotations arrive in reading order, so the Nth annotation carrying a given
+  // targetText belongs to that word's Nth occurrence. Without this cursor every
+  // annotation on a repeated word (구보, 그) collapses onto the first occurrence,
+  // and the duplicates are silently dropped at render time.
+  const searchFrom = new Map<string, number>();
+
   extracted.forEach((ext, idx) => {
-    const found = findInText(fullText, ext.targetText);
+    const from = searchFrom.get(ext.targetText) ?? 0;
+    const found = findInText(fullText, ext.targetText, from);
     if (found) {
+      searchFrom.set(ext.targetText, found.start + 1);
       matched.push({
         id: `ext-${idx}-${Date.now()}`,
         startIndex: found.start,
@@ -140,24 +163,39 @@ export function distributeAnnotationsToSlides(
     for (const ann of annotations) {
       // Summary annotations anchor to the end of their target text
       // so they land on the last slide of their paragraph/stanza
-      let belongs: boolean;
       if (ann.markerType === "summary") {
         const anchor = ann.endIndex - 1;
-        belongs = anchor >= slideStart && anchor < slideEnd;
-      } else {
-        belongs = ann.startIndex >= slideStart && ann.startIndex < slideEnd;
+        if (anchor >= slideStart && anchor < slideEnd) {
+          slideAnnotations.push({
+            ...ann,
+            id: `${slide.id}-ann-${slideAnnotations.length}`,
+            startIndex: ann.startIndex - slideStart,
+            endIndex: Math.min(ann.endIndex, slideEnd) - slideStart,
+            targetText: slide.text.slice(
+              ann.startIndex - slideStart,
+              Math.min(ann.endIndex, slideEnd) - slideStart
+            ),
+            order: slideAnnotations.length + 1,
+          });
+        }
+        continue;
       }
 
-      if (belongs) {
+      // A marker may span a slide boundary. Draw its shape on every slide it
+      // overlaps, clipped to that slide, but attach the explanation text only
+      // to the slide where the annotation begins — otherwise the same sentence
+      // is projected twice.
+      const from = Math.max(ann.startIndex, slideStart);
+      const to = Math.min(ann.endIndex, slideEnd);
+      if (from < to) {
+        const startsHere = ann.startIndex >= slideStart && ann.startIndex < slideEnd;
         slideAnnotations.push({
           ...ann,
           id: `${slide.id}-ann-${slideAnnotations.length}`,
-          startIndex: ann.startIndex - slideStart,
-          endIndex: Math.min(ann.endIndex, slideEnd) - slideStart,
-          targetText: slide.text.slice(
-            ann.startIndex - slideStart,
-            Math.min(ann.endIndex, slideEnd) - slideStart
-          ),
+          startIndex: from - slideStart,
+          endIndex: to - slideStart,
+          targetText: slide.text.slice(from - slideStart, to - slideStart),
+          content: startsHere ? ann.content : "",
           order: slideAnnotations.length + 1,
         });
       }
