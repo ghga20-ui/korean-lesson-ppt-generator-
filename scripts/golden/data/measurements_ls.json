@@ -1,0 +1,185 @@
+{
+ "pxPerInch": 96.02400600150037,
+ "cases": [
+  {
+   "lineSpacing": 1.2,
+   "fontSize": 36,
+   "markerType": "underline",
+   "targetGlyphBox": {
+    "x0": 256,
+    "x1": 381,
+    "y0": 34,
+    "y1": 77
+   },
+   "shapeBBox": {
+    "x0": 52,
+    "x1": 386,
+    "y0": 33,
+    "y1": 110
+   },
+   "shapeBars": [
+    {
+     "x0": 252,
+     "x1": 386,
+     "y0": 107,
+     "y1": 110
+    }
+   ],
+   "png": "ls_1.2_underline.png"
+  },
+  {
+   "lineSpacing": 1.2,
+   "fontSize": 36,
+   "markerType": "circle",
+   "targetGlyphBox": {
+    "x0": 256,
+    "x1": 381,
+    "y0": 34,
+    "y1": 77
+   },
+   "shapeBBox": {
+    "x0": 52,
+    "x1": 394,
+    "y0": 33,
+    "y1": 112
+   },
+   "shapeBars": [],
+   "png": "ls_1.2_circle.png"
+  },
+  {
+   "lineSpacing": 1.5,
+   "fontSize": 36,
+   "markerType": "underline",
+   "targetGlyphBox": {
+    "x0": 256,
+    "x1": 381,
+    "y0": 47,
+    "y1": 90
+   },
+   "shapeBBox": {
+    "x0": 252,
+    "x1": 386,
+    "y0": 107,
+    "y1": 110
+   },
+   "shapeBars": [
+    {
+     "x0": 252,
+     "x1": 386,
+     "y0": 107,
+     "y1": 110
+    }
+   ],
+   "png": "ls_1.5_underline.png"
+  },
+  {
+   "lineSpacing": 1.5,
+   "fontSize": 36,
+   "markerType": "circle",
+   "targetGlyphBox": {
+    "x0": 256,
+    "x1": 381,
+    "y0": 47,
+    "y1": 90
+   },
+   "shapeBBox": {
+    "x0": 242,
+    "x1": 394,
+    "y0": 46,
+    "y1": 112
+   },
+   "shapeBars": [],
+   "png": "ls_1.5_circle.png"
+  },
+  {
+   "lineSpacing": 1.8,
+   "fontSize": 36,
+   "markerType": "underline",
+   "targetGlyphBox": {
+    "x0": 256,
+    "x1": 381,
+    "y0": 60,
+    "y1": 103
+   },
+   "shapeBBox": {
+    "x0": 252,
+    "x1": 386,
+    "y0": 107,
+    "y1": 110
+   },
+   "shapeBars": [
+    {
+     "x0": 252,
+     "x1": 386,
+     "y0": 107,
+     "y1": 110
+    }
+   ],
+   "png": "ls_1.8_underline.png"
+  },
+  {
+   "lineSpacing": 1.8,
+   "fontSize": 36,
+   "markerType": "circle",
+   "targetGlyphBox": {
+    "x0": 256,
+    "x1": 381,
+    "y0": 60,
+    "y1": 103
+   },
+   "shapeBBox": {
+    "x0": 57,
+    "x1": 394,
+    "y0": 46,
+    "y1": 112
+   },
+   "shapeBars": [],
+   "png": "ls_1.8_circle.png"
+  },
+  {
+   "lineSpacing": 2.2,
+   "fontSize": 36,
+   "markerType": "underline",
+   "targetGlyphBox": {
+    "x0": 256,
+    "x1": 381,
+    "y0": 77,
+    "y1": 120
+   },
+   "shapeBBox": {
+    "x0": 252,
+    "x1": 386,
+    "y0": 107,
+    "y1": 110
+   },
+   "shapeBars": [
+    {
+     "x0": 252,
+     "x1": 386,
+     "y0": 107,
+     "y1": 110
+    }
+   ],
+   "png": "ls_2.2_underline.png"
+  },
+  {
+   "lineSpacing": 2.2,
+   "fontSize": 36,
+   "markerType": "circle",
+   "targetGlyphBox": {
+    "x0": 256,
+    "x1": 381,
+    "y0": 77,
+    "y1": 120
+   },
+   "shapeBBox": {
+    "x0": 214,
+    "x1": 394,
+    "y0": 46,
+    "y1": 112
+   },
+   "shapeBars": [],
+   "png": "ls_2.2_circle.png"
+  }
+ ]
+}

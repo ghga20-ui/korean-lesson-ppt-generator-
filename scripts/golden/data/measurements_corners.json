@@ -1,0 +1,105 @@
+{
+ "pxPerInch": 96.02400600150037,
+ "cases": [
+  {
+   "fontSize": 24,
+   "lineSpacing": 1.2,
+   "markerType": "underline",
+   "targetGlyphBox": {
+    "x0": 187,
+    "x1": 269,
+    "y0": 30,
+    "y1": 57
+   },
+   "shapeBBox": {
+    "x0": 184,
+    "x1": 273,
+    "y0": 91,
+    "y1": 94
+   },
+   "shapeBars": [
+    {
+     "x0": 184,
+     "x1": 273,
+     "y0": 91,
+     "y1": 94
+    }
+   ]
+  },
+  {
+   "fontSize": 24,
+   "lineSpacing": 2.2,
+   "markerType": "underline",
+   "targetGlyphBox": {
+    "x0": 187,
+    "x1": 269,
+    "y0": 58,
+    "y1": 85
+   },
+   "shapeBBox": {
+    "x0": 184,
+    "x1": 273,
+    "y0": 91,
+    "y1": 94
+   },
+   "shapeBars": [
+    {
+     "x0": 184,
+     "x1": 273,
+     "y0": 91,
+     "y1": 94
+    }
+   ]
+  },
+  {
+   "fontSize": 44,
+   "lineSpacing": 1.2,
+   "markerType": "underline",
+   "targetGlyphBox": {
+    "x0": 303,
+    "x1": 456,
+    "y0": 36,
+    "y1": 89
+   },
+   "shapeBBox": {
+    "x0": 298,
+    "x1": 461,
+    "y0": 118,
+    "y1": 121
+   },
+   "shapeBars": [
+    {
+     "x0": 298,
+     "x1": 461,
+     "y0": 118,
+     "y1": 121
+    }
+   ]
+  },
+  {
+   "fontSize": 44,
+   "lineSpacing": 2.2,
+   "markerType": "underline",
+   "targetGlyphBox": {
+    "x0": 303,
+    "x1": 456,
+    "y0": 89,
+    "y1": 142
+   },
+   "shapeBBox": {
+    "x0": 298,
+    "x1": 461,
+    "y0": 118,
+    "y1": 121
+   },
+   "shapeBars": [
+    {
+     "x0": 298,
+     "x1": 461,
+     "y0": 118,
+     "y1": 121
+    }
+   ]
+  }
+ ]
+}
