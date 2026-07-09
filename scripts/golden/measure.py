@@ -36,9 +36,49 @@ def is_background(c, tol=12):
     return close(c, WHITE, tol)
 
 
-def is_marker(c, tol=45):
-    """본문 잉크도 배경도 아닌 유채색 = 마커 도형 또는 주석 텍스트."""
-    return not is_body(c, tol) and not is_background(c)
+def chroma(c):
+    return max(c) - min(c)
+
+
+def _dist_to_segment(p, a, b):
+    """RGB 공간에서 점 p와 선분 ab 사이 거리."""
+    ax, ay, az = a
+    bx, by, bz = b
+    px, py, pz = p
+    dx, dy, dz = bx - ax, by - ay, bz - az
+    denom = dx * dx + dy * dy + dz * dz
+    if denom == 0:
+        t = 0.0
+    else:
+        t = ((px - ax) * dx + (py - ay) * dy + (pz - az) * dz) / denom
+        t = max(0.0, min(1.0, t))
+    qx, qy, qz = ax + t * dx, ay + t * dy, az + t * dz
+    return ((px - qx) ** 2 + (py - qy) ** 2 + (pz - qz) ** 2) ** 0.5
+
+
+def make_is_marker(marker_rgb, tol=42, min_chroma=25):
+    """
+    마커 픽셀 판정.
+
+    채도만으로는 안 된다. Windows의 ClearType 서브픽셀 안티에일리어싱이
+    검은 본문 글자의 가장자리에 유채색 프린지를 만들기 때문에, 채도 기준만
+    쓰면 본문 글자가 마커로 잡혀 bbox가 텍스트 전체로 번진다.
+
+    마커는 자기 색에서 흰 배경으로 블렌딩되므로, RGB 공간에서 그 선분 위에
+    놓인다. 선분과의 거리로 판정하면 프린지가 걸러진다.
+    """
+    def pred(c):
+        if is_background(c):
+            return False
+        if chroma(c) < min_chroma:
+            return False
+        return _dist_to_segment(c, marker_rgb, WHITE) <= tol
+    return pred
+
+
+def is_marker(c, min_chroma=28):
+    """기본 마커 색(#294C67)에 대한 편의 함수."""
+    return make_is_marker((41, 76, 103))(c)
 
 
 def mask(im, pred):
@@ -46,6 +86,34 @@ def mask(im, pred):
     px = im.load()
     pts = [(x, y) for y in range(h) for x in range(w) if pred(px[x, y])]
     return pts
+
+
+def drop_specks(pts, min_size=25):
+    """
+    연결 성분(4-이웃)으로 묶어 작은 얼룩을 버린다.
+
+    색 거리 판정을 통과한 뒤에도 ClearType 프린지가 몇 픽셀씩 남는다.
+    도형은 크고 연결돼 있으므로, 작은 성분을 버리면 도형만 남는다.
+    """
+    pset = set(pts)
+    seen = set()
+    keep = []
+    for p in pts:
+        if p in seen:
+            continue
+        stack = [p]
+        seen.add(p)
+        comp = []
+        while stack:
+            x, y = stack.pop()
+            comp.append((x, y))
+            for q in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if q in pset and q not in seen:
+                    seen.add(q)
+                    stack.append(q)
+        if len(comp) >= min_size:
+            keep.extend(comp)
+    return keep
 
 
 def bbox(pts):
@@ -151,7 +219,7 @@ def main():
         out["glyphs"] = {"bbox": bbox(g), "lines": line_boxes(g)}
 
     if a.mode in ("marker", "both"):
-        m = mask(im, is_marker)
+        m = drop_specks(mask(im, is_marker))
         out["marker"] = {
             "bbox": bbox(m),
             "lines": line_boxes(m),

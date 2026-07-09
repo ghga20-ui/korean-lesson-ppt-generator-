@@ -14,11 +14,18 @@
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
+import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MEASURE = os.path.join(HERE, "measure.py")
+
+# Windows에서 officecli는 .cmd 래퍼다. shutil.which가 PATHEXT를 존중해 찾아준다.
+OFFICECLI = shutil.which("officecli")
+if not OFFICECLI:
+    raise SystemExit("officecli를 PATH에서 찾을 수 없다: npm i -g @officecli/officecli")
 
 PORT = sys.argv[1] if len(sys.argv) > 1 else "3000"
 OUT = sys.argv[2] if len(sys.argv) > 2 else "measurements.json"
@@ -45,17 +52,25 @@ def deck(text, anns, fs):
     }
 
 
-def render(payload, base):
-    with open(f"{base}.json", "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False)
-    subprocess.run(
-        ["curl", "-sf", "-X", "POST", f"http://localhost:{PORT}/api/generate-pptx",
-         "-H", "Content-Type: application/json",
-         "--data-binary", f"@{base}.json", "-o", f"{base}.pptx"],
-        check=True,
+def generate_pptx(payload, path):
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        f"http://localhost:{PORT}/api/generate-pptx",
+        data=body,
+        headers={"Content-Type": "application/json"},
+        method="POST",
     )
+    with urllib.request.urlopen(req, timeout=120) as r:
+        if r.status != 200:
+            raise SystemExit(f"generate-pptx 실패: HTTP {r.status}")
+        with open(path, "wb") as f:
+            f.write(r.read())
+
+
+def render(payload, base):
+    generate_pptx(payload, f"{base}.pptx")
     subprocess.run(
-        ["officecli", "view", f"{base}.pptx", "screenshot",
+        [OFFICECLI, "view", f"{base}.pptx", "screenshot",
          "--render", "native", "-o", f"{base}.png"],
         check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
@@ -95,23 +110,35 @@ def main():
             gi = global_index(line_no, col)
 
             for mk in MARKERS:
-                ann = {
-                    "id": "a1", "startIndex": gi, "endIndex": gi + len(tgt),
-                    "targetText": tgt, "content": "주석", "markerType": mk,
-                    "order": 1, "color": "#294C67",
-                }
-                png = render(deck(full_text, [ann], fs), f"sw_{fs}_{line_no}_{mk}")
-                m = measure(png, "marker")["marker"]
+                def ann(content):
+                    return {
+                        "id": "a1", "startIndex": gi, "endIndex": gi + len(tgt),
+                        "targetText": tgt, "content": content, "markerType": mk,
+                        "order": 1, "color": "#294C67",
+                    }
+
+                # 도형과 주석 텍스트는 같은 색이라 한 렌더에서 분리되지 않는다.
+                # content를 비워 도형만 남긴 렌더를 따로 찍는다.
+                shape_png = render(deck(full_text, [ann("")], fs), f"sw_{fs}_{line_no}_{mk}_shape")
+                shape = measure(shape_png, "marker")["marker"]
+
+                full_png = render(deck(full_text, [ann("주석 텍스트")], fs), f"sw_{fs}_{line_no}_{mk}_full")
+                full = measure(full_png, "marker")["marker"]
+                glyphs = measure(full_png, "glyphs")["glyphs"]
+
                 results.append({
                     "fontSize": fs, "lineSpacing": LINE_SPACING,
                     "line": line_no, "target": tgt, "markerType": mk,
                     "targetGlyphBox": tb,
-                    "markerBBox": m["bbox"],
-                    "markerBars": m["bars"],
-                    "markerLines": m["lines"],
-                    "png": png,
+                    "shapeBBox": shape["bbox"],
+                    "shapeBars": shape["bars"],
+                    "shapeBands": shape["lines"],
+                    "withTextBBox": full["bbox"],
+                    "withTextBands": full["lines"],
+                    "bodyGlyphLines": glyphs["lines"],
+                    "shapePng": shape_png, "fullPng": full_png,
                 })
-                print(f"  {fs}pt line{line_no} {mk:10s} target={tb} marker={m['bbox']}", flush=True)
+                print(f"  {fs}pt line{line_no} {mk:10s} target={tb} shape={shape['bbox']}", flush=True)
 
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump({"pxPerInch": 1280 / 13.33, "cases": results}, f, ensure_ascii=False, indent=1)
