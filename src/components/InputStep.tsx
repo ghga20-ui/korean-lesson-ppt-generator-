@@ -1,8 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { KeyRound } from "lucide-react";
 import type { Genre, InputMode, ExtractedAnnotation, PptSettings } from "@/lib/types";
 import ModeSelector from "@/components/ModeSelector";
 import PdfUploader from "@/components/PdfUploader";
+import ApiKeySettings from "@/components/ApiKeySettings";
+import { getApiKey } from "@/lib/api-key-storage";
 
 interface InputStepProps {
   genre: Genre;
@@ -37,6 +41,14 @@ export default function InputStep({
   onExtractAnnotations,
   onExtractAll,
 }: InputStepProps) {
+  const [hasApiKey, setHasApiKey] = useState(false);
+  const [isKeySettingsOpen, setIsKeySettingsOpen] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR-safe read of localStorage must happen post-mount to avoid hydration mismatch
+    setHasApiKey(!!getApiKey());
+  }, []);
+
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-10">
@@ -55,8 +67,32 @@ export default function InputStep({
         <ModeSelector
           mode={inputMode}
           onChange={onInputModeChange}
-          hasApiKey={true}
+          hasApiKey={hasApiKey}
         />
+
+        {inputMode !== "B" && !hasApiKey && (
+          <div className="flex items-center justify-between rounded-xl border-2 border-amber-300 bg-amber-50 px-4 py-3">
+            <p className="text-sm text-amber-800">
+              PDF 주석 추출에는 본인의 Gemini API 키(무료 발급)가 필요합니다.
+            </p>
+            <button
+              onClick={() => setIsKeySettingsOpen(true)}
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600"
+            >
+              <KeyRound className="h-3.5 w-3.5" /> 키 설정
+            </button>
+          </div>
+        )}
+        {inputMode !== "B" && hasApiKey && (
+          <div className="flex justify-end">
+            <button
+              onClick={() => setIsKeySettingsOpen(true)}
+              className="flex items-center gap-1 text-xs text-[#6B3F26]/50 hover:text-[#6B3F26]"
+            >
+              <KeyRound className="h-3 w-3" /> API 키 설정
+            </button>
+          </div>
+        )}
 
         {/* Mode B: Text only */}
         {inputMode === "B" && (
@@ -126,7 +162,7 @@ export default function InputStep({
                 </button>
                 <button
                   onClick={onExtractAnnotations}
-                  disabled={!fullText.trim() || !pdfFile || isExtracting}
+                  disabled={!fullText.trim() || !pdfFile || isExtracting || !hasApiKey}
                   className="rounded-xl bg-[#6B3F26] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6B3F26]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isExtracting ? "추출 중..." : "주석 추출 + 분할"}
@@ -177,7 +213,7 @@ export default function InputStep({
               <div className="flex justify-end">
                 <button
                   onClick={onExtractAll}
-                  disabled={!pdfFile || isExtracting}
+                  disabled={!pdfFile || isExtracting || !hasApiKey}
                   className="rounded-xl bg-[#6B3F26] px-8 py-3 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6B3F26]/95 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isExtracting ? "추출 중..." : "텍스트 & 주석 추출"}
@@ -239,6 +275,12 @@ export default function InputStep({
           </div>
         )}
       </div>
+
+      <ApiKeySettings
+        open={isKeySettingsOpen}
+        onClose={() => setIsKeySettingsOpen(false)}
+        onSaved={() => setHasApiKey(!!getApiKey())}
+      />
     </div>
   );
 }
