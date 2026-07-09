@@ -90,6 +90,8 @@ function EditorInner({ genre }: { genre: Genre }) {
           onCancelUnmatched={editor.handleCancelUnmatched}
           onGenerate={editor.handleGenerate}
           onResetToInput={editor.resetToInput}
+          pptSettings={editor.pptSettings}
+          onChangeSettings={editor.setPptSettings}
           canUndo={editor.canUndo}
           canRedo={editor.canRedo}
           undo={editor.undo}

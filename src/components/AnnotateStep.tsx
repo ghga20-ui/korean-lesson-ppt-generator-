@@ -1,7 +1,10 @@
 "use client";
 
-import { useRef } from "react";
-import type { SlideData, Genre, Annotation, ExtractedAnnotation } from "@/lib/types";
+import { useRef, useState } from "react";
+import type { SlideData, Genre, Annotation, ExtractedAnnotation, PptSettings } from "@/lib/types";
+import { DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
+import { SUPPORTED_FONTS, FONT_LABELS } from "@/lib/font-metrics";
+import { ChevronDown } from "lucide-react";
 import AnnotationEditor from "@/components/AnnotationEditor";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { usePanelResize } from "@/hooks/usePanelResize";
@@ -27,6 +30,8 @@ interface AnnotateStepProps {
   onCancelUnmatched: () => void;
   onGenerate: () => Promise<void>;
   onResetToInput: () => void;
+  pptSettings: PptSettings;
+  onChangeSettings: (s: PptSettings) => void;
   canUndo: boolean;
   canRedo: boolean;
   undo: () => void;
@@ -56,6 +61,8 @@ export default function AnnotateStep({
   onCancelUnmatched,
   onGenerate,
   onResetToInput,
+  pptSettings,
+  onChangeSettings,
   canUndo,
   canRedo,
   undo,
@@ -66,6 +73,33 @@ export default function AnnotateStep({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const currentSlide = slides[currentSlideIndex];
   const { width: sidebarWidth, startDrag: startSidebarDrag } = usePanelResize(256, 160, 400, "right");
+
+  // 슬라이드 설정 패널 (기본 접힘)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const handleFontFamilyChange = (fontFamily: string) => {
+    onChangeSettings({ ...pptSettings, fontFamily });
+  };
+
+  const handleFontSizeChange = (fontSize: number) => {
+    // annotationFontSize는 UI에 노출하지 않고, 장르 기본 비율을 유지한다.
+    const ratio = genre === "poetry" ? 28 / 36 : 24 / 28;
+    onChangeSettings({
+      ...pptSettings,
+      fontSize,
+      annotationFontSize: Math.round(fontSize * ratio),
+    });
+  };
+
+  const handleLineSpacingChange = (lineSpacing: number) => {
+    onChangeSettings({ ...pptSettings, lineSpacing });
+  };
+
+  const handleResetSettings = () => {
+    onChangeSettings({
+      ...(genre === "poetry" ? DEFAULT_POETRY_SETTINGS : DEFAULT_NOVEL_SETTINGS),
+    });
+  };
 
   useKeyboardShortcuts({
     onPrevSlide: () => onSlideSelect(Math.max(0, currentSlideIndex - 1)),
@@ -183,6 +217,121 @@ export default function AnnotateStep({
             </div>
           </div>
 
+          {/* 슬라이드 설정 패널 */}
+          <div className="mb-3 border-t border-[#E4E1DA] pt-3">
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen((v) => !v)}
+              aria-expanded={isSettingsOpen}
+              aria-controls="slide-settings-panel"
+              className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-xs font-semibold text-[#16202B] transition-colors hover:bg-[#EDEAE3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#294C67]"
+            >
+              <span>슬라이드 설정</span>
+              <ChevronDown
+                className={`h-4 w-4 text-[#5B6470] transition-transform ${isSettingsOpen ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+
+            {isSettingsOpen && (
+              <div
+                id="slide-settings-panel"
+                className="mt-2 space-y-3 rounded-lg border border-[#E4E1DA] bg-[#FBFAF7] p-3"
+              >
+                {/* 글꼴 */}
+                <div>
+                  <label
+                    htmlFor="ppt-font-family"
+                    className="mb-1 block text-[11px] font-medium text-[#16202B]"
+                  >
+                    글꼴
+                  </label>
+                  <select
+                    id="ppt-font-family"
+                    value={pptSettings.fontFamily}
+                    onChange={(e) => handleFontFamilyChange(e.target.value)}
+                    className="w-full rounded border border-[#E4E1DA] bg-white px-2 py-1 text-xs text-[#16202B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#294C67]"
+                  >
+                    {SUPPORTED_FONTS.map((font) => (
+                      <option key={font} value={font}>
+                        {FONT_LABELS[font] ?? font}
+                      </option>
+                    ))}
+                  </select>
+                  {pptSettings.fontFamily !== "한컴산뜻돋움" && (
+                    <p className="mt-1 text-[10px] leading-snug text-[#5B6470]">
+                      옛한글(아래아)이 필요한 작품은 한컴산뜻돋움을 사용하세요.
+                    </p>
+                  )}
+                </div>
+
+                {/* 글자 크기 */}
+                <div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <label
+                      htmlFor="ppt-font-size"
+                      className="text-[11px] font-medium text-[#16202B]"
+                    >
+                      글자 크기
+                    </label>
+                    <span className="text-[11px] tabular-nums text-[#5B6470]">
+                      {pptSettings.fontSize}pt
+                    </span>
+                  </div>
+                  <input
+                    id="ppt-font-size"
+                    type="range"
+                    min={24}
+                    max={44}
+                    step={2}
+                    value={pptSettings.fontSize}
+                    onChange={(e) => handleFontSizeChange(Number(e.target.value))}
+                    className="w-full accent-[#294C67] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#294C67]"
+                  />
+                </div>
+
+                {/* 줄간격 */}
+                <div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <label
+                      htmlFor="ppt-line-spacing"
+                      className="text-[11px] font-medium text-[#16202B]"
+                    >
+                      줄간격
+                    </label>
+                    <span className="text-[11px] tabular-nums text-[#5B6470]">
+                      {pptSettings.lineSpacing.toFixed(1)}
+                    </span>
+                  </div>
+                  <input
+                    id="ppt-line-spacing"
+                    type="range"
+                    min={1.2}
+                    max={2.2}
+                    step={0.1}
+                    value={pptSettings.lineSpacing}
+                    onChange={(e) => handleLineSpacingChange(Number(e.target.value))}
+                    className="w-full accent-[#294C67] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#294C67]"
+                  />
+                </div>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleResetSettings}
+                    className="rounded px-1 py-0.5 text-[10px] text-[#294C67] underline-offset-2 transition-colors hover:text-[#21405A] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#294C67]"
+                  >
+                    기본값으로
+                  </button>
+                </div>
+
+                <p className="text-[10px] leading-snug text-[#5B6470]">
+                  설정은 자동 저장되며 PPT 내보내기에 바로 반영됩니다.
+                </p>
+              </div>
+            )}
+          </div>
+
           <button
             onClick={onResetToInput}
             className="mb-2 w-full rounded-lg border border-[#E4E1DA] px-3 py-2 text-xs text-[#16202B] transition-colors hover:bg-[#F3F1EC]"
@@ -248,7 +397,7 @@ export default function AnnotateStep({
             <div className="min-h-0 flex-1">
               <AnnotationEditor
                 slide={currentSlide}
-                genre={genre}
+                pptSettings={pptSettings}
                 onUpdateSlide={onUpdateSlide}
                 onSplitAt={onSplitAt}
                 onMergeNext={onMergeNext}

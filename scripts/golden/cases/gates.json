@@ -143,6 +143,46 @@
       "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry" },
       "invariant": "enclosure",
       "params": { "topMinEm": 0.10, "topMaxEm": 0.50, "botMinEm": 0.10, "botMaxEm": 0.50 }
+    },
+    {
+      "name": "font-batang-underline-gap",
+      "why": "바탕 baselineAdjustEm(-0.0392em 실측)이 밑줄 y 위치로 스레딩되는지 검증하는 회귀 — 값 소실 시 밑줄이 글자에서 뜬다.",
+      "text": "나 보기가 역겨워 가실 때에는",
+      "target": "역겨워",
+      "markerType": "underline",
+      "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry", "fontFamily": "바탕" },
+      "invariant": "underline_gap",
+      "params": { "expectedBars": 1, "gapMinEm": 0.0, "gapMaxEm": 0.30 }
+    },
+    {
+      "name": "font-dotum-underline-gap",
+      "why": "돋움 baselineAdjustEm(-0.06em 실측)이 밑줄 y 위치로 스레딩되는지 검증하는 회귀 — 값 소실 시 밑줄이 글자에서 뜬다.",
+      "text": "나 보기가 역겨워 가실 때에는",
+      "target": "역겨워",
+      "markerType": "underline",
+      "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry", "fontFamily": "돋움" },
+      "invariant": "underline_gap",
+      "params": { "expectedBars": 1, "gapMinEm": 0.0, "gapMaxEm": 0.30 }
+    },
+    {
+      "name": "font-nanumgothic-underline-gap",
+      "why": "나눔고딕 baselineAdjustEm(+0.0233em 실측)이 밑줄 y 위치로 스레딩되는지 검증하는 회귀 — 값 소실 시 밑줄이 글자에서 뜬다.",
+      "text": "나 보기가 역겨워 가실 때에는",
+      "target": "역겨워",
+      "markerType": "underline",
+      "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry", "fontFamily": "나눔고딕" },
+      "invariant": "underline_gap",
+      "params": { "expectedBars": 1, "gapMinEm": 0.0, "gapMaxEm": 0.30 }
+    },
+    {
+      "name": "font-nanummyeongjo-underline-gap",
+      "why": "나눔명조 baselineAdjustEm(-0.0183em 실측)이 밑줄 y 위치로 스레딩되는지 검증하는 회귀 — 값 소실 시 밑줄이 글자에서 뜬다.",
+      "text": "나 보기가 역겨워 가실 때에는",
+      "target": "역겨워",
+      "markerType": "underline",
+      "settings": { "fontSize": 36, "lineSpacing": 1.8, "genre": "poetry", "fontFamily": "나눔명조" },
+      "invariant": "underline_gap",
+      "params": { "expectedBars": 1, "gapMinEm": 0.0, "gapMaxEm": 0.30 }
     }
   ]
 }

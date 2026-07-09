@@ -1,0 +1,230 @@
+{
+  "한컴산뜻돋움": {
+    "hangulAdvanceEm": 0.935,
+    "capHeightEm": 0.8956,
+    "baselineAdjustEm": 0.0025,
+    "lineStepRatio": 1.2162,
+    "fontSize": 36,
+    "lineSpacing": 1.8,
+    "measuredAt": "2026-07-10T01:46:00+09:00",
+    "points": {
+      "first": {
+        "x0": 51,
+        "x1": 91,
+        "y0": 60,
+        "y1": 103
+      },
+      "tenth": {
+        "x0": 455,
+        "x1": 496,
+        "y0": 60,
+        "y1": 103
+      },
+      "line0": {
+        "x0": 51,
+        "x1": 496,
+        "y0": 60,
+        "y1": 103
+      },
+      "l3": {
+        "x0": 199,
+        "x1": 282,
+        "y0": 371,
+        "y1": 414
+      },
+      "emPx": 48.012,
+      "driftPx": 1.4404,
+      "hancomBaselinePx": 102.8801
+    }
+  },
+  "맑은 고딕": {
+    "hangulAdvanceEm": 0.9974,
+    "capHeightEm": 0.8956,
+    "baselineAdjustEm": -0.06,
+    "lineStepRatio": 1.2162,
+    "fontSize": 36,
+    "lineSpacing": 1.8,
+    "measuredAt": "2026-07-10T01:46:26+09:00",
+    "points": {
+      "first": {
+        "x0": 52,
+        "x1": 93,
+        "y0": 57,
+        "y1": 100
+      },
+      "tenth": {
+        "x0": 483,
+        "x1": 525,
+        "y0": 57,
+        "y1": 100
+      },
+      "line0": {
+        "x0": 52,
+        "x1": 525,
+        "y0": 57,
+        "y1": 100
+      },
+      "l3": {
+        "x0": 214,
+        "x1": 302,
+        "y0": 367,
+        "y1": 411
+      },
+      "emPx": 48.012,
+      "driftPx": 1.4404,
+      "hancomBaselinePx": 102.8801
+    }
+  },
+  "바탕": {
+    "hangulAdvanceEm": 0.9859,
+    "capHeightEm": 0.8956,
+    "baselineAdjustEm": -0.0392,
+    "lineStepRatio": 1.2162,
+    "fontSize": 36,
+    "lineSpacing": 1.8,
+    "measuredAt": "2026-07-10T01:46:43+09:00",
+    "points": {
+      "first": {
+        "x0": 52,
+        "x1": 94,
+        "y0": 58,
+        "y1": 101
+      },
+      "tenth": {
+        "x0": 478,
+        "x1": 521,
+        "y0": 58,
+        "y1": 101
+      },
+      "line0": {
+        "x0": 52,
+        "x1": 521,
+        "y0": 58,
+        "y1": 101
+      },
+      "l3": {
+        "x0": 210,
+        "x1": 299,
+        "y0": 369,
+        "y1": 412
+      },
+      "emPx": 48.012,
+      "driftPx": 1.4404,
+      "hancomBaselinePx": 102.8801
+    }
+  },
+  "돋움": {
+    "hangulAdvanceEm": 0.9905,
+    "capHeightEm": 0.8748,
+    "baselineAdjustEm": -0.06,
+    "lineStepRatio": 1.2124,
+    "fontSize": 36,
+    "lineSpacing": 1.8,
+    "measuredAt": "2026-07-10T01:47:05+09:00",
+    "points": {
+      "first": {
+        "x0": 51,
+        "x1": 94,
+        "y0": 58,
+        "y1": 98
+      },
+      "tenth": {
+        "x0": 479,
+        "x1": 520,
+        "y0": 59,
+        "y1": 100
+      },
+      "line0": {
+        "x0": 51,
+        "x1": 520,
+        "y0": 58,
+        "y1": 100
+      },
+      "l3": {
+        "x0": 210,
+        "x1": 299,
+        "y0": 370,
+        "y1": 410
+      },
+      "emPx": 48.012,
+      "driftPx": 1.4404,
+      "hancomBaselinePx": 102.8801
+    }
+  },
+  "나눔고딕": {
+    "hangulAdvanceEm": 0.928,
+    "capHeightEm": 0.9164,
+    "baselineAdjustEm": 0.0233,
+    "lineStepRatio": 1.2162,
+    "fontSize": 36,
+    "lineSpacing": 1.8,
+    "measuredAt": "2026-07-10T01:47:27+09:00",
+    "points": {
+      "first": {
+        "x0": 51,
+        "x1": 92,
+        "y0": 60,
+        "y1": 104
+      },
+      "tenth": {
+        "x0": 452,
+        "x1": 497,
+        "y0": 60,
+        "y1": 104
+      },
+      "line0": {
+        "x0": 51,
+        "x1": 497,
+        "y0": 60,
+        "y1": 104
+      },
+      "l3": {
+        "x0": 201,
+        "x1": 286,
+        "y0": 371,
+        "y1": 415
+      },
+      "emPx": 48.012,
+      "driftPx": 1.4404,
+      "hancomBaselinePx": 102.8801
+    }
+  },
+  "나눔명조": {
+    "hangulAdvanceEm": 0.9558,
+    "capHeightEm": 0.9164,
+    "baselineAdjustEm": -0.0183,
+    "lineStepRatio": 1.2162,
+    "fontSize": 36,
+    "lineSpacing": 1.8,
+    "measuredAt": "2026-07-10T01:47:44+09:00",
+    "points": {
+      "first": {
+        "x0": 51,
+        "x1": 92,
+        "y0": 58,
+        "y1": 102
+      },
+      "tenth": {
+        "x0": 464,
+        "x1": 506,
+        "y0": 58,
+        "y1": 102
+      },
+      "line0": {
+        "x0": 51,
+        "x1": 506,
+        "y0": 58,
+        "y1": 102
+      },
+      "l3": {
+        "x0": 203,
+        "x1": 289,
+        "y0": 369,
+        "y1": 413
+      },
+      "emPx": 48.012,
+      "driftPx": 1.4404,
+      "hancomBaselinePx": 102.8801
+    }
+  }
+}

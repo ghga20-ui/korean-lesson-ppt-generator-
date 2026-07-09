@@ -2,8 +2,8 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { usePanelResize } from "@/hooks/usePanelResize";
-import type { SlideData, Genre, Annotation, MarkerType } from "@/lib/types";
-import { DEFAULT_ANNOTATION_COLOR, ANNOTATION_COLOR_PALETTE, DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
+import type { SlideData, Annotation, MarkerType, PptSettings } from "@/lib/types";
+import { DEFAULT_ANNOTATION_COLOR, ANNOTATION_COLOR_PALETTE } from "@/lib/types";
 import { countVisualLines } from "@/lib/pptx-geometry";
 import { getMaxLinesPerSlide } from "@/lib/slide-splitter";
 import { TEXT_LEFT_MARGIN } from "@/lib/pptx-constants";
@@ -12,7 +12,7 @@ import BatchEditPanel from "@/components/BatchEditPanel";
 
 interface AnnotationEditorProps {
   slide: SlideData;
-  genre: Genre;
+  pptSettings: PptSettings;
   onUpdateSlide: (updatedSlide: SlideData) => void;
   onSplitAt: (charIndex: number) => void;
   onMergeNext: () => void;
@@ -68,7 +68,7 @@ interface SelectionPopup {
 
 export default function AnnotationEditor({
   slide,
-  genre,
+  pptSettings,
   onUpdateSlide,
   onSplitAt,
   onMergeNext,
@@ -87,7 +87,6 @@ export default function AnnotationEditor({
   const popupRef = useRef<HTMLDivElement>(null);
 
   // Overflow indicator
-  const pptSettings = genre === "poetry" ? DEFAULT_POETRY_SETTINGS : DEFAULT_NOVEL_SETTINGS;
   const textAreaWidth = pptSettings.slideWidth - TEXT_LEFT_MARGIN * 2;
   const maxLines = getMaxLinesPerSlide(pptSettings);
   const usedLines = countVisualLines(slide.text, pptSettings.fontSize, textAreaWidth);
