@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { SlideData, Genre, Annotation, ExtractedAnnotation, PptSettings } from "@/lib/types";
 import { DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
 import { SUPPORTED_FONTS, FONT_LABELS } from "@/lib/font-metrics";
 import { ChevronDown } from "lucide-react";
 import AnnotationEditor from "@/components/AnnotationEditor";
+import RehearsalOverlay from "@/components/RehearsalOverlay";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { usePanelResize } from "@/hooks/usePanelResize";
 
@@ -77,6 +78,9 @@ export default function AnnotateStep({
   // 슬라이드 설정 패널 (기본 접힘)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // 리허설(교실 클릭 순서 미리보기) 모드
+  const [isRehearsing, setIsRehearsing] = useState(false);
+
   const handleFontFamilyChange = (fontFamily: string) => {
     onChangeSettings({ ...pptSettings, fontFamily });
   };
@@ -101,14 +105,41 @@ export default function AnnotateStep({
     });
   };
 
-  useKeyboardShortcuts({
-    onPrevSlide: () => onSlideSelect(Math.max(0, currentSlideIndex - 1)),
-    onNextSlide: () => onSlideSelect(Math.min(slides.length - 1, currentSlideIndex + 1)),
-    onUndo: undo,
-    onRedo: redo,
-    onSave: exportProject,
-    onGenerate: () => { if (!isGenerating) onGenerate(); },
-  });
+  useKeyboardShortcuts(
+    {
+      onPrevSlide: () => onSlideSelect(Math.max(0, currentSlideIndex - 1)),
+      onNextSlide: () => onSlideSelect(Math.min(slides.length - 1, currentSlideIndex + 1)),
+      onUndo: undo,
+      onRedo: redo,
+      onSave: exportProject,
+      onGenerate: () => { if (!isGenerating) onGenerate(); },
+    },
+    !isRehearsing, // 리허설 중에는 편집기 단축키(←/→ 등)를 끈다
+  );
+
+  // R → 리허설 열기. 공유 훅(useKeyboardShortcuts)의 고정 인터페이스를 바꾸는
+  // 대신 여기에 스코프된 리스너를 둔다. 입력 요소 포커스·이미 열린 상태는 무시.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key !== "r" && e.key !== "R") return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+      if (isRehearsing || slides.length === 0) return;
+      e.preventDefault();
+      setIsRehearsing(true);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isRehearsing, slides.length]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -339,15 +370,22 @@ export default function AnnotateStep({
             텍스트 다시 입력
           </button>
           <button
+            onClick={() => setIsRehearsing(true)}
+            disabled={slides.length === 0}
+            className="mb-2 w-full rounded-lg border border-[#294C67] bg-white px-3 py-2 text-xs font-semibold text-[#294C67] transition-colors hover:bg-[#E8EFF5] disabled:opacity-40"
+          >
+            리허설 ▶
+          </button>
+          <button
             onClick={onGenerate}
             disabled={isGenerating}
             className="w-full rounded-lg bg-[#294C67] px-3 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#21405A] hover:shadow-md disabled:opacity-40"
           >
             {isGenerating ? "내보내는 중..." : "PPT 내보내기"}
           </button>
-          
+
           <div className="mt-3 text-center text-[10px] text-[#5B6470]">
-            단축키: Ctrl+S (저장), Ctrl+Enter (내보내기)
+            단축키: R (리허설), Ctrl+S (저장), Ctrl+Enter (내보내기)
           </div>
           <div className="mt-2 text-center text-[10px] leading-relaxed text-[#6E7683]">
             생성 파일은 초안입니다.<br />PowerPoint에서 검토 후 사용하세요.
@@ -420,6 +458,15 @@ export default function AnnotateStep({
           </div>
         )}
       </main>
+
+      {isRehearsing && currentSlide && (
+        <RehearsalOverlay
+          key={currentSlide.id}
+          slide={currentSlide}
+          settings={pptSettings}
+          onClose={() => setIsRehearsing(false)}
+        />
+      )}
     </div>
   );
 }
