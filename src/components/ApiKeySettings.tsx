@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, KeyRound, ExternalLink, Check, Trash2 } from "lucide-react";
 import {
   getApiKey, setApiKey, clearApiKey,
@@ -20,16 +20,23 @@ export default function ApiKeySettings({ open, onClose, onSaved }: ApiKeySetting
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR-safe read of localStorage must happen post-mount to avoid hydration mismatch
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 모달 재오픈 시마다 입력창을 저장된 값으로 초기화해야 함
       setKeyInput(getApiKey());
       setModel(getModelId());
       setError("");
       setSaved(false);
     }
   }, [open]);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   if (!open) return null;
 
@@ -48,7 +55,7 @@ export default function ApiKeySettings({ open, onClose, onSaved }: ApiKeySetting
     setModelId(modelId);
     setSaved(true);
     onSaved();
-    setTimeout(onClose, 600);
+    timeoutRef.current = setTimeout(onClose, 600);
   };
 
   const handleClear = () => {
@@ -95,6 +102,7 @@ export default function ApiKeySettings({ open, onClose, onSaved }: ApiKeySetting
           <label className="text-xs font-medium text-[#6B3F26]">API 키</label>
           <input
             type="password"
+            autoComplete="off"
             value={keyInput}
             onChange={(e) => { setKeyInput(e.target.value); setError(""); }}
             placeholder="AIza..."
