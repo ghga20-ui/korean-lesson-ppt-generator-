@@ -6,6 +6,8 @@ import { DEFAULT_POETRY_SETTINGS, DEFAULT_NOVEL_SETTINGS } from "@/lib/types";
 import { splitText, splitSlideAt, mergeSlides } from "@/lib/slide-splitter";
 import { matchAnnotationsToText, distributeAnnotationsToSlides } from "@/lib/annotation-matcher";
 import { useHistory } from "@/hooks/useHistory";
+import { extractFromPdfClient } from "@/lib/gemini-client";
+import { getApiKey, getModelId } from "@/lib/api-key-storage";
 
 // ---------------------------------------------------------------------------
 // Auto-save helpers
@@ -213,33 +215,21 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
 
   const handleExtractAnnotations = useCallback(async () => {
     if (!pdfFile || !fullText.trim()) return;
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      alert("Gemini API 키를 먼저 설정해주세요. (입력 화면의 '키 설정' 버튼)");
+      return;
+    }
     setIsExtracting(true);
-    setExtractionProgress("PDF 전송 중...");
+    setExtractionProgress("PDF 준비 중...");
     setUnmatchedAnnotations([]);
 
     try {
-      const formData = new FormData();
-      formData.append("file", pdfFile);
-      formData.append("mode", "C");
-      formData.append("genre", genre);
-      formData.append("userText", fullText);
-
-      setExtractionProgress("AI가 주석을 분석 중... (최대 2분 소요)");
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4 * 60 * 1000);
-      let response: Response;
-      try {
-        response = await fetch("/api/extract", { method: "POST", body: formData, signal: controller.signal });
-      } finally {
-        clearTimeout(timeoutId);
-      }
-      if (!response.ok) {
-        const text = await response.text().catch(() => "");
-        let msg = `오류 (HTTP ${response.status})`;
-        try { msg = JSON.parse(text).error || msg; } catch { msg = text.slice(0, 200) || msg; }
-        throw new Error(msg);
-      }
-      const result = await response.json();
+      const result = await extractFromPdfClient(
+        pdfFile,
+        { mode: "C", genre, userText: fullText, apiKey, model: getModelId() },
+        setExtractionProgress,
+      );
       setExtractionProgress("본문과 주석 매칭 중...");
       const { matched, unmatched } = matchAnnotationsToText(fullText, result.annotations);
       if (unmatched.length > 0) setUnmatchedAnnotations(unmatched);
@@ -266,32 +256,21 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
 
   const handleExtractAll = useCallback(async () => {
     if (!pdfFile) return;
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      alert("Gemini API 키를 먼저 설정해주세요. (입력 화면의 '키 설정' 버튼)");
+      return;
+    }
     setIsExtracting(true);
-    setExtractionProgress("PDF 전송 중...");
+    setExtractionProgress("PDF 준비 중...");
     setUnmatchedAnnotations([]);
 
     try {
-      const formData = new FormData();
-      formData.append("file", pdfFile);
-      formData.append("mode", "A");
-      formData.append("genre", genre);
-
-      setExtractionProgress("AI가 원문과 주석을 추출 중... (최대 2분 소요)");
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4 * 60 * 1000);
-      let response: Response;
-      try {
-        response = await fetch("/api/extract", { method: "POST", body: formData, signal: controller.signal });
-      } finally {
-        clearTimeout(timeoutId);
-      }
-      if (!response.ok) {
-        const text = await response.text().catch(() => "");
-        let msg = `오류 (HTTP ${response.status})`;
-        try { msg = JSON.parse(text).error || msg; } catch { msg = text.slice(0, 200) || msg; }
-        throw new Error(msg);
-      }
-      const result = await response.json();
+      const result = await extractFromPdfClient(
+        pdfFile,
+        { mode: "A", genre, apiKey, model: getModelId() },
+        setExtractionProgress,
+      );
       setFullText(result.text);
 
       if (result.annotations.length > 0) {
