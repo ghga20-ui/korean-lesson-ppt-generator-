@@ -417,6 +417,138 @@
         "gapMinEm": 0.0,
         "gapMaxEm": 0.3
       }
+    },
+    {
+      "name": "anntext-poetry-underline-lastline",
+      "why": "운문 36pt 밑줄 주석의 설명 텍스트가 본문·마커와 안 겹치고 대상 글자 아래에 놓이는지 검증하는 첫 셀이다.",
+      "text": "나 보기가 역겨워 가실 때에는",
+      "target": "역겨워",
+      "markerType": "underline",
+      "content": "화자의 정서가 집약된 구절",
+      "settings": {
+        "fontSize": 36,
+        "lineSpacing": 1.8,
+        "genre": "poetry"
+      },
+      "invariant": "annotation_text_placement",
+      "params": {}
+    },
+    {
+      "name": "anntext-poetry-circle-lastline",
+      "why": "운문 36pt 원형 마커의 설명 텍스트가 원 도형과 본문을 침범하지 않는지 — 도형형 마커의 텍스트 배치 회귀다.",
+      "text": "나 보기가 역겨워 가실 때에는",
+      "target": "역겨워",
+      "markerType": "circle",
+      "content": "화자의 정서가 집약된 구절",
+      "settings": {
+        "fontSize": 36,
+        "lineSpacing": 1.8,
+        "genre": "poetry"
+      },
+      "invariant": "annotation_text_placement",
+      "params": {}
+    },
+    {
+      "name": "anntext-novel-underline",
+      "why": "산문 28pt 밑줄 주석의 설명 텍스트가 다른 장르·크기 조합에서도 본문·마커를 침범하지 않는지 검증한다.",
+      "text": "구보는 다시 걷기로 한다. 여름 한낮의 뙤약볕이 그에게 현기증을 주었다.",
+      "target": "현기증",
+      "markerType": "underline",
+      "content": "화자의 정서가 집약된 구절",
+      "settings": {
+        "fontSize": 28,
+        "lineSpacing": 1.8,
+        "genre": "novel"
+      },
+      "invariant": "annotation_text_placement",
+      "params": {}
+    },
+    {
+      "name": "anntext-notlast-ls18",
+      "why": "두 줄 본문의 첫 줄 대상 주석에서 설명 텍스트가 첫 줄과 둘째 줄 사이에 놓여 어느 줄도 침범하지 않는지 검증한다.",
+      "text": "나 보기가 역겨워 가실 때에는\n말없이 고이 보내 드리오리다",
+      "target": "역겨워",
+      "markerType": "underline",
+      "content": "화자의 정서가 집약된 구절",
+      "settings": {
+        "fontSize": 36,
+        "lineSpacing": 1.8,
+        "genre": "poetry"
+      },
+      "invariant": "annotation_text_placement",
+      "params": {}
+    },
+    {
+      "name": "anntext-notlast-ls12",
+      "why": "줄간격 1.2에서 줄 사이 공간이 주석 폰트보다 좁아 설명 텍스트가 본문 줄을 침범할 것으로 예상되는 진단 셀이다.",
+      "text": "나 보기가 역겨워 가실 때에는\n말없이 고이 보내 드리오리다",
+      "target": "역겨워",
+      "markerType": "underline",
+      "content": "화자의 정서가 집약된 구절",
+      "settings": {
+        "fontSize": 36,
+        "lineSpacing": 1.2,
+        "genre": "poetry"
+      },
+      "invariant": "annotation_text_placement",
+      "params": {}
+    },
+    {
+      "name": "anntext-notlast-ls22",
+      "why": "줄간격 2.2로 넓어진 줄 사이 공간에 설명 텍스트가 안정적으로 들어가는지 확인하는 넓은 극한 대조 셀이다.",
+      "text": "나 보기가 역겨워 가실 때에는\n말없이 고이 보내 드리오리다",
+      "target": "역겨워",
+      "markerType": "underline",
+      "content": "화자의 정서가 집약된 구절",
+      "settings": {
+        "fontSize": 36,
+        "lineSpacing": 2.2,
+        "genre": "poetry"
+      },
+      "invariant": "annotation_text_placement",
+      "params": {}
+    },
+    {
+      "name": "anntext-font-batang",
+      "why": "바탕(명조계) 폰트에서 주석 설명 텍스트의 세로 배치가 폰트 메트릭을 따라 본문·마커와 안 겹치는지 검증한다.",
+      "text": "나 보기가 역겨워 가실 때에는",
+      "target": "역겨워",
+      "markerType": "underline",
+      "content": "화자의 정서가 집약된 구절",
+      "settings": {
+        "fontSize": 36,
+        "lineSpacing": 1.8,
+        "genre": "poetry",
+        "fontFamily": "바탕"
+      },
+      "invariant": "annotation_text_placement",
+      "params": {}
+    },
+    {
+      "name": "anntext-two-on-one-line",
+      "why": "한 줄에 밑줄·원형 주석 둘이 붙을 때 두 설명 텍스트가 서로 또는 본문과 충돌할 것으로 예상되는 진단 셀이다.",
+      "text": "나 보기가 역겨워 가실 때에는",
+      "annotations": [
+        {
+          "target": "역겨워",
+          "markerType": "underline",
+          "content": "반어적 표현",
+          "color": "#294C67"
+        },
+        {
+          "target": "때에는",
+          "markerType": "circle",
+          "content": "이별의 상황 가정",
+          "color": "#294C67"
+        }
+      ],
+      "settings": {
+        "fontSize": 36,
+        "lineSpacing": 1.8,
+        "genre": "poetry"
+      },
+      "invariant": "annotation_text_placement",
+      "params": {}
     }
   ]
 }

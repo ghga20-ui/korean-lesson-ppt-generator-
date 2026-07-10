@@ -27,6 +27,7 @@ import {
   LINE_DRIFT_CORRECTION,
   BASELINE_OFFSET_EM,
   BASELINE_LS_COEF,
+  CAP_HEIGHT_EM,
   BRACKET_X_INSET_EM,
   BRACKET_OPEN_RISE_EM,
   BRACKET_CLOSE_DROP_EM,
@@ -291,6 +292,7 @@ function buildSlide(
       (BASELINE_OFFSET_EM + BASELINE_LS_COEF * settings.lineSpacing) * emInch;
 
     let annotTextY: number;
+    let effAnnotationFontSize = settings.annotationFontSize;
     if (isLastLine) {
       annotTextY = Math.max(shapeBottomY, glyphBottomY) + ANNOTATION_Y_GAP;
     } else {
@@ -307,6 +309,27 @@ function buildSlide(
       annotTextY = Math.max(
         anchorY + ANNOTATION_Y_GAP,
         gapBias - visibleTextH / 2,
+      );
+
+      // 줄 사이 공간이 주석 잉크보다 작으면 주석 폰트를 그 줄에서만 축소한다 —
+      // 실측 게이트 anntext-notlast-ls12의 2011px 본문 침범이 근거.
+      const nextGlyphTopY =
+        TEXT_TOP_MARGIN +
+        (annotLine + 1) * lineStepInch -
+        (annotLine + 1) * LINE_DRIFT_CORRECTION +
+        (BASELINE_OFFSET_EM + BASELINE_LS_COEF * settings.lineSpacing) * emInch +
+        (metrics.baselineAdjustEm ?? 0) * emInch -
+        (metrics.capHeightEm ?? CAP_HEIGHT_EM) * emInch;
+      const gapInch = nextGlyphTopY - annotTextY;
+      // 실측(anntext-notlast-ls12 렌더 3회)으로 확정한 텍스트박스 내부 기하:
+      //   잉크 top    = boxY + tIns(≈0.05in) + (1.026 − 0.90)·annEm   → boxY + 7px@12pt
+      //   잉크 bottom = boxY + tIns + 1.026·annEm
+      // (주석 addText는 lineSpacingMultiple 미지정 = 1.0 이므로 baseline 계수 1.026.)
+      // 잉크 bottom ≤ nextGlyphTop − 0.03in 이 되도록 역산한다. ls1.2에서는 밑줄과
+      // 다음 줄 사이 회랑이 16px뿐이라 12pt도 물리적으로 불가능 — 하한 10pt.
+      effAnnotationFontSize = Math.min(
+        settings.annotationFontSize,
+        Math.max(10, Math.floor(((gapInch - 0.08) * 72) / 1.03)),
       );
     }
 
@@ -329,7 +352,7 @@ function buildSlide(
       y: clampedY,
       w: annotTextW,
       h: ANNOTATION_TEXT_HEIGHT,
-      fontSize: settings.annotationFontSize,
+      fontSize: effAnnotationFontSize,
       fontFace: settings.fontFamily,
       bold: true,
       color,

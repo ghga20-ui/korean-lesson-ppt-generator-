@@ -68,11 +68,47 @@ def render(text, anns, settings, genre, base):
     return f"{base}.png"
 
 
-def measure(png, mode, prefix_png=None):
+def measure(png, mode, prefix_png=None, shape_png=None):
     cmd = [sys.executable, MEASURE, png, "--mode", mode]
     if prefix_png:
         cmd += ["--prefix-png", prefix_png]
+    if shape_png:
+        cmd += ["--shape-png", shape_png]
     return json.loads(subprocess.run(cmd, capture_output=True, text=True, check=True).stdout)
+
+
+def build_annotations(case, text, contentful):
+    """
+    케이스의 주석 목록을 만든다.
+
+    contentful=False 면 모든 content 를 ""(shape 변형), True 면 실제 content(full 변형).
+    per-case `annotations` 배열이 있으면 그것으로 다중 주석을 만들고, 없으면 단일
+    target/markerType/content 로 하나를 만든다.
+
+    반환: (annotations, probe_target) — probe_target 은 접두사 프로빙 대상(다중이면 첫째).
+    """
+    specs = case.get("annotations")
+    if specs:
+        anns = []
+        for j, sp in enumerate(specs):
+            tgt = sp["target"]
+            st = text.index(tgt)
+            anns.append({
+                "id": f"a{j + 1}", "startIndex": st, "endIndex": st + len(tgt),
+                "targetText": tgt,
+                "content": sp.get("content", "") if contentful else "",
+                "markerType": sp["markerType"], "order": j + 1,
+                "color": sp.get("color", "#294C67"),
+            })
+        return anns, specs[0]["target"]
+
+    tgt = case["target"]
+    st = text.index(tgt)
+    ann = {"id": "a1", "startIndex": st, "endIndex": st + len(tgt),
+           "targetText": tgt,
+           "content": case.get("content", "") if contentful else "",
+           "markerType": case["markerType"], "order": 1, "color": "#294C67"}
+    return [ann], tgt
 
 
 def probe_target(text, start, end, settings, genre, base):
@@ -210,6 +246,48 @@ def inv_enclosure(case, glyph, marker, em, p):
     return True, msg
 
 
+def inv_annotation_text_placement(case, glyph, marker, em, p):
+    """주석 설명 텍스트가 본문·마커를 침범하지 않고 대상 글자 아래에 놓이는지.
+
+    marker["anntext"] 는 measure.py --mode anntext 의 이중 렌더 차분 결과다(주석 텍스트
+    픽셀만 분리). glyph 는 접두사 프로빙으로 얻은 대상 글자 밴드다. 모든 한도는 params
+    구동이며 기본값은 아래와 같다.
+    """
+    at = marker["anntext"]
+    txt = at["text"]
+    min_text = p.get("minTextPx", 150)
+    max_shape = p.get("maxShapeOverlapPx", 8)
+    max_body = p.get("maxBodyOverlapPx", 12)
+
+    # 다중 주석 케이스: 두 텍스트 블록이 서로 겹치지 않는지의 간이 프록시.
+    # 밴드 x구간 교집합을 세는 대신, 두 블록이 각자 렌더됐음을 합산 하한으로 요구한다.
+    two_ann = bool(case.get("annotations")) and len(case["annotations"]) >= 2
+    need = 2 * min_text * 0.6 if two_ann else min_text
+
+    band0 = txt["bands"][0]["band"] if txt["bands"] else None
+    msg = (f"count={txt['count']} overlapShape={at['overlapShapePx']} "
+           f"overlapBody={at['overlapBodyPx']} band0={band0}")
+
+    # 1. 텍스트가 실제로 렌더됐는가 — 조용히 빈 차분을 잡는 가드
+    if txt["count"] < need:
+        return False, f"텍스트 픽셀 {txt['count']} < {need:.0f} — 차분이 비었거나 렌더 실패. " + msg
+    # 2. 주석 텍스트가 자기 마커 위에 얹히지 않는다
+    if at["overlapShapePx"] > max_shape:
+        return False, f"마커 겹침 {at['overlapShapePx']}px > {max_shape} — 텍스트가 도형 위. " + msg
+    # 3. 주석 텍스트가 어떤 본문 줄 밴드도 침범하지 않는다
+    if at["overlapBodyPx"] > max_body:
+        return False, f"본문 겹침 {at['overlapBodyPx']}px > {max_body} — 텍스트가 본문 줄 위. " + msg
+    # 4. 텍스트 최상단 밴드가 대상 글자 밴드보다 아래에 놓인다
+    if not txt["bands"]:
+        return False, "텍스트 밴드 없음. " + msg
+    text_top = txt["bands"][0]["band"][0]
+    glyph_bottom = glyph["targetBands"][-1]["band"][1]
+    if not (text_top > glyph_bottom - 0.05 * em):
+        return False, (f"텍스트 top y={text_top} 이 대상 글자 바닥 y={glyph_bottom} 위 "
+                       f"(허용 -0.05em). " + msg)
+    return True, msg
+
+
 INVARIANTS = {
     "underline_gap": inv_underline_gap,
     "underline_gap_and_cover": inv_underline_gap_and_cover,
@@ -217,39 +295,61 @@ INVARIANTS = {
     "summary_box": inv_summary_box,
     "bracket_pair": inv_bracket_pair,
     "enclosure": inv_enclosure,
+    "annotation_text_placement": inv_annotation_text_placement,
 }
 
 
 def main():
     spec = json.load(open(os.path.join(HERE, "cases", "gates.json"), encoding="utf-8"))
     cases = [c for c in spec["cases"] if FILTER in c["name"]]
-    passed, failed = [], []
+    passed, failed, xfailed, xpassed = [], [], [], []
 
     for i, case in enumerate(cases):
         name = case["name"]
         text = case["text"]
-        target = case["target"]
-        start = text.index(target)
-        end = start + len(target)
         settings, genre = default_settings(dict(case.get("settings", {})))
         em = settings["fontSize"] / 72 * PXI
         base = os.path.join(WORK, f"g{i}")
+        expect_fail = case.get("expectFail", False)
 
-        ann = {"id": "a1", "startIndex": start, "endIndex": end,
-               "targetText": target, "content": case.get("content", ""),
-               "markerType": case["markerType"], "order": 1, "color": "#294C67"}
         try:
-            glyph = probe_target(text, start, end, settings, genre, base)
-            png = render(text, [ann], settings, genre, f"{base}_full")
-            marker = measure(png, "marker")["marker"]
+            if case["invariant"] == "annotation_text_placement":
+                # 이중 렌더: shape 변형(content:"")과 full 변형(실제 content)을 같은
+                # 레이아웃으로 낸 뒤, measure anntext 로 텍스트 픽셀을 차분한다.
+                anns_shape, probe_tgt = build_annotations(case, text, contentful=False)
+                anns_full, _ = build_annotations(case, text, contentful=True)
+                start = text.index(probe_tgt)
+                end = start + len(probe_tgt)
+                glyph = probe_target(text, start, end, settings, genre, base)
+                shape_png = render(text, anns_shape, settings, genre, f"{base}_shape")
+                full_png = render(text, anns_full, settings, genre, f"{base}_full")
+                marker = {"anntext": measure(full_png, "anntext", shape_png=shape_png)}
+            else:
+                target = case["target"]
+                start = text.index(target)
+                end = start + len(target)
+                ann = {"id": "a1", "startIndex": start, "endIndex": end,
+                       "targetText": target, "content": case.get("content", ""),
+                       "markerType": case["markerType"], "order": 1, "color": "#294C67"}
+                glyph = probe_target(text, start, end, settings, genre, base)
+                png = render(text, [ann], settings, genre, f"{base}_full")
+                marker = measure(png, "marker")["marker"]
             ok, msg = INVARIANTS[case["invariant"]](case, glyph, marker, em, case.get("params", {}))
         except Exception as e:  # noqa: BLE001 — 게이트 러너는 원인 보고가 우선
             ok, msg = False, f"실행 오류: {e}"
-        tag = "PASS" if ok else "FAIL"
-        (passed if ok else failed).append(name)
+
+        # expectFail 진단 셀: FAIL 은 [XFAIL](exit code 무관), PASS 는 [XPASS](역시 무관).
+        # 둘 다 뚜렷이 찍어 컨트롤러가 판정할 수 있게 한다.
+        if expect_fail:
+            tag = "XPASS" if ok else "XFAIL"
+            (xpassed if ok else xfailed).append(name)
+        else:
+            tag = "PASS" if ok else "FAIL"
+            (passed if ok else failed).append(name)
         print(f"[{tag}] {name}: {msg}", flush=True)
 
-    print(f"\n{len(passed)} PASS / {len(failed)} FAIL   (렌더 산출물: {WORK})")
+    print(f"\n{len(passed)} PASS / {len(failed)} FAIL / {len(xfailed)} XFAIL / "
+          f"{len(xpassed)} XPASS   (렌더 산출물: {WORK})", flush=True)
     if failed:
         for f in failed:
             print("  FAIL:", f)

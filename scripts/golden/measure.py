@@ -9,9 +9,16 @@ PPTX 골든 렌더 측정 유틸.
   대상까지 담은 슬라이드를 각각 렌더해 글자의 오른쪽 끝을 잰다.
   그 차이가 PowerPoint 자신이 알려준 대상의 x 구간이다.
 
+주석 텍스트 측정 기법 — 이중 렌더 차분(double-render diff):
+  마커 도형과 주석 설명 텍스트는 같은 주석색을 쓰므로 한 렌더로는 둘을 못 나눈다.
+  같은 레이아웃을 두 번 렌더한다 — shape 변형(content:"")은 도형만, full 변형은
+  도형+텍스트가 유채색이다. 두 렌더는 픽셀 정렬돼 있으므로 유채 마스크의 위치
+  집합 차분이 곧 주석 텍스트 픽셀이다.
+
 사용:
   python measure.py <png> --mode glyphs           # 본문 글자 bbox / 줄별 분석
   python measure.py <png> --mode marker           # 마커(비검정 유채색) bbox
+  python measure.py <full_png> --mode anntext --shape-png <shape_png>  # 주석 텍스트 배치
 """
 import sys
 import json
@@ -221,11 +228,70 @@ def target_bbox(prefix_png, upto_png):
     return {"bbox": bbox(pts), "bands": line_boxes(pts)}
 
 
+def anntext(full_png, shape_png):
+    """
+    주석 설명 텍스트의 배치를 측정한다 (이중 렌더 차분).
+
+    shape 변형(content:"")은 마커 도형만 유채색이고, full 변형은 도형 + 주석 텍스트가
+    유채색이다. 두 렌더가 같은 레이아웃이면 픽셀이 정렬되므로, 유채 마스크의 위치
+    집합 차분(full − shape)에 남는 픽셀이 곧 주석 텍스트다.
+
+    반환 JSON:
+      text          : 텍스트 픽셀의 bbox / 줄별 밴드 / 픽셀 수
+      overlapShapePx: 텍스트 픽셀 ∩ 도형 픽셀 수
+      overlapBodyPx : 텍스트 픽셀이 본문 줄 밴드 사각형 안에 든 수
+      bodyBands     : 본문 글자 줄 밴드
+    """
+    a = Image.open(shape_png).convert("RGB")   # 도형만
+    b = Image.open(full_png).convert("RGB")    # 도형 + 텍스트
+    if a.size != b.size:
+        raise SystemExit("shape/full 렌더 크기가 다르다 — 같은 레이아웃으로 렌더해야 한다")
+
+    chromA = drop_specks(mask(a, is_marker))
+    chromB = drop_specks(mask(b, is_marker))
+    setA = set(chromA)
+
+    # 위치 집합 차분: full 에만 있는 유채 픽셀 = 주석 텍스트.
+    # drop_specks 로 안티에일리어싱 잔여 얼룩을 죽인다.
+    text_px = drop_specks(list(set(chromB) - setA), min_size=25)
+
+    body_px = mask(b, is_body)
+    body_bands = line_boxes(body_px)
+
+    # overlapShapePx: 텍스트 픽셀이 도형 픽셀과 겹치는 수.
+    # 주의 — text_px 는 setA 를 뺀 차분이라 정의상 setA 와 서로소이고, drop_specks 는
+    # 픽셀을 더하지 않으므로 이 값은 구조적으로 0에 수렴한다. 도형과 텍스트가 같은
+    # 색이라 텍스트가 도형 위에 얹히면 두 렌더에서 모두 마커색이라 차분에서 상쇄되기
+    # 때문이다(측정 트릭의 한계). 따라서 이 지표는 분류가 무너지는 병리적 경우를
+    # 잡는 구조적 가드이며, 텍스트가 도형 위에 앉는 실제 사고는 오히려 text.count 가
+    # 줄어드는 것으로 드러난다.
+    overlap_shape = len(set(text_px) & setA)
+
+    # overlapBodyPx: 텍스트 픽셀이 본문 줄 밴드의 사각형(밴드 y구간 AND x구간) 안에
+    # 드는 수를 센다. 각 픽셀은 한쪽 색으로만 분류되므로 텍스트 잉크가 본문 잉크와
+    # 좌표를 문자 그대로 공유할 수는 없다 — 사각형 침범이 "주석 텍스트가 본문 줄
+    # 위를/속을 지나 그려졌다"의 올바른 프록시다.
+    overlap_body = 0
+    for (x, y) in text_px:
+        for band in body_bands:
+            if band["y0"] <= y <= band["y1"] and band["x0"] <= x <= band["x1"]:
+                overlap_body += 1
+                break
+
+    return {
+        "text": {"bbox": bbox(text_px), "bands": line_boxes(text_px), "count": len(text_px)},
+        "overlapShapePx": overlap_shape,
+        "overlapBodyPx": overlap_body,
+        "bodyBands": body_bands,
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("png")
-    ap.add_argument("--mode", choices=["glyphs", "marker", "both", "target"], default="both")
+    ap.add_argument("--mode", choices=["glyphs", "marker", "both", "target", "anntext"], default="both")
     ap.add_argument("--prefix-png", help="target 모드: 접두사만 담은 렌더")
+    ap.add_argument("--shape-png", help="anntext 모드: content:\"\" 로 렌더한 도형만 변형")
     a = ap.parse_args()
 
     if a.mode == "target":
@@ -234,6 +300,13 @@ def main():
         t = target_bbox(a.prefix_png, a.png)
         # "target"은 bbox (기존 sweep 스크립트 호환), "targetBands"는 줄별 상자
         sys.stdout.write(json.dumps({"target": t["bbox"], "targetBands": t["bands"]}))
+        return
+
+    if a.mode == "anntext":
+        if not a.shape_png:
+            raise SystemExit("--shape-png 필요")
+        # png = full 변형, shape-png = 도형만 변형
+        sys.stdout.write(json.dumps(anntext(a.png, a.shape_png), ensure_ascii=False))
         return
 
     im = Image.open(a.png).convert("RGB")
