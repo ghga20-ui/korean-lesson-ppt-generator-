@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import type { Annotation, PptSettings, SlideData } from "@/lib/types";
+import { getFontMetrics } from "@/lib/font-metrics";
 
 // ---------------------------------------------------------------------------
 // 교정지 palette (chrome only — marker/summary colors come from annotation.color)
@@ -152,10 +153,12 @@ export default function RehearsalOverlay({
 
   const { total } = steps;
 
-  // Current step: step 0 is revealed on mount (mirrors the mockup's startRehearsal).
-  // The overlay is keyed on slide.id by its parent, so a new slide remounts it
-  // fresh and this initializes back to 0 — no reset effect needed.
-  const [currentStep, setCurrentStep] = useState(0);
+  // Current step starts at -1: nothing is revealed on mount, matching real
+  // PowerPoint — when a slide appears no click-animated element is visible, and
+  // the first click reveals the first element. The overlay is keyed on slide.id
+  // by its parent, so a new slide remounts it fresh and this initializes back to
+  // -1 — no reset effect needed.
+  const [currentStep, setCurrentStep] = useState(-1);
 
   // --- Scale: make the text look like the real slide. ---
   const [scale, setScale] = useState(0);
@@ -178,7 +181,7 @@ export default function RehearsalOverlay({
   }, [total]);
 
   const retreat = useCallback(() => {
-    setCurrentStep((s) => Math.max(0, s - 1));
+    setCurrentStep((s) => Math.max(-1, s - 1));
   }, []);
 
   // --- Keyboard: → / Space / Enter advance, ← retreats, Esc closes. ---
@@ -227,9 +230,11 @@ export default function RehearsalOverlay({
   const pillText =
     total === 0
       ? "Esc로 닫기"
-      : currentStep >= total - 1
-        ? "리허설 완료 — Esc로 닫기"
-        : `리허설 ${currentStep + 1} / ${total} — 클릭하면 다음`;
+      : currentStep < 0
+        ? "리허설 — 클릭하면 첫 주석이 나타납니다"
+        : currentStep >= total - 1
+          ? "리허설 완료 — Esc로 닫기"
+          : `리허설 ${currentStep + 1} / ${total} — 클릭하면 다음`;
 
   // --- Render a single inline annotation marker (text always visible). ---
   const renderMarker = useCallback(
@@ -248,7 +253,9 @@ export default function RehearsalOverlay({
           style={{
             position: "absolute",
             left: 0,
-            top: `${settings.fontSize * scale * 1.05}px`,
+            // Baseline-aware offset: clears the 2px underline + padding so the
+            // explanation never overlaps the marker rule.
+            top: `${settings.fontSize * scale * 1.18}px`,
             color,
             fontSize: `${annFontPx}px`,
             lineHeight: 1.2,
@@ -401,8 +408,17 @@ export default function RehearsalOverlay({
             whiteSpace: "pre-wrap",
             wordBreak: "keep-all",
             overflowWrap: "break-word",
+            // Render in the slide's actual font — the real deliverable is
+            // typeset in settings.fontFamily (locally installed), so override
+            // .kor-text's font here while keeping the class for its other props.
+            // 옛한글 글리프는 한컴산뜻돋움일 때만 보장.
+            fontFamily: `"${settings.fontFamily}", '맑은 고딕', sans-serif`,
             fontSize: `${fontSizePx}px`,
-            lineHeight: settings.lineSpacing,
+            // PowerPoint's line step is fontSize × metrics.lineStepRatio ×
+            // lineSpacing, not lineSpacing alone — match it for line fidelity.
+            lineHeight:
+              settings.lineSpacing *
+              getFontMetrics(settings.fontFamily).lineStepRatio,
             fontWeight: 700,
             color: INK,
           }}
