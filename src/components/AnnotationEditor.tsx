@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import { usePanelResize } from "@/hooks/usePanelResize";
 import type { SlideData, Annotation, MarkerType, PptSettings } from "@/lib/types";
 import { DEFAULT_ANNOTATION_COLOR, ANNOTATION_COLOR_PALETTE } from "@/lib/types";
 import { countVisualLines } from "@/lib/pptx-geometry";
 import { getMaxLinesPerSlide } from "@/lib/slide-splitter";
+import { getFontMetrics } from "@/lib/font-metrics";
 import { TEXT_LEFT_MARGIN } from "@/lib/pptx-constants";
 import { GripVertical } from "lucide-react";
 import BatchEditPanel from "@/components/BatchEditPanel";
@@ -27,6 +28,9 @@ interface AnnotationEditorProps {
   onAddUnmatched: (startIndex: number, endIndex: number, targetText: string) => void;
   onCancelUnmatched: () => void;
 }
+
+// CSS px per inch (CSS reference pixel) — 카드 폭→슬라이드 폭 환산에 사용.
+const PX_PER_IN = 96;
 
 const MARKER_COLORS: Record<MarkerType, string> = {
   underline: "bg-blue-200/60",
@@ -85,6 +89,8 @@ export default function AnnotationEditor({
 }: AnnotationEditorProps) {
   const textRef = useRef<HTMLDivElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
+  // 슬라이드형 카드 프레임 — clientWidth를 재어 실제 슬라이드 폭에 대한 배율을 구한다.
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Overflow indicator
   const textAreaWidth = pptSettings.slideWidth - TEXT_LEFT_MARGIN * 2;
@@ -118,6 +124,22 @@ export default function AnnotationEditor({
   // Text edit mode state
   const [isTextEditMode, setIsTextEditMode] = useState(false);
   const [editingText, setEditingText] = useState("");
+
+  // --- 카드 폭 → 실제 슬라이드 폭 배율. RehearsalOverlay와 동일한 측정 패턴.
+  // (setState는 measure 콜백 안에 두어 set-state-in-effect 규칙을 건드리지 않는다.)
+  const [scale, setScale] = useState(0);
+  useLayoutEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const measure = () => {
+      const w = el.clientWidth; // padding-box 폭 — 내부 padding 값과 무관하게 안정적.
+      if (w > 0) setScale(w / (pptSettings.slideWidth * PX_PER_IN));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [pptSettings.slideWidth]);
 
   // Close popup when clicking outside
   useEffect(() => {
@@ -591,6 +613,17 @@ export default function AnnotationEditor({
     }
   };
 
+  // --- 실제 슬라이드와 동일한 본문 타이포/여백을 배율로 환산한 값들.
+  // lineHeight = lineSpacing × lineStepRatio → CSS 줄 간격이 PPT 줄 스텝과 일치.
+  const bodyFontSizePx = pptSettings.fontSize * scale;
+  const bodyLineHeight =
+    pptSettings.lineSpacing * getFontMetrics(pptSettings.fontFamily).lineStepRatio;
+  // 로컬 설치 폰트. 인라인 fontFamily가 .kor-text(옛한글 폴백)보다 우선한다.
+  const bodyFontFamily = `"${pptSettings.fontFamily}", "맑은 고딕", sans-serif`;
+  // 슬라이드 여백(좌/우 0.5in, 상 0.2in)을 카드 폭 배율로 환산.
+  const cardPadX = TEXT_LEFT_MARGIN * PX_PER_IN * scale;
+  const cardPadY = 0.2 * PX_PER_IN * scale;
+
   return (
     <div className="flex h-full flex-col gap-0 lg:flex-row">
       {/* Text display with annotations */}
@@ -645,18 +678,57 @@ export default function AnnotationEditor({
           )}
         </div>
         <div className="relative min-h-0 flex-1 overflow-y-auto p-6">
+          {/* 실제 슬라이드 폭 비율임을 조용히 알리는 캡션 */}
+          <p className="mb-1.5 text-right text-[11px] text-[#5B6470]">
+            실제 슬라이드 비율 미리보기
+          </p>
+
+          {/* 슬라이드형 카드: 흰 배경·얇은 테두리·옅은 그림자. 세로로는 슬라이드를
+              넘겨도 자르지 않는다(편집 중 본문이 넘칠 수 있음). 좌우/상단 패딩은
+              실제 슬라이드 여백(0.5in / 0.2in)을 카드 폭 배율로 환산. */}
+          <div
+            ref={cardRef}
+            className="relative"
+            style={{
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #E4E1DA",
+              borderRadius: 4,
+              boxShadow:
+                "0 1px 2px rgba(22, 32, 43, 0.06), 0 6px 18px rgba(22, 32, 43, 0.06)",
+              padding: `${cardPadY}px ${cardPadX}px`,
+            }}
+          >
           {isTextEditMode ? (
             <textarea
               value={editingText}
               onChange={(e) => setEditingText(e.target.value)}
               autoFocus
-              className="kor-text h-full min-h-64 w-full resize-none rounded-lg border border-emerald-300 bg-emerald-50/30 p-3 text-base leading-relaxed text-[#1E2761] focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+              // 편집 모드도 동일한 폰트/크기/줄간격 → 보기↔편집 전환 시 본문이 튀지 않음.
+              className="kor-text min-h-64 w-full resize-none bg-transparent p-0 outline-none"
+              style={{
+                fontSize: `${bodyFontSizePx}px`,
+                lineHeight: bodyLineHeight,
+                fontWeight: 700,
+                color: "#222222",
+                fontFamily: bodyFontFamily,
+              }}
             />
           ) : (
           <div
             ref={textRef}
             onMouseUp={handleTextMouseUp}
-            className={`kor-text whitespace-pre-wrap text-base leading-relaxed text-[#1E2761] selection:bg-[#E8EFF5] ${isSplitMode ? "cursor-crosshair selection:bg-transparent" : "cursor-text"}`}
+            // .kor-text 유지 = 옛한글 폴백. 단 아래 inline fontFamily가 우선하며,
+            // 옛한글 글리프 렌더에는 한컴산뜻돋움이 설치돼 있어야 한다.
+            className={`kor-text whitespace-pre-wrap selection:bg-[#E8EFF5] ${isSplitMode ? "cursor-crosshair selection:bg-transparent" : "cursor-text"}`}
+            style={{
+              fontSize: `${bodyFontSizePx}px`,
+              lineHeight: bodyLineHeight,
+              fontWeight: 700,
+              color: "#222222",
+              fontFamily: bodyFontFamily,
+              wordBreak: "keep-all",
+              overflowWrap: "break-word",
+            }}
           >
             {renderHighlightedText()}
           </div>
@@ -759,6 +831,7 @@ export default function AnnotationEditor({
               </div>
             </div>
           )}
+          </div>
         </div>
 
         {/* Summary input */}
