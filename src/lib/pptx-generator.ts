@@ -8,7 +8,6 @@ import {
   DEFAULT_POETRY_SETTINGS,
   DEFAULT_NOVEL_SETTINGS,
 } from "./types";
-import { getFontMetrics } from "./font-metrics";
 import {
   TEXT_LEFT_MARGIN,
   TEXT_TOP_MARGIN,
@@ -17,28 +16,11 @@ import {
   MARKER_COLOR,
   UNDERLINE_LINE_WIDTH,
   SHAPE_LINE_WIDTH,
-  ANNOTATION_Y_GAP,
   ANNOTATION_TEXT_HEIGHT,
-  MIN_ANNOTATION_WIDTH,
   SUMMARY_BG_COLOR,
   SUMMARY_BORDER_COLOR,
-  SUMMARY_BOX_HEIGHT,
-  SUMMARY_BOX_BOTTOM_OFFSET,
-  LINE_DRIFT_CORRECTION,
-  BASELINE_OFFSET_EM,
-  BASELINE_LS_COEF,
-  CAP_HEIGHT_EM,
-  BRACKET_X_INSET_EM,
-  BRACKET_OPEN_RISE_EM,
-  BRACKET_CLOSE_DROP_EM,
-  MULTI_LINE_ANNOTATION_OFFSET,
-  GAP_BIAS_FACTOR,
 } from "./pptx-constants";
-import {
-  estimateTextPosition,
-  getUnderlineSegments,
-  getShapeGeometry,
-} from "./pptx-geometry";
+import { layoutAnnotation } from "./annotation-layout";
 import { injectAnimations } from "./pptx-animation";
 
 // Re-export geometry utilities used by slide-splitter
@@ -91,7 +73,6 @@ function buildSlide(
   const slide = pptx.addSlide();
   slide.background = { color: SLIDE_BG_COLOR };
 
-  const metrics = getFontMetrics(settings.fontFamily);
   const textAreaWidth = settings.slideWidth - TEXT_LEFT_MARGIN * 2;
   const textAreaHeight = settings.slideHeight * settings.textAreaHeightRatio;
 
@@ -125,33 +106,26 @@ function buildSlide(
   }
 
   const shapeCountsPerAnnotation: number[] = [];
+  const totalLines = slideData.text.split("\n").length;
 
   for (let idx = 0; idx < sortedAnnotations.length; idx++) {
     const annotation = sortedAnnotations[idx];
     const color = (annotation.color ?? MARKER_COLOR).replace(/^#/, "");
 
-    const pos = estimateTextPosition(
+    // 모든 인치 좌표 산출은 순수 모듈에 위임한다(HTML 미리보기와 동일한 좌표).
+    const layout = layoutAnnotation(
       slideData.text,
-      annotation.startIndex,
-      annotation.endIndex,
+      annotation,
       settings,
+      totalLines,
     );
+    const marker = layout.marker;
 
     let markerShapeCount = 0;
-    let shapeBottomY: number;
-    let shapeLeftX: number;
-    let shapeWidth: number;
 
     // ---- Marker shape(s) ----
-    if (annotation.markerType === "underline") {
-      const segments = getUnderlineSegments(
-        slideData.text,
-        annotation.startIndex,
-        annotation.endIndex,
-        settings,
-      );
-
-      for (const seg of segments) {
+    if (marker.kind === "underline") {
+      for (const seg of marker.segments) {
         slide.addShape(pptx.ShapeType.line, {
           x: seg.x,
           y: seg.y,
@@ -161,30 +135,13 @@ function buildSlide(
         });
         markerShapeCount++;
       }
-
-      // Use first segment for annotation text positioning so annotation
-      // appears below the first underline line (not the last).
-      shapeBottomY = segments[0].y;
-      shapeLeftX = segments[0].x;
-      shapeWidth = segments[0].w;
-    } else if (annotation.markerType === "bracket") {
-      const startPos = estimateTextPosition(
-        slideData.text, annotation.startIndex, annotation.startIndex + 1, settings,
-      );
-      const endPos = estimateTextPosition(
-        slideData.text, annotation.endIndex - 1, annotation.endIndex, settings,
-      );
-      // 기호는 본문과 같은 크기로 스케일한다. 고정 36pt는 44pt 본문에서
-      // 왜소해지고 24pt 본문을 압도했다(실측: 잉크 높이가 본문 크기와 무관하게 ~21px).
-      const emInch = settings.fontSize / 72;
-      const symbolSize = emInch;
-
+    } else if (marker.kind === "bracket") {
       // 「 — 시작 글자의 잉크 top 좌상단
       slide.addText("「", {
-        x: startPos.x - BRACKET_X_INSET_EM * emInch,
-        y: startPos.y - BRACKET_OPEN_RISE_EM * emInch,
-        w: symbolSize,
-        h: symbolSize,
+        x: marker.open.x,
+        y: marker.open.y,
+        w: marker.open.size,
+        h: marker.open.size,
         fontSize: settings.fontSize,
         fontFace: settings.fontFamily,
         bold: true,
@@ -197,10 +154,10 @@ function buildSlide(
 
       // 」 — 끝 글자의 baseline 우하단
       slide.addText("」", {
-        x: endPos.x + endPos.w - BRACKET_X_INSET_EM * emInch,
-        y: endPos.baseline + BRACKET_CLOSE_DROP_EM * emInch - symbolSize,
-        w: symbolSize,
-        h: symbolSize,
+        x: marker.close.x,
+        y: marker.close.y,
+        w: marker.close.size,
+        h: marker.close.size,
         fontSize: settings.fontSize,
         fontFace: settings.fontFamily,
         bold: true,
@@ -212,52 +169,24 @@ function buildSlide(
       });
 
       markerShapeCount = 2;
-      shapeBottomY = endPos.baseline + BRACKET_CLOSE_DROP_EM * emInch;
-      shapeLeftX = startPos.x;
-      shapeWidth = pos.w;
-    } else if (annotation.markerType === "summary") {
-      const summaryBoxW = textAreaWidth;
-      const summaryBoxX = TEXT_LEFT_MARGIN;
-      const summaryBoxY = settings.slideHeight - SUMMARY_BOX_HEIGHT - SUMMARY_BOX_BOTTOM_OFFSET;
-
+    } else if (marker.kind === "summary") {
       slide.addShape(pptx.ShapeType.roundRect, {
-        x: summaryBoxX,
-        y: summaryBoxY,
-        w: summaryBoxW,
-        h: SUMMARY_BOX_HEIGHT,
+        x: marker.x,
+        y: marker.y,
+        w: marker.w,
+        h: marker.h,
         fill: { color: SUMMARY_BG_COLOR },
         line: { color: SUMMARY_BORDER_COLOR, width: 1.5 },
         rectRadius: 0.08,
       });
       markerShapeCount = 1;
-      shapeBottomY = summaryBoxY;
-      shapeLeftX = summaryBoxX;
-      shapeWidth = summaryBoxW;
-    } else {
-      const geom = getShapeGeometry(annotation.markerType, pos, settings.fontSize);
-      const shapeType = getShapeType(annotation.markerType, pptx);
-      slide.addShape(shapeType, {
-        x: geom.x,
-        y: geom.y,
-        w: geom.w,
-        h: geom.h,
-        fill: { type: "none" },
-        line: { color, width: SHAPE_LINE_WIDTH },
-      });
-      markerShapeCount = 1;
-      shapeBottomY = geom.y + geom.h;
-      shapeLeftX = geom.x;
-      shapeWidth = geom.w;
-    }
 
-    // ---- Annotation text box ----
-    if (annotation.markerType === "summary") {
-      const summaryBoxY = settings.slideHeight - SUMMARY_BOX_HEIGHT - SUMMARY_BOX_BOTTOM_OFFSET;
+      // 요약 주석은 박스 안에 ▶ 텍스트를 넣는다(박스 좌표에서 고정 인셋으로 파생).
       slide.addText("▶ " + annotation.content, {
-        x: TEXT_LEFT_MARGIN + 0.15,
-        y: summaryBoxY + 0.05,
-        w: textAreaWidth - 0.3,
-        h: SUMMARY_BOX_HEIGHT - 0.1,
+        x: marker.x + 0.15,
+        y: marker.y + 0.05,
+        w: marker.w - 0.3,
+        h: marker.h - 0.1,
         fontSize: settings.annotationFontSize,
         fontFace: settings.fontFamily,
         bold: true,
@@ -269,98 +198,36 @@ function buildSlide(
       });
       shapeCountsPerAnnotation.push(markerShapeCount + 1);
       continue;
-    }
-
-    // Position annotation text consistently based on the TEXT LINE position,
-    // not the shape bottom, so all marker types produce the same text Y.
-    const lineStepInch =
-      (settings.fontSize * metrics.lineStepRatio * settings.lineSpacing) / 72;
-    const emInch = settings.fontSize / 72;
-    const totalLines = slideData.text.split("\n").length;
-
-    // 밑줄은 마지막 줄(끝 세그먼트) 아래, 나머지는 시작 줄 아래에 주석을 단다.
-    const annotLine =
-      annotation.markerType === "underline" ? pos.endLine : pos.startLine;
-    const isMultiLine = pos.endLine > pos.startLine;
-    const isLastLine = annotLine >= totalLines - 1;
-
-    // Consistent glyph bottom reference: baseline(annotLine).
-    const glyphBottomY =
-      TEXT_TOP_MARGIN +
-      annotLine * lineStepInch -
-      annotLine * LINE_DRIFT_CORRECTION +
-      (BASELINE_OFFSET_EM + BASELINE_LS_COEF * settings.lineSpacing) * emInch;
-
-    let annotTextY: number;
-    let effAnnotationFontSize = settings.annotationFontSize;
-    if (isLastLine) {
-      annotTextY = Math.max(shapeBottomY, glyphBottomY) + ANNOTATION_Y_GAP;
     } else {
-      const nextLineY = TEXT_TOP_MARGIN + (annotLine + 1) * lineStepInch
-        - (annotLine + 1) * LINE_DRIFT_CORRECTION;
-      const visibleTextH = settings.annotationFontSize / 72;
-      // For underlines, annotLine is already based on the last segment (bottom line),
-      // so no extra offset is needed. Only apply MULTI_LINE_ANNOTATION_OFFSET for
-      // other marker types where annotLine is based on pos.y (top/first line).
-      const anchorY = (isMultiLine && annotation.markerType !== "underline")
-        ? glyphBottomY + MULTI_LINE_ANNOTATION_OFFSET
-        : Math.max(shapeBottomY, glyphBottomY);
-      const gapBias = anchorY + (nextLineY - anchorY) * GAP_BIAS_FACTOR;
-      annotTextY = Math.max(
-        anchorY + ANNOTATION_Y_GAP,
-        gapBias - visibleTextH / 2,
-      );
-
-      // 줄 사이 공간이 주석 잉크보다 작으면 주석 폰트를 그 줄에서만 축소한다 —
-      // 실측 게이트 anntext-notlast-ls12의 2011px 본문 침범이 근거.
-      const nextGlyphTopY =
-        TEXT_TOP_MARGIN +
-        (annotLine + 1) * lineStepInch -
-        (annotLine + 1) * LINE_DRIFT_CORRECTION +
-        (BASELINE_OFFSET_EM + BASELINE_LS_COEF * settings.lineSpacing) * emInch +
-        (metrics.baselineAdjustEm ?? 0) * emInch -
-        (metrics.capHeightEm ?? CAP_HEIGHT_EM) * emInch;
-      const gapInch = nextGlyphTopY - annotTextY;
-      // 실측(anntext-notlast-ls12 렌더 3회)으로 확정한 텍스트박스 내부 기하:
-      //   잉크 top    = boxY + tIns(≈0.05in) + (1.026 − 0.90)·annEm   → boxY + 7px@12pt
-      //   잉크 bottom = boxY + tIns + 1.026·annEm
-      // (주석 addText는 lineSpacingMultiple 미지정 = 1.0 이므로 baseline 계수 1.026.)
-      // 잉크 bottom ≤ nextGlyphTop − 0.03in 이 되도록 역산한다. ls1.2에서는 밑줄과
-      // 다음 줄 사이 회랑이 16px뿐이라 12pt도 물리적으로 불가능 — 하한 10pt.
-      effAnnotationFontSize = Math.min(
-        settings.annotationFontSize,
-        Math.max(10, Math.floor(((gapInch - 0.08) * 72) / 1.03)),
-      );
+      const shapeType = getShapeType(marker.shape, pptx);
+      slide.addShape(shapeType, {
+        x: marker.x,
+        y: marker.y,
+        w: marker.w,
+        h: marker.h,
+        fill: { type: "none" },
+        line: { color, width: SHAPE_LINE_WIDTH },
+      });
+      markerShapeCount = 1;
     }
 
-    // Start annotation text below target, but ensure minimum width
-    let annotTextX = Math.max(TEXT_LEFT_MARGIN, shapeLeftX);
-    let annotTextW = settings.slideWidth - annotTextX - 0.3;
-    if (annotTextW < MIN_ANNOTATION_WIDTH) {
-      annotTextX = Math.max(TEXT_LEFT_MARGIN, settings.slideWidth - MIN_ANNOTATION_WIDTH - 0.3);
-      annotTextW = settings.slideWidth - annotTextX - 0.3;
+    // ---- Annotation text box ----
+    if (layout.text) {
+      slide.addText(annotation.content, {
+        x: layout.text.x,
+        y: layout.text.y,
+        w: layout.text.w,
+        h: ANNOTATION_TEXT_HEIGHT,
+        fontSize: layout.text.fontSizePt,
+        fontFace: settings.fontFamily,
+        bold: true,
+        color,
+        align: "left",
+        valign: "top",
+        wrap: true,
+        isTextBox: true,
+      });
     }
-
-    // Clamp so it doesn't overflow below the slide
-    const clampedY = Math.min(
-      annotTextY,
-      settings.slideHeight - ANNOTATION_TEXT_HEIGHT - 0.1,
-    );
-
-    slide.addText(annotation.content, {
-      x: annotTextX,
-      y: clampedY,
-      w: annotTextW,
-      h: ANNOTATION_TEXT_HEIGHT,
-      fontSize: effAnnotationFontSize,
-      fontFace: settings.fontFamily,
-      bold: true,
-      color,
-      align: "left",
-      valign: "top",
-      wrap: true,
-      isTextBox: true,
-    });
 
     shapeCountsPerAnnotation.push(markerShapeCount + 1);
   }
