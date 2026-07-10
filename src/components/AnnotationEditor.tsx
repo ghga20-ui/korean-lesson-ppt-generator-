@@ -6,10 +6,11 @@ import type { SlideData, Annotation, MarkerType, PptSettings } from "@/lib/types
 import { DEFAULT_ANNOTATION_COLOR, ANNOTATION_COLOR_PALETTE } from "@/lib/types";
 import { countVisualLines } from "@/lib/pptx-geometry";
 import { getMaxLinesPerSlide } from "@/lib/slide-splitter";
-import { getFontMetrics } from "@/lib/font-metrics";
 import { TEXT_LEFT_MARGIN } from "@/lib/pptx-constants";
+import { useSlideTextMetrics } from "@/lib/use-slide-text-metrics";
 import { GripVertical } from "lucide-react";
 import BatchEditPanel from "@/components/BatchEditPanel";
+import SlideMarkerLayer from "@/components/SlideMarkerLayer";
 
 interface AnnotationEditorProps {
   slide: SlideData;
@@ -577,12 +578,15 @@ export default function AnnotationEditor({
       }
 
       if (seg.annotation) {
-        const annColor = seg.annotation.color || DEFAULT_ANNOTATION_COLOR;
+        // 실제 도형은 SlideMarkerLayer가 그리므로, 여기 타겟 스팬은 기본 무채색으로
+        // 두어 도형과 이중으로 그려지지 않게 한다. 상호작용 힌트로 hover 또는 해당
+        // 주석 카드가 펼쳐졌을 때만 옅은 틴트(#E8EFF5)를 준다. 여백/모서리(px-0.5,
+        // rounded)는 글자를 모델 좌표에서 밀어내므로 제거한다(오프셋 불변).
+        const isExpanded = expandedAnnotationId === seg.annotation.id;
         return (
           <span
             key={i}
-            className="rounded-sm px-0.5"
-            style={{ backgroundColor: annColor + "20" }}
+            className={`transition-colors ${isExpanded ? "bg-[#E8EFF5]" : "hover:bg-[#E8EFF5]"}`}
             title={`[${seg.annotation.order}] ${seg.annotation.content}`}
           >
             {segContent}
@@ -591,7 +595,7 @@ export default function AnnotationEditor({
       }
       return <span key={i}>{segContent}</span>;
     });
-  }, [slide, isSplitMode, splitCharIndex]);
+  }, [slide, isSplitMode, splitCharIndex, expandedAnnotationId]);
 
   const sortedAnnotations = [...slide.annotations].sort(
     (a, b) => a.order - b.order
@@ -613,16 +617,19 @@ export default function AnnotationEditor({
     }
   };
 
-  // --- 실제 슬라이드와 동일한 본문 타이포/여백을 배율로 환산한 값들.
-  // lineHeight = lineSpacing × lineStepRatio → CSS 줄 간격이 PPT 줄 스텝과 일치.
-  const bodyFontSizePx = pptSettings.fontSize * scale;
-  const bodyLineHeight =
-    pptSettings.lineSpacing * getFontMetrics(pptSettings.fontFamily).lineStepRatio;
+  // --- 실제 슬라이드와 동일한 본문 타이포/여백/첫 baseline 보정(공유 훅).
+  // 편집기와 리허설이 같은 훅을 써서 두 미리보기가 어긋나지 않게 한다.
+  // fontSizePx = (fontSize/72)in·pxPerInch (fontSize·scale 이 아님 — 마커 도형과
+  // 같은 스케일이라야 도형이 글자를 정확히 감싼다). lineHeightPx는 모델 줄 스텝.
+  const {
+    fontSizePx: bodyFontSizePx,
+    lineHeightPx: bodyLineHeightPx,
+    translateYPx: bodyTranslateYPx,
+    padXPx: cardPadX,
+    padYPx: cardPadY,
+  } = useSlideTextMetrics(pptSettings, scale);
   // 로컬 설치 폰트. 인라인 fontFamily가 .kor-text(옛한글 폴백)보다 우선한다.
   const bodyFontFamily = `"${pptSettings.fontFamily}", "맑은 고딕", sans-serif`;
-  // 슬라이드 여백(좌/우 0.5in, 상 0.2in)을 카드 폭 배율로 환산.
-  const cardPadX = TEXT_LEFT_MARGIN * PX_PER_IN * scale;
-  const cardPadY = 0.2 * PX_PER_IN * scale;
 
   return (
     <div className="flex h-full flex-col gap-0 lg:flex-row">
@@ -696,6 +703,8 @@ export default function AnnotationEditor({
               boxShadow:
                 "0 1px 2px rgba(22, 32, 43, 0.06), 0 6px 18px rgba(22, 32, 43, 0.06)",
               padding: `${cardPadY}px ${cardPadX}px`,
+              // 하단 앵커 요약이 보이도록 슬라이드 높이를 최소 확보(넘치면 더 커짐).
+              minHeight: pptSettings.slideHeight * PX_PER_IN * scale,
             }}
           >
           {isTextEditMode ? (
@@ -707,7 +716,7 @@ export default function AnnotationEditor({
               className="kor-text min-h-64 w-full resize-none bg-transparent p-0 outline-none"
               style={{
                 fontSize: `${bodyFontSizePx}px`,
-                lineHeight: bodyLineHeight,
+                lineHeight: `${bodyLineHeightPx}px`,
                 fontWeight: 700,
                 color: "#222222",
                 fontFamily: bodyFontFamily,
@@ -722,16 +731,28 @@ export default function AnnotationEditor({
             className={`kor-text whitespace-pre-wrap selection:bg-[#E8EFF5] ${isSplitMode ? "cursor-crosshair selection:bg-transparent" : "cursor-text"}`}
             style={{
               fontSize: `${bodyFontSizePx}px`,
-              lineHeight: bodyLineHeight,
+              lineHeight: `${bodyLineHeightPx}px`,
               fontWeight: 700,
               color: "#222222",
               fontFamily: bodyFontFamily,
               wordBreak: "keep-all",
               overflowWrap: "break-word",
+              // 첫 줄 baseline을 PPT 모델에 맞춘다(본문 블록만 이동, 마커 레이어는 모델 좌표 유지).
+              transform: `translateY(${bodyTranslateYPx}px)`,
             }}
           >
             {renderHighlightedText()}
           </div>
+          )}
+
+          {/* 실제 도형 마커/주석 레이어 — 본문 위, 클릭은 통과(pointer-events-none).
+              텍스트 편집 중에는 본문이 textarea라 좌표가 어긋나므로 숨긴다. */}
+          {!isTextEditMode && scale > 0 && (
+            <SlideMarkerLayer
+              slide={slide}
+              settings={pptSettings}
+              pxPerInch={PX_PER_IN * scale}
+            />
           )}
 
           {/* Selection popup */}
