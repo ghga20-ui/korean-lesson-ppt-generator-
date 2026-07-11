@@ -1,0 +1,189 @@
+<title>홈 리디자인 B안 — 교과서, 수업 화면으로</title>
+<style>
+  :root {
+    --paper: #FBFAF7;
+    --slide: #FFFFFF;
+    --ink: #16202B;
+    --pencil: #5B6470;
+    --hint: #6E7683;
+    --blue: #294C67;
+    --blue-hover: #21405A;
+    --rule: #E4E1DA;
+    --tint: #E8EFF5;
+    --red: #C0392B;
+    --book-paper: #F7F2E6;   /* 교과서 종이 — 다이제틱, 카드 안에서만 */
+    --book-rule: #E3D9C2;
+    --hilite: #FFE9A8;       /* 형광펜 */
+    --display: "MaruBuri", "나눔명조", "Nanum Myeongjo", "바탕", serif;
+    --body: "Pretendard", "맑은 고딕", "Malgun Gothic", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--paper); }
+  body { font-family: var(--body); color: var(--ink); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  .topbar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 22px 48px 0; max-width: 1240px; margin: 0 auto;
+  }
+  .topbar .name { font-weight: 700; font-size: 15px; }
+  .topbar .name small { font-weight: 400; color: var(--pencil); margin-left: 8px; font-size: 12px; }
+  .topbar .free { font-size: 12px; color: var(--pencil); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px; background: var(--slide); }
+
+  /* ── 헤드라인: 중앙, 변환 서사 ─────────────────────────── */
+  .head { text-align: center; padding: 56px 24px 40px; }
+  .head .eyebrow { font-size: 12px; letter-spacing: 0.14em; color: var(--pencil); margin-bottom: 16px; }
+  .head h1 {
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(30px, 4vw, 46px); line-height: 1.3; letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .head h1 .accent { color: var(--blue); }
+  .head .sub { color: var(--pencil); font-size: 16px; max-width: 46ch; margin: 16px auto 0; word-break: keep-all; }
+
+  /* ── 변환 스테이지: 교과서 → 슬라이드 ──────────────────── */
+  .stage {
+    max-width: 1240px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 28px;
+    align-items: center; padding: 8px 48px 40px;
+  }
+  @media (max-width: 960px) {
+    .stage { grid-template-columns: 1fr; padding: 8px 24px 32px; }
+    .arrow { transform: rotate(90deg); margin: -8px auto; }
+  }
+
+  /* 교과서 페이지 카드 */
+  .book {
+    background: var(--book-paper);
+    border: 1px solid var(--book-rule);
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(22, 32, 43, 0.08);
+    padding: 30px 34px;
+    position: relative;
+  }
+  .book::before {  /* 제본 그림자 */
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 14px;
+    background: linear-gradient(90deg, rgba(22,32,43,0.10), transparent);
+    border-radius: 4px 0 0 4px;
+  }
+  .book .unit { font-size: 11px; letter-spacing: 0.12em; color: #8A7B58; margin-bottom: 10px; }
+  .book .title { font-family: var(--display); font-weight: 800; font-size: 19px; margin-bottom: 14px; }
+  .book .text { font-family: var(--display); font-size: 15px; line-height: 2.0; color: #2B2418; }
+  .book .hl { background: linear-gradient(transparent 35%, var(--hilite) 35%, var(--hilite) 92%, transparent 92%); }
+  .book .pen { border-bottom: 2px solid var(--red); }
+  .book .memo {
+    font-size: 11.5px; color: var(--pencil); font-style: italic;
+    display: block; margin-top: 2px; margin-left: 8px;
+  }
+  .book .label {
+    position: absolute; top: -11px; left: 22px;
+    background: var(--ink); color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 999px;
+  }
+
+  .arrow { text-align: center; color: var(--blue); }
+  .arrow .glyph { font-size: 26px; font-weight: 700; line-height: 1; }
+  .arrow .lbl { font-size: 11.5px; color: var(--pencil); margin-top: 6px; white-space: nowrap; }
+
+  /* 슬라이드 카드 (완성 상태) */
+  .slide {
+    position: relative;
+    aspect-ratio: 1333 / 750;
+    background: var(--slide);
+    border: 1px solid var(--rule); border-radius: 6px;
+    box-shadow: 0 18px 48px rgba(22, 32, 43, 0.10);
+    padding: 7% 8%;
+  }
+  .slide .label {
+    position: absolute; top: -11px; left: 22px;
+    background: var(--blue); color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 999px;
+  }
+  .poem { font-size: clamp(14px, 1.7vw, 21px); font-weight: 700; line-height: 2.1; letter-spacing: -0.01em; }
+  .poem .line { position: relative; white-space: nowrap; }
+  .mark-target { position: relative; display: inline-block; }
+  .u-bar { position: absolute; left: 0; right: 0; bottom: 0.30em; height: 0.09em; background: var(--blue); border-radius: 1px; }
+  .circle-ring { position: absolute; inset: 0.08em -0.14em 0.22em -0.14em; border: 2px solid var(--red); border-radius: 50%; }
+  .ann-note {
+    position: absolute; white-space: nowrap;
+    font-size: 0.6em; font-weight: 700; line-height: 1.1;
+    top: 100%; margin-top: -0.55em;
+  }
+  .note-blue { color: var(--blue); }
+  .note-red { color: var(--red); }
+  .clickhint {
+    position: absolute; right: 14px; bottom: 10px;
+    font-size: 11px; color: var(--hint);
+  }
+
+  /* ── CTA ──────────────────────────────────────────────── */
+  .cta-zone { text-align: center; padding: 0 24px 64px; }
+  .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; font-family: inherit;
+    padding: 13px 22px; border-radius: 8px; cursor: pointer;
+    border: 1.5px solid var(--blue); background: var(--blue); color: #fff;
+    transition: background 0.15s ease;
+  }
+  .cta:hover { background: var(--blue-hover); }
+  .cta.ghost { background: transparent; color: var(--blue); }
+  .cta.ghost:hover { background: var(--tint); }
+  .cta:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .cta-caption { font-size: 13px; color: var(--hint); }
+
+  .foot {
+    max-width: 1240px; margin: 0 auto; border-top: 1px solid var(--rule);
+    padding: 24px 48px 40px; color: var(--hint); font-size: 12.5px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+</style>
+
+<div class="topbar">
+  <div class="name">국어 수업 슬라이드 제작 도구<small>lit-ppt</small></div>
+  <div class="free">무료 · 브라우저에서 바로</div>
+</div>
+
+<section class="head">
+  <p class="eyebrow">고등 국어 · 문학 수업</p>
+  <h1>펼쳐 둔 교과서가,<br /><span class="accent">그대로 수업 화면이 됩니다</span></h1>
+  <p class="sub">본문을 붙여넣고 밑줄·원·꺾쇠 주석을 달면, 클릭할 때마다 하나씩 나타나는 수업용 PPT가 됩니다.</p>
+</section>
+
+<section class="stage">
+  <div class="book">
+    <span class="label">선생님의 교과서</span>
+    <p class="unit">2단원 · 서정 갈래의 흐름</p>
+    <p class="title">진달래꽃 — 김소월</p>
+    <p class="text">
+      나 보기가 <span class="pen">역겨워</span><span class="memo">← 반어! 속마음은 반대</span>
+      가실 때에는 <span class="hl">말없이</span><br />
+      <span class="hl">고이 보내 드리오리다</span><span class="memo">← 체념·순종, 7·5조</span>
+    </p>
+  </div>
+
+  <div class="arrow" aria-hidden="true">
+    <div class="glyph">→</div>
+    <div class="lbl">붙여넣고 · 주석 달고 · 내보내기</div>
+  </div>
+
+  <div class="slide">
+    <span class="label">수업 화면 (.pptx)</span>
+    <div class="poem">
+      <div class="line">나 보기가 <span class="mark-target">역겨워<span class="u-bar"></span><span class="ann-note note-blue">반어 — 속마음은 반대</span></span></div>
+      <div class="line">가실 <span class="mark-target">때에는<span class="circle-ring"></span><span class="ann-note note-red">이별의 상황 가정</span></span> 말없이</div>
+      <div class="line">고이 보내 드리오리다</div>
+    </div>
+    <span class="clickhint">클릭마다 주석이 하나씩 나타납니다</span>
+  </div>
+</section>
+
+<div class="cta-zone">
+  <div class="cta-row">
+    <button class="cta">운문으로 시작 →</button>
+    <button class="cta ghost">산문으로 시작 →</button>
+  </div>
+  <p class="cta-caption">로그인·설치·비용 없음 · PDF 주석 AI 추출은 편집 중에 붙일 수 있어요</p>
+</div>
+
+<div class="foot">
+  <span>1 본문 입력 → 2 주석 달기 → 3 PPT 내보내기</span>
+  <span>생성 파일은 초안입니다 — PowerPoint에서 확인 후 수업에 쓰세요</span>
+</div>

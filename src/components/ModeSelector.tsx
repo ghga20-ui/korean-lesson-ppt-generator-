@@ -9,10 +9,11 @@ interface ModeSelectorProps {
   hasApiKey: boolean;
 }
 
+// 키가 필요 없는 경로(B)를 첫 번째·추천으로 — 첫 방문자가 키 요구 없이 바로 시작한다.
 const MODES: { value: InputMode; label: string; desc: string; recommended?: boolean }[] = [
-  { value: "C", label: "텍스트 + PDF 주석", desc: "(추천) 텍스트 입력 후 PDF에서 주석 가져오기", recommended: true },
+  { value: "B", label: "직접 입력", desc: "(추천) 본문을 붙여넣어 바로 시작 — 키 불필요", recommended: true },
+  { value: "C", label: "텍스트 + PDF 주석", desc: "텍스트 입력 후 PDF에서 주석 가져오기" },
   { value: "A", label: "PDF 전체 추출", desc: "PDF에서 본문과 주석 모두 가져오기" },
-  { value: "B", label: "직접 입력", desc: "텍스트와 주석을 수동으로 입력" },
 ];
 
 export default function ModeSelector({ mode, onChange, hasApiKey }: ModeSelectorProps) {

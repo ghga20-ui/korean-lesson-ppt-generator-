@@ -1,0 +1,245 @@
+<title>홈 리디자인 — 리허설 히어로</title>
+<style>
+  /* ── 교정지 토큰 (에디터와 동일) ─────────────────────────── */
+  :root {
+    --paper: #FBFAF7;
+    --slide: #FFFFFF;
+    --ink: #16202B;
+    --pencil: #5B6470;
+    --hint: #6E7683;
+    --blue: #294C67;
+    --blue-hover: #21405A;
+    --rule: #E4E1DA;
+    --tint: #E8EFF5;
+    --red: #C0392B;
+    --display: "MaruBuri", "나눔명조", "Nanum Myeongjo", "바탕", serif;
+    --body: "Pretendard", "맑은 고딕", "Malgun Gothic", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--paper); }
+  body {
+    font-family: var(--body);
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── 상단바: 도구명만, 조용하게 ─────────────────────────── */
+  .topbar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 22px 48px 0;
+    max-width: 1240px; margin: 0 auto;
+  }
+  .topbar .name { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+  .topbar .name small { font-weight: 400; color: var(--pencil); margin-left: 8px; font-size: 12px; }
+  .topbar .free {
+    font-size: 12px; color: var(--pencil);
+    border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px;
+    background: var(--slide);
+  }
+
+  /* ── 히어로: 슬라이드가 주인공 ──────────────────────────── */
+  .hero {
+    max-width: 1240px; margin: 0 auto;
+    display: grid; grid-template-columns: 7fr 5fr; gap: 56px;
+    align-items: center;
+    padding: 48px 48px 64px;
+  }
+  @media (max-width: 960px) {
+    .hero { grid-template-columns: 1fr; gap: 32px; padding: 32px 24px 48px; }
+    .topbar { padding: 18px 24px 0; }
+  }
+
+  /* 슬라이드 카드 — 실제 산출물 비율 13.33:7.5 */
+  .slide-wrap { position: relative; }
+  .slide {
+    position: relative;
+    aspect-ratio: 1333 / 750;
+    background: var(--slide);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: 0 18px 48px rgba(22, 32, 43, 0.10), 0 2px 8px rgba(22, 32, 43, 0.05);
+    padding: 7.2% 8%;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    display: block;
+    font-family: inherit;
+  }
+  .slide:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+  .poem { font-size: clamp(17px, 2.6vw, 30px); font-weight: 700; line-height: 2.05; letter-spacing: -0.01em; }
+  .poem .line { position: relative; white-space: nowrap; }
+
+  /* 주석 요소 — 등장 전 숨김, .on 으로 등장 */
+  .ann { opacity: 0; transition: opacity 0.3s ease; }
+  .ann.on { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .ann { transition: none; } }
+
+  .u-bar {
+    position: absolute; left: 0; right: 0; bottom: 0.30em;
+    height: 0.09em; background: var(--blue); border-radius: 1px;
+  }
+  .mark-target { position: relative; display: inline-block; }
+  .circle-ring {
+    position: absolute; inset: 0.08em -0.14em 0.22em -0.14em;
+    border: 2.5px solid var(--red); border-radius: 50%;
+  }
+  /* 꺾쇠는 절대배치 — 숨김 상태에서 자리를 차지해 행이 벌어지지 않게 */
+  .bk { color: var(--blue); font-weight: 700; position: absolute; }
+  .bk-open { top: -0.34em; left: -0.52em; }
+  .bk-close { bottom: -0.02em; right: -0.5em; }
+
+  .ann-note {
+    position: absolute; white-space: nowrap;
+    font-size: 0.62em; font-weight: 700; line-height: 1.1;
+    top: 100%; margin-top: -0.55em;
+  }
+  .note-blue { color: var(--blue); }
+  .note-red { color: var(--red); }
+
+  /* 리허설 필 */
+  .pill {
+    position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%);
+    background: var(--ink); color: #fff;
+    font-size: 12px; padding: 7px 14px; border-radius: 999px;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(22, 32, 43, 0.25);
+  }
+
+  /* ── 카피 칼럼 ─────────────────────────────────────────── */
+  .copy .eyebrow {
+    font-size: 12px; letter-spacing: 0.14em; color: var(--pencil);
+    text-transform: none; margin-bottom: 18px;
+  }
+  .copy h1 {
+    font-family: var(--display);
+    font-size: clamp(34px, 4.2vw, 52px);
+    line-height: 1.28; font-weight: 800; letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin-bottom: 20px;
+  }
+  .copy h1 .accent { color: var(--blue); }
+  .copy .sub {
+    color: var(--pencil); font-size: 16px; max-width: 38ch;
+    margin-bottom: 32px;
+    word-break: keep-all;
+  }
+  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; font-family: inherit;
+    padding: 13px 22px; border-radius: 8px; cursor: pointer;
+    border: 1.5px solid var(--blue);
+    background: var(--blue); color: #fff;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .cta:hover { background: var(--blue-hover); border-color: var(--blue-hover); }
+  .cta.ghost { background: transparent; color: var(--blue); }
+  .cta.ghost:hover { background: var(--tint); }
+  .cta:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .cta-caption { font-size: 13px; color: var(--hint); }
+
+  /* ── 사용 흐름(실제 순서라 번호가 정보) ───────────────────── */
+  .flow {
+    max-width: 1240px; margin: 0 auto;
+    padding: 0 48px 72px;
+  }
+  @media (max-width: 960px) { .flow { padding: 0 24px 48px; } }
+  .flow .rule-top { border-top: 1px solid var(--rule); padding-top: 40px; }
+  .flow ol {
+    list-style: none;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+  }
+  @media (max-width: 720px) { .flow ol { grid-template-columns: 1fr; gap: 20px; } }
+  .flow li { display: flex; gap: 14px; align-items: baseline; }
+  .flow .n {
+    font-family: var(--display); font-weight: 800;
+    color: var(--blue); font-size: 22px; line-height: 1;
+    min-width: 22px;
+  }
+  .flow .t { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
+  .flow .d { color: var(--pencil); font-size: 13.5px; }
+
+  .foot {
+    max-width: 1240px; margin: 0 auto;
+    padding: 0 48px 40px; color: var(--hint); font-size: 12.5px;
+  }
+  @media (max-width: 960px) { .foot { padding: 0 24px 32px; } }
+</style>
+
+<div class="topbar">
+  <div class="name">국어 수업 슬라이드 제작 도구<small>lit-ppt</small></div>
+  <div class="free">무료 · 브라우저에서 바로</div>
+</div>
+
+<section class="hero">
+  <div class="slide-wrap">
+    <button class="slide" id="slide" aria-label="리허설 데모 — 클릭하면 주석이 순서대로 나타납니다">
+      <div class="poem">
+        <div class="line">나 보기가 <span class="mark-target">역겨워<span class="ann u-bar" data-step="1"></span><span class="ann ann-note note-blue" data-step="1">반어 — 속마음은 반대</span></span></div>
+        <div class="line">가실 <span class="mark-target">때에는<span class="ann circle-ring" data-step="2"></span><span class="ann ann-note note-red" data-step="2">이별의 상황 가정</span></span> 말없이</div>
+        <div class="line" style="padding-left: 0.52em;"><span class="mark-target"><span class="ann bk bk-open" data-step="3">「</span>고이<span class="ann bk bk-close" data-step="3">」</span><span class="ann ann-note note-blue" data-step="3">체념과 순종의 자세</span></span> 보내 드리오리다</div>
+      </div>
+      <span class="pill" id="pill">이 슬라이드를 클릭해 보세요 — 주석이 하나씩 나타납니다</span>
+    </button>
+  </div>
+
+  <div class="copy">
+    <p class="eyebrow">고등 국어 · 문학 수업</p>
+    <h1>클릭마다,<br /><span class="accent">주석 하나.</span></h1>
+    <p class="sub">
+      교과서 본문을 붙여넣고 주석을 달면, 수업에서 클릭할 때마다
+      하나씩 나타나는 PPT가 됩니다. 로그인도 설치도 없습니다.
+    </p>
+    <div class="cta-row">
+      <button class="cta">운문으로 시작 →</button>
+      <button class="cta ghost">산문으로 시작 →</button>
+    </div>
+    <p class="cta-caption">PDF에서 주석 AI 추출은 편집 중에 붙일 수 있어요 · 본인 Gemini 키 사용</p>
+  </div>
+</section>
+
+<section class="flow">
+  <div class="rule-top">
+    <ol>
+      <li><span class="n">1</span><div><div class="t">본문 입력</div><div class="d">시·소설을 붙여넣거나 PDF에서 가져오기 — 연·문장 단위로 자동 분할</div></div></li>
+      <li><span class="n">2</span><div><div class="t">주석 달기</div><div class="d">밑줄·원·네모·세모·꺾쇠·요약, 편집 화면이 곧 실제 슬라이드</div></div></li>
+      <li><span class="n">3</span><div><div class="t">PPT 내보내기</div><div class="d">클릭 애니메이션이 포함된 .pptx — PowerPoint에서 바로 수업</div></div></li>
+    </ol>
+  </div>
+</section>
+
+<p class="foot">생성 파일은 초안입니다 — PowerPoint에서 확인 후 수업에 쓰세요.</p>
+
+<script>
+  (function () {
+    var slide = document.getElementById("slide");
+    var pill = document.getElementById("pill");
+    var TOTAL = 3;
+    var step = 0;
+    var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function render() {
+      document.querySelectorAll(".ann").forEach(function (el) {
+        el.classList.toggle("on", Number(el.getAttribute("data-step")) <= step);
+      });
+      if (step === 0) {
+        pill.textContent = "이 슬라이드를 클릭해 보세요 — 주석이 하나씩 나타납니다";
+      } else if (step < TOTAL) {
+        pill.textContent = "리허설 " + step + " / " + TOTAL + " — 클릭하면 다음 주석";
+      } else {
+        pill.textContent = "수업 화면이 이렇게 만들어집니다 · 다시 보기 ↺";
+      }
+    }
+
+    slide.addEventListener("click", function () {
+      step = step >= TOTAL ? 0 : step + 1;
+      render();
+    });
+
+    if (reduced) { step = TOTAL; }
+    render();
+  })();
+</script>

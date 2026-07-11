@@ -1,229 +1,150 @@
 import Link from "next/link";
-import { Icon } from "@/components/Icon";
 
-const FEATURES = [
-  { icon: "auto_awesome_mosaic" as const, label: "연·문장 단위 자동 분할" },
-  { icon: "ink_highlighter" as const, label: "밑줄·원·사각형 주석 도형" },
-  { icon: "animation" as const, label: "클릭 애니메이션 자동 적용" },
-  { icon: "document_scanner" as const, label: "PDF 주석 OCR 추출" },
-];
+// 확정 디자인: docs/mockups/home-chalkboard.html (판서 대비 C안)
+// 칠판 히어로(before의 세계) 위에 흰 슬라이드 카드(after의 결과물)를 띄운다.
 
-const STEPS = [
-  { label: "텍스트 입력", desc: "시·소설 본문을 붙여넣거나 PDF에서 추출" },
-  { label: "주석 달기", desc: "슬라이드별로 밑줄·도형·설명을 추가" },
-  { label: "PPT 저장", desc: "클릭 애니메이션이 포함된 .pptx 다운로드" },
-];
-
-const MODES = [
+const FLOW_STEPS = [
   {
-    key: "poetry",
-    icon: "format_align_left" as const,
-    label: "운문 / 짧은 텍스트",
-    subtitle: "시 · 시조 · 가사 · 짧은 지문",
-    desc: "연·행 단위로 슬라이드를 분할합니다. 빈 줄로 연을 구분합니다.",
-    href: "/editor?genre=poetry",
+    n: "1",
+    title: "본문 입력",
+    desc: "시·소설을 붙여넣거나 PDF에서 가져오기 — 연·문장 단위로 자동 분할",
   },
   {
-    key: "novel",
-    icon: "menu_book" as const,
-    label: "산문 / 긴 텍스트",
-    subtitle: "소설 · 수필 · 비문학 지문",
-    desc: "적정 분량으로 자동 분할합니다. 문장 경계에서 자연스럽게 나눕니다.",
-    href: "/editor?genre=novel",
+    n: "2",
+    title: "주석 달기",
+    desc: "밑줄·원·네모·세모·꺾쇠·요약, 편집 화면이 곧 실제 슬라이드",
+  },
+  {
+    n: "3",
+    title: "PPT 내보내기",
+    desc: "클릭 애니메이션이 포함된 .pptx — PowerPoint에서 바로 수업",
   },
 ];
 
-const PAIN_POINTS = [
-  {
-    icon: "schedule" as const,
-    stat: "30분~1시간",
-    desc: "시 한 편을 슬라이드로 옮기는 데 걸리는 시간",
-  },
-  {
-    icon: "refresh" as const,
-    stat: "매번 처음부터",
-    desc: "작품이 바뀔 때마다 반복되는 레이아웃 작업",
-  },
-  {
-    icon: "school" as const,
-    stat: "정작 써야 할 곳",
-    desc: "작품 해석 · 발문 구성 · 학생 피드백",
-  },
-];
-
-const CORE_FEATURES = [
-  {
-    icon: "format_align_left" as const,
-    title: "시 · 운문 자동 분할",
-    desc: "빈 줄로 구분된 연(stanza)을 인식해 슬라이드별 4~5행을 자동 배치합니다. 40pt 글자 크기와 줄 간격도 계산해 주석 공간을 확보합니다.",
-  },
-  {
-    icon: "menu_book" as const,
-    title: "소설 · 산문 자동 분할",
-    desc: "문단이 아닌 글자 수·줄 수 기준으로 슬라이드를 나눕니다. 긴 인용문도 문장 경계에서 자연스럽게 넘겨 잘림이 없습니다.",
-  },
-  {
-    icon: "animation" as const,
-    title: "클릭 주석 애니메이션",
-    desc: "밑줄·원·사각형 도형과 텍스트 상자가 클릭할 때마다 순서대로 등장합니다. 학생의 시선을 단계적으로 유도하는 수업 흐름을 설계할 수 있습니다.",
-  },
-];
+const CTA_BASE =
+  "inline-flex items-center gap-2 rounded-lg border-[1.5px] border-[#F4F1E8] px-[22px] py-[13px] text-[15px] font-bold transition-opacity motion-reduce:transition-none focus-visible:[outline:3px_solid_#F0DC9E] focus-visible:outline-offset-2";
 
 export default function Home() {
   return (
-    <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-br from-white to-[#FFF0E4]">
-      {/* Hero section */}
+    <div className="min-h-screen bg-[#FBFAF7] text-[#16202B]">
+      {/* ── 칠판 히어로 ─────────────────────────────────────── */}
       <div
-        className="grid h-screen w-full border-b border-[#E4E1DA]"
-        style={{ gridTemplateColumns: "2fr 3fr" }}
+        className="border-b-8 border-[#8A6B4D] pb-[72px] text-[#F4F1E8]"
+        style={{
+          background:
+            "radial-gradient(ellipse 90% 60% at 20% 10%, rgba(244,241,232,0.05), transparent), radial-gradient(ellipse 70% 50% at 85% 85%, rgba(244,241,232,0.04), transparent), #263A31",
+        }}
       >
-        {/* LEFT */}
-        <div className="flex flex-col justify-center gap-9 border-r border-[#E4E1DA] px-14 py-16">
-          {/* Brand */}
-          <div className="flex items-center gap-3">
-            <span className="flex h-13 w-13 shrink-0 items-center justify-center rounded-xl bg-[#A07050] p-3 text-white">
-              <Icon name="draw" size={28} />
-            </span>
-            <h1 className="text-4xl font-extrabold tracking-tight text-[#16202B]">
-              국어 수업 슬라이드 제작 도구
-            </h1>
-          </div>
-
-          {/* Description */}
-          <p className="text-lg leading-relaxed text-[#8B6040]">
-            교과서 본문 텍스트를 붙여넣고 주석을 달면<br />
-            수업용 PPT 초안을 빠르게 만들 수 있습니다.
+        <header className="mx-auto flex max-w-[1240px] items-baseline justify-between px-6 pt-[22px] min-[961px]:px-12">
+          <p className="text-[15px] font-bold text-[#F4F1E8]">
+            국어 수업 슬라이드 제작 도구
+            <small className="ml-2 text-xs font-normal text-[#C9CDBF]">lit-ppt</small>
           </p>
+          <p className="rounded-full border border-dashed border-[#F4F1E8]/40 px-2.5 py-[3px] text-xs text-[#C9CDBF]">
+            무료 · 브라우저에서 바로
+          </p>
+        </header>
 
-          {/* Features */}
-          <ul className="flex flex-col gap-3.5">
-            {FEATURES.map((f) => (
-              <li key={f.icon} className="flex items-center gap-3 text-base text-[#7A5540]">
-                <Icon name={f.icon} size={20} className="shrink-0 text-[#A07050]" />
-                {f.label}
-              </li>
-            ))}
-          </ul>
-
-          {/* Steps */}
+        <section className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-10 px-6 pt-10 min-[961px]:grid-cols-2 min-[961px]:gap-14 min-[961px]:px-12 min-[961px]:pt-16">
+          {/* 좌: 카피 */}
           <div>
-            <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#A07050]/60">
-              사용 흐름
-            </p>
-            <ol className="flex flex-col">
-              {STEPS.map((step, i) => (
-                <li key={i} className="relative flex gap-4">
-                  {i < STEPS.length - 1 && (
-                    <span className="absolute left-[13px] top-7 h-full w-px bg-[#E4E1DA]" />
-                  )}
-                  <span className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#A07050] text-xs font-bold text-white">
-                    {i + 1}
-                  </span>
-                  <div className="pb-5">
-                    <p className="text-base font-semibold text-[#16202B]">{step.label}</p>
-                    <p className="text-sm leading-relaxed text-[#B09070]">{step.desc}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-
-        {/* RIGHT */}
-        <div className="flex flex-col justify-center gap-6 bg-white px-16 py-16">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#A07050]/50">
-            텍스트 유형 선택
-          </p>
-
-          {MODES.map((mode) => (
-            <Link
-              key={mode.key}
-              href={mode.href}
-              className="group flex flex-col gap-4 rounded-2xl border border-[#E4E1DA] bg-[#FFFBF8] p-8 transition-all hover:-translate-y-0.5 hover:border-[#A07050]/50 hover:shadow-lg"
+            <h1
+              className="mb-[18px] text-balance font-display text-[clamp(30px,3.8vw,44px)] font-extrabold leading-[1.35] tracking-[-0.01em] text-[#F4F1E8]"
+              style={{ textShadow: "0 0 14px rgba(244,241,232,0.25)" }}
             >
-              <div className="flex items-center gap-4">
-                <span className="flex shrink-0 items-center justify-center rounded-xl bg-[#F5E8DC] p-3 text-[#A07050] transition-colors group-hover:bg-[#A07050] group-hover:text-white">
-                  <Icon name={mode.icon} size={28} />
+              오늘도 같은 판서를
+              <br />
+              다시 쓰고 계신가요?
+              <br />
+              <span className="text-[#F0DC9E]">한 번만 만들어 두세요.</span>
+            </h1>
+            <p className="mb-[30px] max-w-[40ch] break-keep text-base text-[#C9CDBF]">
+              교과서 본문을 붙여넣고 주석을 달면, 수업에서 클릭할 때마다{" "}
+              <b className="font-bold text-[#F4F1E8]">하나씩 나타나는 PPT</b>가 됩니다.
+              로그인도 설치도 없습니다.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/editor?genre=poetry"
+                className={`${CTA_BASE} bg-[#F4F1E8] text-[#16202B] hover:opacity-90`}
+              >
+                운문으로 시작 <span aria-hidden="true">→</span>
+              </Link>
+              <Link
+                href="/editor?genre=novel"
+                className={`${CTA_BASE} bg-transparent text-[#F4F1E8] transition-colors hover:bg-[#F4F1E8]/10`}
+              >
+                산문으로 시작 <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* 우: 칠판 위에 떠 있는 결과물 — 흰 슬라이드 카드 */}
+          <div
+            role="img"
+            aria-label="완성된 수업 슬라이드 예시 — 진달래꽃 세 행에 밑줄·원 주석이 표시된 화면"
+            className="relative aspect-[1333/750] rounded-md bg-white px-[8%] py-[7%] shadow-[0_30px_70px_rgba(0,0,0,0.45)]"
+          >
+            <span className="absolute -top-3 left-[22px] rounded-full bg-[#294C67] px-2.5 py-[3px] text-[11px] text-white">
+              수업 화면 (.pptx)
+            </span>
+            <div className="text-[clamp(15px,1.9vw,23px)] font-bold leading-[2.1] tracking-[-0.01em] text-[#16202B]">
+              <div className="relative whitespace-nowrap">
+                나 보기가{" "}
+                <span className="relative inline-block">
+                  역겨워
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-0 bottom-[0.3em] h-[0.09em] rounded-[1px] bg-[#294C67]"
+                  />
+                  <span className="absolute top-full -mt-[0.55em] whitespace-nowrap text-[0.6em] font-bold leading-[1.1] text-[#294C67]">
+                    반어 — 속마음은 반대
+                  </span>
                 </span>
-                <div>
-                  <h2 className="text-xl font-bold text-[#16202B]">{mode.label}</h2>
-                  <p className="text-sm text-[#C4A898]">{mode.subtitle}</p>
-                </div>
               </div>
-              <p className="text-base leading-relaxed text-[#9B7060]">{mode.desc}</p>
-              <span className="flex items-center gap-1 self-end text-sm font-medium text-[#A07050] opacity-30 transition-all group-hover:translate-x-1 group-hover:opacity-100">
-                시작하기 <Icon name="arrow_forward" size={16} />
-              </span>
-            </Link>
-          ))}
-
-          <p className="text-center text-sm text-[#D4B8A8]">
-            유형을 선택하면 편집 화면으로 이동합니다.
-          </p>
-
-          <p className="rounded-xl border border-[#E4E1DA] bg-[#FFF8F4] px-5 py-3 text-center text-xs leading-relaxed text-[#B09070]">
-            생성된 파일은 <strong className="font-semibold text-[#8B6040]">초안</strong>입니다.
-            폰트 설치 여부·레이아웃 세부 조정은 PowerPoint에서 직접 확인 후 사용하세요.
-          </p>
-        </div>
+              <div className="relative whitespace-nowrap">
+                가실{" "}
+                <span className="relative inline-block">
+                  때에는
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-[0.08em_-0.14em_0.22em_-0.14em] rounded-full border-2 border-[#C0392B]"
+                  />
+                  <span className="absolute top-full -mt-[0.55em] whitespace-nowrap text-[0.6em] font-bold leading-[1.1] text-[#C0392B]">
+                    이별의 상황 가정
+                  </span>
+                </span>{" "}
+                말없이
+              </div>
+              <div className="relative whitespace-nowrap">고이 보내 드리오리다</div>
+            </div>
+            <span className="absolute bottom-2.5 right-3.5 text-[11px] text-[#6E7683]">
+              클릭마다 주석이 하나씩 나타납니다
+            </span>
+          </div>
+        </section>
       </div>
 
-      {/* ── 서비스 상세 섹션 ── */}
-      <section className="w-full bg-white px-4 py-20 sm:px-10 lg:px-24">
-
-        {/* 1. 공감: 문제 제기 */}
-        <div className="mx-auto mb-14 max-w-2xl text-center">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#A07050]/60">
-            많은 국어 선생님이 공감하는 이야기
-          </p>
-          <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-[#16202B]">
-            시 한 편을 슬라이드로 옮기는 데<br />얼마나 걸리세요?
-          </h2>
-          <p className="text-base leading-relaxed text-[#8B6040]">
-            연 구분, 글자 크기, 줄 간격, 밑줄·동그라미 주석까지—<br />
-            수업 준비의 상당 시간이 PPT 레이아웃 작업에 사라집니다.
-          </p>
-        </div>
-
-        <div className="mx-auto mb-24 grid max-w-4xl grid-cols-1 gap-5 sm:grid-cols-3">
-          {PAIN_POINTS.map((p) => (
-            <div
-              key={p.stat}
-              className="flex flex-col items-center gap-3 rounded-2xl border border-[#E4E1DA] bg-[#FFFBF8] p-7 text-center"
-            >
-              <Icon name={p.icon} size={28} className="text-[#A07050]" />
-              <p className="text-lg font-extrabold text-[#16202B]">{p.stat}</p>
-              <p className="text-sm leading-relaxed text-[#9B7060]">{p.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* 2. 핵심 기능 3가지 */}
-        <div className="mx-auto mb-24 max-w-5xl">
-          <div className="mb-10 text-center">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#A07050]/60">
-              핵심 기능
-            </p>
-            <h2 className="text-2xl font-extrabold tracking-tight text-[#16202B]">
-              수업 준비를 바꾸는 세 가지
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {CORE_FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="flex flex-col gap-4 rounded-2xl border border-[#E4E1DA] bg-[#FFFBF8] p-7"
-              >
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F5E8DC] text-[#A07050]">
-                  <Icon name={f.icon} size={24} />
-                </span>
-                <h3 className="text-base font-bold text-[#16202B]">{f.title}</h3>
-                <p className="text-sm leading-relaxed text-[#9B7060]">{f.desc}</p>
+      {/* ── 칠판 아래: 교정지 톤 3단계 흐름 ──────────────────── */}
+      <section className="mx-auto max-w-[1240px] px-6 pb-8 pt-9 min-[961px]:px-12 min-[961px]:pb-10 min-[961px]:pt-12">
+        <ol className="grid grid-cols-1 gap-5 min-[721px]:grid-cols-3 min-[721px]:gap-8">
+          {FLOW_STEPS.map((step) => (
+            <li key={step.n} className="flex items-baseline gap-3.5">
+              <span className="min-w-[22px] font-display text-[22px] font-extrabold text-[#294C67]">
+                {step.n}
+              </span>
+              <div>
+                <p className="mb-[3px] text-[15px] font-bold">{step.title}</p>
+                <p className="break-keep text-[13.5px] text-[#5B6470]">{step.desc}</p>
               </div>
-            ))}
-          </div>
-        </div>
+            </li>
+          ))}
+        </ol>
       </section>
+
+      <p className="mx-auto max-w-[1240px] px-6 pb-10 text-[12.5px] text-[#6E7683] min-[961px]:px-12">
+        생성 파일은 초안입니다 — PowerPoint에서 확인 후 수업에 쓰세요.
+      </p>
     </div>
   );
 }

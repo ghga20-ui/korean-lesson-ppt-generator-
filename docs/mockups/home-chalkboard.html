@@ -1,0 +1,157 @@
+<title>홈 리디자인 C안 — 판서 대비</title>
+<style>
+  /* Pretendard — CDN 동적 서브셋(로컬 목업·배포에서 동작; 실제 구현은 self-host).
+     차단 환경에서는 맑은 고딕으로 우아하게 폴백. */
+  @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+
+  :root {
+    --paper: #FBFAF7;
+    --slide: #FFFFFF;
+    --ink: #16202B;
+    --pencil: #5B6470;
+    --hint: #6E7683;
+    --blue: #294C67;
+    --blue-hover: #21405A;
+    --rule: #E4E1DA;
+    --tint: #E8EFF5;
+    --red: #C0392B;
+    --board: #263A31;        /* 칠판 진녹 */
+    --board-edge: #1D2E26;
+    --chalk: #F4F1E8;        /* 분필 백 */
+    --chalk-dim: #C9CDBF;
+    --chalk-yellow: #F0DC9E; /* 노랑 분필 */
+    --display: "MaruBuri", "나눔명조", "Nanum Myeongjo", "바탕", serif;
+    --body: "Pretendard Variable", "Pretendard", "맑은 고딕", "Malgun Gothic", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--paper); }
+  body { font-family: var(--body); color: var(--ink); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* ── 칠판 히어로 (before의 세계) ────────────────────────── */
+  .board {
+    background:
+      radial-gradient(ellipse 90% 60% at 20% 10%, rgba(244,241,232,0.05), transparent),
+      radial-gradient(ellipse 70% 50% at 85% 85%, rgba(244,241,232,0.04), transparent),
+      var(--board);
+    border-bottom: 8px solid #8A6B4D; /* 분필받이 나무 */
+    color: var(--chalk);
+    padding: 0 0 72px;
+  }
+  .topbar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 22px 48px 0; max-width: 1240px; margin: 0 auto;
+  }
+  .topbar .name { font-weight: 700; font-size: 15px; color: var(--chalk); }
+  .topbar .name small { font-weight: 400; color: var(--chalk-dim); margin-left: 8px; font-size: 12px; }
+  .topbar .free {
+    font-size: 12px; color: var(--chalk-dim);
+    border: 1px dashed rgba(244,241,232,0.4); border-radius: 999px; padding: 3px 10px;
+  }
+
+  .hero {
+    max-width: 1240px; margin: 0 auto;
+    display: grid; grid-template-columns: 6fr 6fr; gap: 56px;
+    align-items: center; padding: 64px 48px 0;
+  }
+  @media (max-width: 960px) { .hero { grid-template-columns: 1fr; gap: 40px; padding: 40px 24px 0; } }
+
+  .copy h1 {
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(30px, 3.8vw, 44px); line-height: 1.35; letter-spacing: -0.01em;
+    color: var(--chalk); text-wrap: balance;
+    text-shadow: 0 0 14px rgba(244,241,232,0.25);
+    margin-bottom: 18px;
+  }
+  .copy h1 .yellow { color: var(--chalk-yellow); }
+  .copy .sub { color: var(--chalk-dim); font-size: 16px; max-width: 40ch; word-break: keep-all; margin-bottom: 30px; }
+  .copy .sub b { color: var(--chalk); font-weight: 700; }
+
+  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; font-family: inherit;
+    padding: 13px 22px; border-radius: 8px; cursor: pointer;
+    border: 1.5px solid var(--chalk); background: var(--chalk); color: var(--ink);
+    transition: opacity 0.15s ease;
+  }
+  .cta:hover { opacity: 0.9; }
+  .cta.ghost { background: transparent; color: var(--chalk); }
+  .cta.ghost:hover { background: rgba(244,241,232,0.08); }
+  .cta:focus-visible { outline: 3px solid var(--chalk-yellow); outline-offset: 2px; }
+
+  /* 칠판 위에 떠 있는 결과물 — 흰 슬라이드 */
+  .slide {
+    position: relative;
+    aspect-ratio: 1333 / 750;
+    background: var(--slide);
+    border-radius: 6px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+    padding: 7% 8%;
+  }
+  .slide .label {
+    position: absolute; top: -12px; left: 22px;
+    background: var(--blue); color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 999px;
+  }
+  .poem { color: var(--ink); font-size: clamp(15px, 1.9vw, 23px); font-weight: 700; line-height: 2.1; letter-spacing: -0.01em; }
+  .poem .line { position: relative; white-space: nowrap; }
+  .mark-target { position: relative; display: inline-block; }
+  .u-bar { position: absolute; left: 0; right: 0; bottom: 0.30em; height: 0.09em; background: var(--blue); border-radius: 1px; }
+  .circle-ring { position: absolute; inset: 0.08em -0.14em 0.22em -0.14em; border: 2px solid var(--red); border-radius: 50%; }
+  .ann-note { position: absolute; white-space: nowrap; font-size: 0.6em; font-weight: 700; line-height: 1.1; top: 100%; margin-top: -0.55em; }
+  .note-blue { color: var(--blue); }
+  .note-red { color: var(--red); }
+  .clickhint { position: absolute; right: 14px; bottom: 10px; font-size: 11px; color: var(--hint); }
+
+  /* ── 칠판 아래: 교정지 톤 흐름 ─────────────────────────── */
+  .flow { max-width: 1240px; margin: 0 auto; padding: 48px 48px 40px; }
+  @media (max-width: 960px) { .flow { padding: 36px 24px 32px; } }
+  .flow ol { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  @media (max-width: 720px) { .flow ol { grid-template-columns: 1fr; gap: 20px; } }
+  .flow li { display: flex; gap: 14px; align-items: baseline; }
+  .flow .n { font-family: var(--display); font-weight: 800; color: var(--blue); font-size: 22px; min-width: 22px; }
+  .flow .t { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
+  .flow .d { color: var(--pencil); font-size: 13.5px; }
+
+  .foot { max-width: 1240px; margin: 0 auto; padding: 0 48px 40px; color: var(--hint); font-size: 12.5px; }
+</style>
+
+<div class="board">
+  <div class="topbar">
+    <div class="name">국어 수업 슬라이드 제작 도구<small>lit-ppt</small></div>
+    <div class="free">무료 · 브라우저에서 바로</div>
+  </div>
+
+  <section class="hero">
+    <div class="copy">
+      <h1>오늘도 같은 판서를<br />다시 쓰고 계신가요?<br /><span class="yellow">한 번만 만들어 두세요.</span></h1>
+      <p class="sub">
+        교과서 본문을 붙여넣고 주석을 달면, 수업에서 클릭할 때마다
+        <b>하나씩 나타나는 PPT</b>가 됩니다. 로그인도 설치도 없습니다.
+      </p>
+      <div class="cta-row">
+        <button class="cta">운문으로 시작 →</button>
+        <button class="cta ghost">산문으로 시작 →</button>
+      </div>
+    </div>
+
+    <div class="slide">
+      <span class="label">수업 화면 (.pptx)</span>
+      <div class="poem">
+        <div class="line">나 보기가 <span class="mark-target">역겨워<span class="u-bar"></span><span class="ann-note note-blue">반어 — 속마음은 반대</span></span></div>
+        <div class="line">가실 <span class="mark-target">때에는<span class="circle-ring"></span><span class="ann-note note-red">이별의 상황 가정</span></span> 말없이</div>
+        <div class="line">고이 보내 드리오리다</div>
+      </div>
+      <span class="clickhint">클릭마다 주석이 하나씩 나타납니다</span>
+    </div>
+  </section>
+</div>
+
+<section class="flow">
+  <ol>
+    <li><span class="n">1</span><div><div class="t">본문 입력</div><div class="d">시·소설을 붙여넣거나 PDF에서 가져오기 — 연·문장 단위로 자동 분할</div></div></li>
+    <li><span class="n">2</span><div><div class="t">주석 달기</div><div class="d">밑줄·원·네모·세모·꺾쇠·요약, 편집 화면이 곧 실제 슬라이드</div></div></li>
+    <li><span class="n">3</span><div><div class="t">PPT 내보내기</div><div class="d">클릭 애니메이션이 포함된 .pptx — PowerPoint에서 바로 수업</div></div></li>
+  </ol>
+</section>
+
+<p class="foot">생성 파일은 초안입니다 — PowerPoint에서 확인 후 수업에 쓰세요.</p>
