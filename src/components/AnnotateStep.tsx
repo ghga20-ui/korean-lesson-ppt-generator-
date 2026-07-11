@@ -105,6 +105,21 @@ export default function AnnotateStep({
     });
   };
 
+  const handleGenerate = async () => {
+    // AI 추출 주석이 남아 있으면 내보내기 직전 1회 검토 확인을 받는다.
+    const aiCount = slides.reduce(
+      (n, s) => n + s.annotations.filter((a) => a.source === "ai").length,
+      0,
+    );
+    if (
+      aiCount > 0 &&
+      !window.confirm("AI가 추출한 주석 " + aiCount + "개가 포함돼 있습니다. 내용을 검토하셨나요?")
+    ) {
+      return;
+    }
+    await onGenerate();
+  };
+
   useKeyboardShortcuts(
     {
       onPrevSlide: () => onSlideSelect(Math.max(0, currentSlideIndex - 1)),
@@ -112,7 +127,7 @@ export default function AnnotateStep({
       onUndo: undo,
       onRedo: redo,
       onSave: exportProject,
-      onGenerate: () => { if (!isGenerating) onGenerate(); },
+      onGenerate: () => { if (!isGenerating) handleGenerate(); },
     },
     !isRehearsing, // 리허설 중에는 편집기 단축키(←/→ 등)를 끈다
   );
@@ -377,7 +392,7 @@ export default function AnnotateStep({
             리허설 ▶
           </button>
           <button
-            onClick={onGenerate}
+            onClick={handleGenerate}
             disabled={isGenerating}
             className="w-full rounded-lg bg-[#294C67] px-3 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#21405A] hover:shadow-md disabled:opacity-40"
           >

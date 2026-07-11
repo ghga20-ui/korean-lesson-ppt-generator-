@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo } from "react";
 import { usePanelResize } from "@/hooks/usePanelResize";
 import type { SlideData, Annotation, MarkerType, PptSettings } from "@/lib/types";
 import { DEFAULT_ANNOTATION_COLOR, ANNOTATION_COLOR_PALETTE } from "@/lib/types";
+import { detectTextOverlaps } from "@/lib/annotation-overlap";
 import { countVisualLines } from "@/lib/pptx-geometry";
 import { getMaxLinesPerSlide } from "@/lib/slide-splitter";
 import { TEXT_LEFT_MARGIN } from "@/lib/pptx-constants";
@@ -280,6 +281,7 @@ export default function AnnotationEditor({
       markerType: popupMarkerType,
       order: nextOrder,
       color: popupColor,
+      source: "manual",
     };
 
     onUpdateSlide({
@@ -515,6 +517,7 @@ export default function AnnotationEditor({
             markerType: "summary" as MarkerType,
             order: nextOrder,
             color: DEFAULT_ANNOTATION_COLOR,
+            source: "manual" as const,
           },
         ],
       });
@@ -605,6 +608,25 @@ export default function AnnotationEditor({
   const displayAnnotations = sortedAnnotations.filter(
     (a) => a.markerType !== "summary"
   );
+
+  // 주석 텍스트 박스 겹침 검출 — 주석 id → 겹치는 상대 주석의 order 목록.
+  // 레이아웃 계산이 주석 수만큼 돌므로 slide·settings 변경 시에만 재계산한다.
+  const overlapPartnerOrders = useMemo(() => {
+    const orderById = new Map(slide.annotations.map((a) => [a.id, a.order]));
+    const partners = new Map<string, number[]>();
+    for (const { a, b } of detectTextOverlaps(slide, pptSettings)) {
+      const link = (id: string, otherId: string) => {
+        const order = orderById.get(otherId);
+        if (order === undefined) return;
+        const list = partners.get(id) ?? [];
+        list.push(order);
+        partners.set(id, list);
+      };
+      link(a, b);
+      link(b, a);
+    }
+    return partners;
+  }, [slide, pptSettings]);
 
   // 카드 열기/닫기 핸들러
   const handleExpandCard = (ann: Annotation) => {
@@ -1015,6 +1037,19 @@ export default function AnnotationEditor({
                           >
                             {MARKER_LABELS[ann.markerType]}
                           </span>
+                          {ann.source === "ai" && (
+                            <span className="flex-shrink-0 rounded border border-[#5B6470] bg-transparent px-1 text-[11px] leading-tight text-[#5B6470]">
+                              AI
+                            </span>
+                          )}
+                          {overlapPartnerOrders.has(ann.id) && (
+                            <span
+                              className="flex-shrink-0 rounded border border-[#C0392B] bg-transparent px-1 text-[11px] leading-tight text-[#C0392B]"
+                              title={`주석 ${overlapPartnerOrders.get(ann.id)!.join(", ")}번과 텍스트가 겹칩니다 — 순서나 대상 위치를 조정하세요`}
+                            >
+                              겹침
+                            </span>
+                          )}
                           <span className="truncate text-xs font-medium text-[#374151]">
                             {ann.targetText}
                           </span>

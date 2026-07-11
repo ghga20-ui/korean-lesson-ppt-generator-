@@ -31,6 +31,8 @@ export interface Annotation {
   order: number;
   /** Marker and annotation text color (hex, e.g. "#294C67") */
   color: string;
+  /** 주석 출처 — "ai"는 AI 추출, "manual"/부재는 수동 작성으로 간주 */
+  source?: "ai" | "manual";
 }
 
 // A single slide's data

@@ -128,6 +128,7 @@ export function matchAnnotationsToText(
         markerType: ext.markerType,
         order: matched.length + 1,
         color: DEFAULT_ANNOTATION_COLOR,
+        source: "ai",
       });
     } else {
       unmatched.push(ext);
@@ -158,6 +159,8 @@ export function distributeAnnotationsToSlides(
 
   return slides.map((slide, slideIdx) => {
     const { start: slideStart, end: slideEnd } = offsets[slideIdx];
+    // 아래 두 분기 모두 `...ann` 스프레드로 복사하므로 matchAnnotationsToText가
+    // 붙인 source: "ai"가 슬라이드별 재매핑 후에도 그대로 유지된다.
     const slideAnnotations: Annotation[] = [];
 
     for (const ann of annotations) {

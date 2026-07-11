@@ -118,6 +118,11 @@ export default function BatchEditPanel({ annotations, onBatchUpdate }: BatchEdit
               onChange={() => toggleSelection(ann.id)}
               className="h-3 w-3 rounded border-[#E4E1DA] accent-[#294C67]"
             />
+            {ann.source === "ai" && (
+              <span className="flex-shrink-0 rounded border border-[#5B6470] bg-transparent px-1 text-[11px] leading-tight text-[#5B6470]">
+                AI
+              </span>
+            )}
             <span className="truncate">&ldquo;{ann.targetText.slice(0, 15)}&rdquo; → {ann.content.slice(0, 15)}</span>
           </label>
         ))}
