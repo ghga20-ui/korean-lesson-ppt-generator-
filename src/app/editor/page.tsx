@@ -39,9 +39,7 @@ function EditorInner({ genre }: { genre: Genre }) {
         >
           &larr; 처음으로
         </button>
-        <h1 className="text-lg font-semibold text-white">
-          국어 수업 슬라이드 제작 도구
-        </h1>
+        <h1 className="text-lg font-semibold text-white">밑줄쫙</h1>
         <span className="rounded-full bg-white/15 px-3 py-1 text-sm text-[#D9E2EA]">
           {GENRE_LABELS[genre]}
         </span>

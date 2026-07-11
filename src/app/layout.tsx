@@ -25,8 +25,9 @@ const nanumYetHangul = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "국어 수업 슬라이드 제작 도구",
-  description: "국어 수업 PPT를 자동으로 생성합니다",
+  title: "밑줄쫙 — 국어 수업 슬라이드 제작 도구",
+  description:
+    "교과서 본문을 붙여넣고 주석을 달면, 클릭마다 하나씩 나타나는 수업용 PPT가 됩니다",
 };
 
 export default function RootLayout({

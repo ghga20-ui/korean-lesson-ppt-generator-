@@ -256,7 +256,7 @@ export async function generatePptxBuffer(
 
   pptx.defineLayout({ name: "CUSTOM_WIDE", width: s.slideWidth, height: s.slideHeight });
   pptx.layout = "CUSTOM_WIDE";
-  pptx.author = "lit-ppt";
+  pptx.author = "밑줄쫙";
   pptx.title = genre === "poetry" ? "문학 수업 PPT" : "문학 수업 PPT";
 
   const slideShapeCounts: number[][] = [];

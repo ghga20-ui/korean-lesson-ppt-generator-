@@ -37,8 +37,10 @@ export default function Home() {
       >
         <header className="mx-auto flex max-w-[1240px] items-baseline justify-between px-6 pt-[22px] min-[961px]:px-12">
           <p className="text-[15px] font-bold text-[#F4F1E8]">
-            국어 수업 슬라이드 제작 도구
-            <small className="ml-2 text-xs font-normal text-[#C9CDBF]">lit-ppt</small>
+            밑줄쫙
+            <small className="ml-2 text-xs font-normal text-[#C9CDBF]">
+              국어 수업 슬라이드 제작 도구
+            </small>
           </p>
           <p className="rounded-full border border-dashed border-[#F4F1E8]/40 px-2.5 py-[3px] text-xs text-[#C9CDBF]">
             무료 · 브라우저에서 바로
