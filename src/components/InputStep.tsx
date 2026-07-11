@@ -49,16 +49,6 @@ export default function InputStep({
     setHasApiKey(!!getApiKey());
   }, []);
 
-  // 첫 진입 기본 모드를 키가 필요 없는 "직접 입력"(B)으로 재배치.
-  // 초기값 "C"는 useEditorState(수정 범위 밖)에서 내려오므로, 본문·PDF가 전혀 없는
-  // 최초 상태에서만 마운트 시 1회 보정한다 — 이미 작업 중인 상태는 건드리지 않는다.
-  useEffect(() => {
-    if (!fullText && !pdfFile) {
-      onInputModeChange("B");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- 마운트 시 1회만 기본 모드 보정
-  }, []);
-
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-10">
