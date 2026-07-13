@@ -309,8 +309,8 @@ export default function SlideMarkerLayer({
             // exporter가 margin 미지정 → PPT 기본 lIns/rIns 0.1in이 적용된다.
             paddingLeft: PPT_DEFAULT_LINS_IN * P,
             paddingRight: PPT_DEFAULT_LINS_IN * P,
-            overflowWrap: "break-word",
-            wordBreak: "keep-all",
+            // 줄바꿈은 CSS 기본값(word-break: normal) — PPT 주석 텍스트박스와 동일하게
+            // 한글은 글자 단위로 꺾인다.
             opacity: textOpacity,
           }}
         >

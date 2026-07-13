@@ -201,8 +201,8 @@ export default function RehearsalOverlay({
           className="kor-text"
           style={{
             whiteSpace: "pre-wrap",
-            wordBreak: "keep-all",
-            overflowWrap: "break-word",
+            // 줄바꿈은 CSS 기본값(word-break: normal)에 맡긴다 — 한글은 글자 단위로
+            // 꺾여 실제 PowerPoint의 본문 자동 줄바꿈과 일치한다.
             fontFamily: `"${settings.fontFamily}", '맑은 고딕', sans-serif`,
             fontSize: `${fontSizePx}px`,
             lineHeight: `${lineHeightPx}px`,

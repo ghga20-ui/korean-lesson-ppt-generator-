@@ -236,6 +236,13 @@ export function layoutAnnotation(
       settings.annotationFontSize,
       Math.max(10, Math.floor(((gapInch - 0.08) * 72) / 1.03)),
     );
+
+    // 하한(10pt)에 걸려도 회랑이 모자라면 텍스트박스를 위로 당겨 다음 줄
+    // 침범을 막는다 — 축소 공식의 역산(잉크 bottom ≤ nextGlyphTop − 0.03).
+    // 위로는 구 간격(글자 바닥 − 0.03in)까지만 — 렌더 게이트 anntext-notlast-ls12
+    // 실측(ANNOTATION_Y_GAP 0.03 상향 후 침범 121px)이 근거.
+    const fitY = nextGlyphTopY - 0.08 - (1.03 * effAnnotationFontSize) / 72;
+    annotTextY = Math.max(glyphBottomY - 0.03, Math.min(annotTextY, fitY));
   }
 
   // Start annotation text below target, but ensure minimum width

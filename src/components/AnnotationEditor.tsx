@@ -757,8 +757,8 @@ export default function AnnotationEditor({
               fontWeight: 700,
               color: "#222222",
               fontFamily: bodyFontFamily,
-              wordBreak: "keep-all",
-              overflowWrap: "break-word",
+              // 줄바꿈은 CSS 기본값(word-break: normal)에 맡긴다 — 한글은 글자 단위,
+              // 라틴은 단어 단위로 꺾여 실제 PowerPoint의 본문 줄바꿈과 일치한다.
               // 첫 줄 baseline을 PPT 모델에 맞춘다(본문 블록만 이동, 마커 레이어는 모델 좌표 유지).
               transform: `translateY(${bodyTranslateYPx}px)`,
             }}

@@ -72,8 +72,9 @@ export const SHAPE_LINE_WIDTH = 3;
  * 밑줄 stroke의 baseline 아래 오프셋(em).
  * 소유자 실물 관측: 기존 0.083em은 "조금 높다" → 0.16em으로 하강.
  * 렌더된 bar 상단이 글자 바닥에서 0.12~0.17em 아래에 균일하게 앉는다.
+ * 소유자 피드백: 타겟과 너무 딱 붙음 → 0.20으로 하강(2026-07-13).
  */
-export const UNDERLINE_GAP_EM = 0.16;
+export const UNDERLINE_GAP_EM = 0.20;
 
 /** 감싸기 도형 패딩(em). */
 export const RECT_PAD_EM = 0.12;
@@ -92,8 +93,12 @@ export const BRACKET_CLOSE_DROP_EM = 0.05;
 // Annotation Text Positioning
 // ---------------------------------------------------------------------------
 
-/** Vertical gap between marker shape bottom and annotation text (inches). */
-export const ANNOTATION_Y_GAP = -0.03;
+/**
+ * Vertical gap between marker shape bottom and annotation text (inches).
+ * 음수였을 때는 글자 잉크 바닥보다 위에서 주석 박스가 시작돼 마커와 겹쳐 보였다.
+ * 양수로 바꿔 마커 아래에 실질적인 공기(여백)를 확보한다(2026-07-13).
+ */
+export const ANNOTATION_Y_GAP = 0.03;
 
 /** Height of an annotation text box (inches). */
 export const ANNOTATION_TEXT_HEIGHT = 0.6;
@@ -134,5 +139,7 @@ export const MULTI_LINE_ANNOTATION_OFFSET = 0.27;
 /**
  * Gap bias factor: proportion of the gap between anchor and next line
  * used to position annotation text closer to the marker.
+ * 중간 줄 회랑에서 마커 쪽에 3%까지만 붙던 것을 15% 지점으로 내려
+ * 마커와 주석 텍스트 사이에 더 넉넉한 간격을 준다(2026-07-13).
  */
-export const GAP_BIAS_FACTOR = 0.03;
+export const GAP_BIAS_FACTOR = 0.15;

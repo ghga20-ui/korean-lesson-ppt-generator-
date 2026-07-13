@@ -1,11 +1,16 @@
 /**
  * annotation-layout.ts 등가성 핀 테스트 (vitest, node).
  *
- * 기대값은 리팩터 전 buildSlide가 내던 인치 좌표를 그대로 고정한 것이다.
- * layoutAnnotation은 buildSlide의 수식을 순수 추출한 것이므로 값이 한 치도
- * 달라지면 안 된다. 아래 숫자는 리팩터 전 코드 경로(구 buildSlide 수식을
- * 독립 재현한 스크래치 하니스)로 산출해 하드코딩한 등가성 핀이다.
- *   // 리팩터 전 buildSlide 산출값을 고정한 등가성 핀
+ * 기대값은 특정 시점의 레이아웃 산출값을 그대로 고정한 스냅샷이다. 의도치
+ * 않은 수식 변화를 잡는 게 목적이며, 간격 상수를 "의도적으로" 바꿀 때는
+ * 렌더 게이트(scripts/golden) 재검증을 통과시킨 뒤 여기 핀을 재고정한다.
+ *
+ * 이력:
+ *  - 최초: 리팩터 전 buildSlide 산출값 고정(등가성 증명, 62d90a5).
+ *  - 2026-07-13: 간격 상향(UNDERLINE_GAP_EM 0.16→0.20, ANNOTATION_Y_GAP
+ *    -0.03→0.03, GAP_BIAS_FACTOR 0.03→0.15)에 맞춰 재고정. 밑줄 y +0.02in
+ *    (fs36 기준), 주석 text.y +0.06~0.08in, 좁은 회랑 케이스의 자동 축소가
+ *    더 일찍 걸림(novel circle 24→20pt, bracket newline 21→17pt).
  */
 import { describe, it, expect } from "vitest";
 import { layoutAnnotation } from "./annotation-layout";
@@ -48,10 +53,10 @@ describe("layoutAnnotation 등가성 핀", () => {
     if (l.marker.kind !== "underline") throw new Error("kind");
     expect(l.marker.segments).toHaveLength(1);
     expect(l.marker.segments[0].x).toBeCloseTo(3.1015, P);
-    expect(l.marker.segments[0].y).toBeCloseTo(3.31056, P);
+    expect(l.marker.segments[0].y).toBeCloseTo(3.33056, P);
     expect(l.marker.segments[0].w).toBeCloseTo(3.404500000000001, P);
     expect(l.text!.x).toBeCloseTo(3.1015, P);
-    expect(l.text!.y).toBeCloseTo(3.2805600000000004, P);
+    expect(l.text!.y).toBeCloseTo(3.36056, P);
     expect(l.text!.w).toBeCloseTo(9.9285, P);
     expect(l.text!.fontSizePt).toBe(28);
   });
@@ -63,10 +68,10 @@ describe("layoutAnnotation 등가성 핀", () => {
     if (l.marker.kind !== "underline") throw new Error("kind");
     expect(l.marker.segments).toHaveLength(1);
     expect(l.marker.segments[0].x).toBeCloseTo(0.5, P);
-    expect(l.marker.segments[0].y).toBeCloseTo(2.2309799999999997, P);
+    expect(l.marker.segments[0].y).toBeCloseTo(2.2509799999999998, P);
     expect(l.marker.segments[0].w).toBeCloseTo(0.935, P);
     expect(l.text!.x).toBeCloseTo(0.5, P);
-    expect(l.text!.y).toBeCloseTo(2.20098, P);
+    expect(l.text!.y).toBeCloseTo(2.2809799999999996, P);
     expect(l.text!.w).toBeCloseTo(12.53, P);
     expect(l.text!.fontSizePt).toBe(28);
   });
@@ -77,10 +82,11 @@ describe("layoutAnnotation 등가성 핀", () => {
     expect(l.marker.kind).toBe("underline");
     if (l.marker.kind !== "underline") throw new Error("kind");
     expect(l.marker.segments[0].x).toBeCloseTo(0.5, P);
-    expect(l.marker.segments[0].y).toBeCloseTo(1.5973199999999999, P);
+    expect(l.marker.segments[0].y).toBeCloseTo(1.6173199999999999, P);
     expect(l.marker.segments[0].w).toBeCloseTo(0.935, P);
+    // 10pt 하한 + fit 역산으로 위로 당겨진 값(다음 줄 침범 방지 안전판).
     expect(l.text!.x).toBeCloseTo(0.5, P);
-    expect(l.text!.y).toBeCloseTo(1.5673199999999998, P);
+    expect(l.text!.y).toBeCloseTo(1.558984444444444, P);
     expect(l.text!.w).toBeCloseTo(12.53, P);
     expect(l.text!.fontSizePt).toBe(10);
   });
@@ -96,9 +102,9 @@ describe("layoutAnnotation 등가성 핀", () => {
     expect(l.marker.w).toBeCloseTo(1.2619444444444445, P);
     expect(l.marker.h).toBeCloseTo(0.5211111111111112, P);
     expect(l.text!.x).toBeCloseTo(0.8807222222222222, P);
-    expect(l.text!.y).toBeCloseTo(0.9333111111111112, P);
+    expect(l.text!.y).toBeCloseTo(0.9933111111111113, P);
     expect(l.text!.w).toBeCloseTo(12.149277777777778, P);
-    expect(l.text!.fontSizePt).toBe(24);
+    expect(l.text!.fontSizePt).toBe(20);
   });
 
   // (5) 브라켓 44pt 단일 글자(단일 줄).
@@ -113,7 +119,7 @@ describe("layoutAnnotation 등가성 핀", () => {
     expect(l.marker.close.y).toBeCloseTo(0.6844888888888887, P);
     expect(l.marker.close.size).toBeCloseTo(0.6111111111111112, P);
     expect(l.text!.x).toBeCloseTo(0.5, P);
-    expect(l.text!.y).toBeCloseTo(1.2655999999999998, P);
+    expect(l.text!.y).toBeCloseTo(1.3256, P);
     expect(l.text!.w).toBeCloseTo(12.53, P);
     expect(l.text!.fontSizePt).toBe(28);
   });
@@ -130,9 +136,9 @@ describe("layoutAnnotation 등가성 핀", () => {
     expect(l.marker.close.y).toBeCloseTo(1.6759799999999996, P);
     expect(l.marker.close.size).toBeCloseTo(0.5, P);
     expect(l.text!.x).toBeCloseTo(2.6340000000000003, P);
-    expect(l.text!.y).toBeCloseTo(1.3114, P);
+    expect(l.text!.y).toBeCloseTo(1.3714, P);
     expect(l.text!.w).toBeCloseTo(10.395999999999999, P);
-    expect(l.text!.fontSizePt).toBe(21);
+    expect(l.text!.fontSizePt).toBe(17);
   });
 
   // (7) 요약(summary) — 박스만 반환하고 주석 텍스트 레이아웃은 없다.
@@ -153,10 +159,10 @@ describe("layoutAnnotation 등가성 핀", () => {
     expect(l.marker.kind).toBe("underline");
     if (l.marker.kind !== "underline") throw new Error("kind");
     expect(l.marker.segments[0].x).toBeCloseTo(0.5, P);
-    expect(l.marker.segments[0].y).toBeCloseTo(2.20098, P);
+    expect(l.marker.segments[0].y).toBeCloseTo(2.22098, P);
     expect(l.marker.segments[0].w).toBeCloseTo(0.997, P);
     expect(l.text!.x).toBeCloseTo(0.5, P);
-    expect(l.text!.y).toBeCloseTo(2.17098, P);
+    expect(l.text!.y).toBeCloseTo(2.2509799999999998, P);
     expect(l.text!.w).toBeCloseTo(12.53, P);
     expect(l.text!.fontSizePt).toBe(28);
   });
