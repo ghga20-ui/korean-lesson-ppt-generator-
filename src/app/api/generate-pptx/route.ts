@@ -29,11 +29,17 @@ export async function POST(request: NextRequest) {
 
     const buffer = await generatePptxBuffer(slides, genre, resolvedSettings);
 
+    // 직접 내비게이션·확장프로그램 경로에서도 파일명이 보존되도록 이중 안전벨트.
+    // ASCII 폴백(filename)과 UTF-8 인코딩된 한글 파일명(filename*)을 함께 제공한다.
+    const koreanFilename = `수업자료_${genre === "poetry" ? "운문" : "산문"}.pptx`;
+    const contentDisposition =
+      `attachment; filename="lesson.pptx"; filename*=UTF-8''${encodeURIComponent(koreanFilename)}`;
+
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        "Content-Disposition": `attachment; filename="literature-slides.pptx"`,
+        "Content-Disposition": contentDisposition,
       },
     });
   } catch (error) {

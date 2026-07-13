@@ -359,10 +359,16 @@ export function useEditorState(genre: Genre): EditorState & EditorActions {
       const a = document.createElement("a");
       a.href = url;
       a.download = `수업자료_${genre === "poetry" ? "운문" : "산문"}.pptx`;
+      a.rel = "noopener";
+      a.style.display = "none";
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // 브라우저의 다운로드 등록이 비동기이므로 blob 해제/앵커 제거를 지연시킨다.
+      // 즉시 해제하면 download 파일명이 유실되고 blob UUID로 저장되는 레이스가 발생한다.
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        a.remove();
+      }, 30_000);
       showToast("PPT를 내보냈습니다");
     } catch (error) {
       alert(error instanceof Error ? error.message : "PPT 생성 중 오류가 발생했습니다");
