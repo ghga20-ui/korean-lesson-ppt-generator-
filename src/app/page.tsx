@@ -163,9 +163,21 @@ export default function Home() {
         </ol>
       </section>
 
-      <p className="mx-auto max-w-[1240px] px-6 pb-10 text-[12.5px] text-[#6E7683] min-[961px]:px-12">
-        생성 파일은 초안입니다 — PowerPoint에서 확인 후 수업에 쓰세요.
-      </p>
+      {/* ── 푸터: 고지·만든이·메뉴 ─────────────────────────── */}
+      <footer className="mx-auto max-w-[1240px] border-t border-[#E4E1DA] px-6 pb-10 pt-6 min-[961px]:px-12">
+        <div className="flex flex-col gap-3 text-[12.5px] text-[#6E7683] min-[721px]:flex-row min-[721px]:items-baseline min-[721px]:justify-between">
+          <p>생성 파일은 초안입니다 — PowerPoint에서 확인 후 수업에 쓰세요.</p>
+          <nav className="flex items-baseline gap-4">
+            <Link
+              href="/notice"
+              className="text-[#5B6470] underline-offset-2 transition-colors hover:text-[#294C67] hover:underline"
+            >
+              저작권·이용 안내
+            </Link>
+            <span className="text-[#6E7683]">© 2026 밑줄쫙 · 만든이 박세준</span>
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }

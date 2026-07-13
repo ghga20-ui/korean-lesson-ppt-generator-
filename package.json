@@ -12,6 +12,7 @@
     "golden:render": "python scripts/golden/run_cases.py 3000"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "jszip": "^3.10.1",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",

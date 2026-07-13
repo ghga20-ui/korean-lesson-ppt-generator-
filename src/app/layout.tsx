@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Gugi, Nanum_Myeongjo } from "next/font/google";
 import localFont from "next/font/local";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const geistMono = Geist_Mono({
@@ -57,6 +58,8 @@ export default function RootLayout({
         className={`${geistMono.variable} ${nanumMyeongjo.variable} ${gugi.variable} ${nanumYetHangul.variable} antialiased`}
       >
         {children}
+        {/* 사용자 통계 — Vercel Web Analytics(쿠키 없는 방문 집계) */}
+        <Analytics />
       </body>
     </html>
   );
