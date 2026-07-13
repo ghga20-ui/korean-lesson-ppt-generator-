@@ -4,21 +4,22 @@ import BrandLogo from "@/components/BrandLogo";
 // 확정 디자인: docs/mockups/home-chalkboard.html (판서 대비 C안)
 // 칠판 히어로(before의 세계) 위에 흰 슬라이드 카드(after의 결과물)를 띄운다.
 
+// desc는 의미 단위 2줄로 고정 개행 — 문장 중간 줄겹침 금지.
 const FLOW_STEPS = [
   {
     n: "1",
     title: "본문 입력",
-    desc: "시·소설을 붙여넣거나 교사용 교과서 PDF 업로드 — 연·문장 단위로 자동 분할",
+    desc: ["시·소설을 붙여넣거나 교사용 교과서 PDF 업로드", "연·문장 단위로 자동 분할"],
   },
   {
     n: "2",
     title: "주석 달기",
-    desc: "교사용 PDF에서 AI가 추출하거나 직접 달기 — 편집 화면이 곧 실제 슬라이드",
+    desc: ["교사용 PDF에서 AI가 추출하거나 직접 달기", "편집 화면이 곧 실제 슬라이드"],
   },
   {
     n: "3",
     title: "PPT 내보내기",
-    desc: "클릭 애니메이션이 포함된 .pptx — PowerPoint에서 바로 수업",
+    desc: ["클릭 애니메이션이 포함된 .pptx", "PowerPoint에서 바로 수업"],
   },
 ];
 
@@ -61,12 +62,18 @@ export default function Home() {
               <br />
               <span className="text-[#F0DC9E]">한 번만 만들어 두세요.</span>
             </h1>
-            <p className="mb-[30px] max-w-[40ch] break-keep text-base text-[#C9CDBF]">
-              교과서 본문을 붙여넣으면 슬라이드가 되고, 교사용 교과서 PDF를
-              올리면 <b className="font-bold text-[#F4F1E8]">AI가 주석까지 대신 답니다</b>.
-              수업에서는 클릭마다{" "}
-              <b className="font-bold text-[#F4F1E8]">주석이 하나씩</b>.
-              로그인도 설치도 없습니다.
+            {/* 부제는 판서처럼 의미 단위로 개행한다 — 문장 중간 줄겹침 금지. */}
+            <p className="mb-[30px] break-keep text-base leading-[1.75] text-[#C9CDBF]">
+              <span className="block">교과서 본문을 붙여넣으면 슬라이드가 되고,</span>
+              <span className="block">
+                교사용 PDF를 올리면{" "}
+                <b className="font-bold text-[#F4F1E8]">AI가 주석까지 대신 답니다</b>.
+              </span>
+              <span className="block">
+                수업에서는 클릭마다{" "}
+                <b className="font-bold text-[#F4F1E8]">주석이 하나씩</b>.
+              </span>
+              <span className="block">로그인도 설치도 없습니다.</span>
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -143,7 +150,13 @@ export default function Home() {
               </span>
               <div>
                 <p className="mb-[3px] text-[15px] font-bold">{step.title}</p>
-                <p className="break-keep text-[13.5px] text-[#5B6470]">{step.desc}</p>
+                <p className="break-keep text-[13.5px] text-[#5B6470]">
+                  {step.desc.map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </p>
               </div>
             </li>
           ))}
