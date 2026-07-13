@@ -6,6 +6,7 @@ import type { Genre } from "@/lib/types";
 import { useEditorState } from "@/hooks/useEditorState";
 import InputStep from "@/components/InputStep";
 import AnnotateStep from "@/components/AnnotateStep";
+import BrandLogo from "@/components/BrandLogo";
 
 const GENRE_LABELS: Record<Genre, string> = {
   poetry: "운문 / 짧은 텍스트",
@@ -39,7 +40,9 @@ function EditorInner({ genre }: { genre: Genre }) {
         >
           &larr; 처음으로
         </button>
-        <h1 className="text-lg font-semibold text-white">밑줄쫙</h1>
+        <h1>
+          <BrandLogo size={22} tone="chalk" />
+        </h1>
         <span className="rounded-full bg-white/15 px-3 py-1 text-sm text-[#D9E2EA]">
           {GENRE_LABELS[genre]}
         </span>

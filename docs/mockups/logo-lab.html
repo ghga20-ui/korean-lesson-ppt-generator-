@@ -1,0 +1,111 @@
+<title>밑줄쫙 로고 실험실</title>
+<style>
+  body { font-family: "Pretendard", "맑은 고딕", sans-serif; background: #FBFAF7; color: #16202B; margin: 0; padding: 40px; }
+  .row { display: flex; gap: 48px; align-items: center; flex-wrap: wrap; margin-bottom: 36px; }
+  .cell { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+  .cell .cap { font-size: 12px; color: #5B6470; }
+  .board { background: #263A31; padding: 28px 36px; border-radius: 8px; }
+  .navy { background: #16202B; padding: 28px 36px; border-radius: 8px; }
+  .wm { position: relative; display: inline-block; font-family: "나눔명조", "Nanum Myeongjo", serif; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
+  .wm svg { position: absolute; left: -2%; right: 0; bottom: -0.28em; width: 104%; height: 0.34em; overflow: visible; }
+  h2 { font-size: 14px; color: #5B6470; margin: 24px 0 12px; }
+</style>
+
+<h2>A. 테이퍼 스우시 — 왼쪽 두껍게 시작, 오른쪽 끝 살짝 치켜올림</h2>
+<div class="row">
+  <div class="cell">
+    <span class="wm" style="font-size:56px; color:#16202B;">밑줄쫙
+      <svg viewBox="0 0 200 26" preserveAspectRatio="none">
+        <path fill="#294C67" d="M2 10 C 48 19, 128 20, 186 9 L 198 3 C 194 11, 176 17, 150 20 C 100 26, 38 24, 2 17 Z"/>
+      </svg>
+    </span>
+    <span class="cap">A-1 잉크(교과서 파랑), 종이 위</span>
+  </div>
+  <div class="cell board">
+    <span class="wm" style="font-size:56px; color:#F4F1E8;">밑줄쫙
+      <svg viewBox="0 0 200 26" preserveAspectRatio="none">
+        <path fill="#F0DC9E" d="M2 10 C 48 19, 128 20, 186 9 L 198 3 C 194 11, 176 17, 150 20 C 100 26, 38 24, 2 17 Z"/>
+      </svg>
+    </span>
+    <span class="cap" style="color:#C9CDBF;">A-2 분필(노랑), 칠판 위</span>
+  </div>
+</div>
+
+<h2>B. 붓끝 플릭 — 수평으로 달리다 끝에서 위로 쫙</h2>
+<div class="row">
+  <div class="cell">
+    <span class="wm" style="font-size:56px; color:#16202B;">밑줄쫙
+      <svg viewBox="0 0 200 26" preserveAspectRatio="none">
+        <path fill="#294C67" d="M2 13 C 60 18, 120 18, 168 14 C 180 13, 190 9, 197 2 C 194 12, 184 19, 168 21 C 120 26, 50 25, 2 19 Z"/>
+      </svg>
+    </span>
+    <span class="cap">B-1 잉크</span>
+  </div>
+  <div class="cell board">
+    <span class="wm" style="font-size:56px; color:#F4F1E8;">밑줄쫙
+      <svg viewBox="0 0 200 26" preserveAspectRatio="none">
+        <path fill="#F0DC9E" d="M2 13 C 60 18, 120 18, 168 14 C 180 13, 190 9, 197 2 C 194 12, 184 19, 168 21 C 120 26, 50 25, 2 19 Z"/>
+      </svg>
+    </span>
+    <span class="cap" style="color:#C9CDBF;">B-2 분필</span>
+  </div>
+</div>
+
+<h2>C. 이중 획 — 빠르게 두 번 그은 강조(별표 다섯 개의 에너지)</h2>
+<div class="row">
+  <div class="cell">
+    <span class="wm" style="font-size:56px; color:#16202B;">밑줄쫙
+      <svg viewBox="0 0 200 30" preserveAspectRatio="none">
+        <path fill="#294C67" d="M2 6 C 60 12, 140 12, 198 4 L 198 8 C 140 16, 60 16, 2 10 Z"/>
+        <path fill="#294C67" opacity="0.55" d="M14 18 C 70 23, 130 23, 186 17 L 186 21 C 130 27, 70 27, 14 22 Z"/>
+      </svg>
+    </span>
+    <span class="cap">C-1 잉크 이중획</span>
+  </div>
+  <div class="cell board">
+    <span class="wm" style="font-size:56px; color:#F4F1E8;">밑줄쫙
+      <svg viewBox="0 0 200 30" preserveAspectRatio="none">
+        <path fill="#F0DC9E" d="M2 6 C 60 12, 140 12, 198 4 L 198 8 C 140 16, 60 16, 2 10 Z"/>
+        <path fill="#F0DC9E" opacity="0.55" d="M14 18 C 70 23, 130 23, 186 17 L 186 21 C 130 27, 70 27, 14 22 Z"/>
+      </svg>
+    </span>
+    <span class="cap" style="color:#C9CDBF;">C-2 분필 이중획</span>
+  </div>
+</div>
+
+<h2>상단바 크기 시뮬레이션 (A안 획 기준, 26px)</h2>
+<div class="row">
+  <div class="cell board" style="width: 640px;">
+    <div style="display:flex; align-items:baseline; justify-content:space-between;">
+      <span style="display:flex; align-items:baseline; gap:12px;">
+        <span class="wm" style="font-size:26px; color:#F4F1E8;">밑줄쫙
+          <svg viewBox="0 0 200 26" preserveAspectRatio="none">
+            <path fill="#F0DC9E" d="M2 10 C 48 19, 128 20, 186 9 L 198 3 C 194 11, 176 17, 150 20 C 100 26, 38 24, 2 17 Z"/>
+          </svg>
+        </span>
+        <span style="font-size:12px; color:#C9CDBF;">국어 수업 슬라이드 제작 도구</span>
+      </span>
+      <span style="font-size:12px; color:#C9CDBF; border:1px dashed rgba(244,241,232,.4); border-radius:999px; padding:3px 10px;">무료 · 브라우저에서 바로</span>
+    </div>
+  </div>
+</div>
+
+<h2>파비콘/심벌 (16·32·64px)</h2>
+<div class="row">
+  <div class="cell">
+    <svg width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#263A31"/><rect x="14" y="18" width="36" height="6" rx="3" fill="#F4F1E8" opacity=".9"/><rect x="14" y="30" width="24" height="6" rx="3" fill="#F4F1E8" opacity=".55"/><path fill="#F0DC9E" d="M12 46 C 24 50, 40 50, 50 46 L 54 43 C 52 48, 44 52, 34 53 C 26 53.5, 16 52, 12 49 Z"/></svg>
+    <span class="cap">64px — 칠판+본문 두 줄+쫙</span>
+  </div>
+  <div class="cell">
+    <svg width="32" height="32" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#263A31"/><rect x="14" y="18" width="36" height="6" rx="3" fill="#F4F1E8" opacity=".9"/><rect x="14" y="30" width="24" height="6" rx="3" fill="#F4F1E8" opacity=".55"/><path fill="#F0DC9E" d="M12 46 C 24 50, 40 50, 50 46 L 54 43 C 52 48, 44 52, 34 53 C 26 53.5, 16 52, 12 49 Z"/></svg>
+    <span class="cap">32px</span>
+  </div>
+  <div class="cell">
+    <svg width="16" height="16" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#263A31"/><rect x="14" y="18" width="36" height="6" rx="3" fill="#F4F1E8" opacity=".9"/><rect x="14" y="30" width="24" height="6" rx="3" fill="#F4F1E8" opacity=".55"/><path fill="#F0DC9E" d="M12 46 C 24 50, 40 50, 50 46 L 54 43 C 52 48, 44 52, 34 53 C 26 53.5, 16 52, 12 49 Z"/></svg>
+    <span class="cap">16px</span>
+  </div>
+  <div class="cell">
+    <svg width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#FBFAF7" stroke="#E4E1DA"/><rect x="14" y="18" width="36" height="6" rx="3" fill="#16202B" opacity=".85"/><rect x="14" y="30" width="24" height="6" rx="3" fill="#16202B" opacity=".45"/><path fill="#294C67" d="M12 46 C 24 50, 40 50, 50 46 L 54 43 C 52 48, 44 52, 34 53 C 26 53.5, 16 52, 12 49 Z"/></svg>
+    <span class="cap">종이 버전(대안)</span>
+  </div>
+</div>

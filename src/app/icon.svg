@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- 밑줄쫙 심벌: 칠판 위 본문 두 줄, 그 아래 노랑 분필로 쫙 -->
+  <rect width="64" height="64" rx="14" fill="#263A31"/>
+  <rect x="14" y="18" width="36" height="6" rx="3" fill="#F4F1E8" opacity=".9"/>
+  <rect x="14" y="30" width="24" height="6" rx="3" fill="#F4F1E8" opacity=".55"/>
+  <path fill="#F0DC9E" d="M12 46 C 24 50, 40 50, 50 46 L 54 43 C 52 48, 44 52, 34 53 C 26 53.5, 16 52, 12 49 Z"/>
+</svg>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrandLogo from "@/components/BrandLogo";
 
 // 확정 디자인: docs/mockups/home-chalkboard.html (판서 대비 C안)
 // 칠판 히어로(before의 세계) 위에 흰 슬라이드 카드(after의 결과물)를 띄운다.
@@ -36,9 +37,9 @@ export default function Home() {
         }}
       >
         <header className="mx-auto flex max-w-[1240px] items-baseline justify-between px-6 pt-[22px] min-[961px]:px-12">
-          <p className="text-[15px] font-bold text-[#F4F1E8]">
-            밑줄쫙
-            <small className="ml-2 text-xs font-normal text-[#C9CDBF]">
+          <p className="flex items-baseline gap-3">
+            <BrandLogo size={30} tone="chalk" />
+            <small className="text-xs font-normal text-[#C9CDBF]">
               국어 수업 슬라이드 제작 도구
             </small>
           </p>
