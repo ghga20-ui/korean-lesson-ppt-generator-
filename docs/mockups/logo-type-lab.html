@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>밑줄쫙 타이포 시안 20</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@800&family=Noto+Serif+KR:wght@900&family=Gowun+Batang:wght@700&family=Jeju+Myeongjo&family=Song+Myung&family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=Gothic+A1:wght@900&family=Gugi&family=Stylish&family=Nanum+Pen+Script&family=Nanum+Brush+Script&family=East+Sea+Dokdo&family=Kirang+Haerang&family=Gaegu:wght@700&family=Yeon+Sung&family=Single+Day&display=swap" rel="stylesheet" />
+<style>
+  @font-face {
+    font-family: "MaruBuri";
+    src: url("https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Bold.woff2") format("woff2"),
+         url("https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Bold.woff") format("woff");
+    font-weight: 700; font-display: swap;
+  }
+  @font-face {
+    font-family: "SBAggro";
+    src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SBAggroB.woff") format("woff");
+    font-weight: 700; font-display: swap;
+  }
+  body { font-family: "Pretendard", "맑은 고딕", sans-serif; background: #FBFAF7; color: #16202B; margin: 0; padding: 36px; }
+  h1 { font-size: 16px; margin: 0 0 6px; }
+  .note { font-size: 12.5px; color: #5B6470; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; max-width: 1440px; }
+  @media (max-width: 1200px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  .tile {
+    background: radial-gradient(ellipse 90% 60% at 20% 10%, rgba(244,241,232,.05), transparent), #263A31;
+    border-radius: 10px; padding: 30px 16px 24px; text-align: center; position: relative;
+  }
+  .tile .num {
+    position: absolute; top: 10px; left: 12px;
+    font-size: 11px; color: #C9CDBF; border: 1px solid rgba(244,241,232,.35); border-radius: 999px; padding: 1px 8px;
+  }
+  .tile .cur { position: absolute; top: 10px; right: 12px; font-size: 11px; color: #F0DC9E; }
+  .tile .fail {
+    position: absolute; top: 10px; right: 12px; font-size: 11px; color: #ff9d9d;
+    display: none;
+  }
+  .tile.dead .fail { display: inline; }
+  .wm { position: relative; display: inline-block; font-size: 52px; line-height: 1.15; color: #F4F1E8; letter-spacing: -0.02em; }
+  .wm svg { position: absolute; left: -2%; bottom: -0.26em; width: 104%; height: 0.32em; overflow: visible; }
+  .lbl { margin-top: 18px; font-size: 12px; color: #C9CDBF; }
+</style>
+</head>
+<body>
+<h1>밑줄쫙 — 서비스명 타이포 시안 20</h1>
+<p class="note">같은 '쫙' 획 위에 글자만 교체. 번호로 골라 주세요. 여러 개 후보 지목도 환영.</p>
+<div class="grid" id="grid"></div>
+
+<script>
+  const SWOOSH = '<svg viewBox="0 0 200 26" preserveAspectRatio="none"><path fill="#F0DC9E" d="M2 10 C 48 19, 128 20, 186 9 L 198 3 C 194 11, 176 17, 150 20 C 100 26, 38 24, 2 17 Z"/></svg>';
+  const FONTS = [
+    // ── 명조·세리프 ──
+    { n: 1,  f: '"Nanum Myeongjo", serif',   w: 800, name: "나눔명조 800", cur: true },
+    { n: 2,  f: '"Noto Serif KR", serif',    w: 900, name: "노토세리프 KR 900 (본명조)" },
+    { n: 3,  f: '"Gowun Batang", serif',     w: 700, name: "고운바탕 700" },
+    { n: 4,  f: '"Jeju Myeongjo", serif',    w: 400, name: "제주명조" },
+    { n: 5,  f: '"Song Myung", serif',       w: 400, name: "송명 — 옛 활자" },
+    { n: 6,  f: '"MaruBuri", serif',         w: 700, name: "마루부리 Bold", check: "MaruBuri" },
+    // ── 임팩트·디스플레이 ──
+    { n: 7,  f: '"Black Han Sans", sans-serif', w: 400, name: "검은한산스 — 초굵은 임팩트" },
+    { n: 8,  f: '"Do Hyeon", sans-serif',    w: 400, name: "도현 — 각진 판넬" },
+    { n: 9,  f: '"Jua", sans-serif',         w: 400, name: "주아 — 둥근 손간판" },
+    { n: 10, f: '"Gothic A1", sans-serif',   w: 900, name: "고딕 A1 900" },
+    { n: 11, f: '"SBAggro", sans-serif',     w: 700, name: "어그로체 Bold", check: "SBAggro" },
+    { n: 12, f: '"Gugi", sans-serif',        w: 400, name: "구기 — 붓+기하" },
+    { n: 13, f: '"Stylish", sans-serif',     w: 400, name: "스타일리시" },
+    // ── 손글씨·분필 ──
+    { n: 14, f: '"Nanum Pen Script", cursive',   w: 400, name: "나눔손글씨 펜" },
+    { n: 15, f: '"Nanum Brush Script", cursive', w: 400, name: "나눔손글씨 붓" },
+    { n: 16, f: '"East Sea Dokdo", cursive',     w: 400, name: "동해독도 — 거친 붓" },
+    { n: 17, f: '"Kirang Haerang", cursive',     w: 400, name: "기랑해랑 — 목판 붓" },
+    { n: 18, f: '"Gaegu", cursive',              w: 700, name: "개구 700 — 교실 낙서" },
+    { n: 19, f: '"Yeon Sung", cursive',          w: 400, name: "연성 — 붓펜" },
+    { n: 20, f: '"Single Day", cursive',         w: 400, name: "싱글데이 — 매직펜" },
+  ];
+
+  const grid = document.getElementById("grid");
+  for (const t of FONTS) {
+    const d = document.createElement("div");
+    d.className = "tile";
+    d.id = "tile-" + t.n;
+    d.innerHTML =
+      '<span class="num">' + t.n + "</span>" +
+      (t.cur ? '<span class="cur">현재</span>' : '<span class="fail">폰트 로드 실패</span>') +
+      '<span class="wm" style="font-family:' + t.f.replace(/"/g, "&quot;") + "; font-weight:" + t.w + ';">밑줄쫙' + SWOOSH + "</span>" +
+      '<div class="lbl">' + t.n + ". " + t.name + "</div>";
+    grid.appendChild(d);
+  }
+
+  // 로드 실패 감지: 폰트별 렌더 폭이 폴백(serif/sans)과 완전히 같으면 의심 표시
+  document.fonts.ready.then(() => {
+    for (const t of FONTS) {
+      const fam = t.f.split(",")[0].replace(/"/g, "");
+      const ok = document.fonts.check('700 40px "' + fam + '"', "밑줄쫙");
+      if (!ok) document.getElementById("tile-" + t.n).classList.add("dead");
+    }
+  });
+</script>
+</body>
+</html>

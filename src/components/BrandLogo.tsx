@@ -1,7 +1,7 @@
 /**
  * BrandLogo — "밑줄쫙" 워드마크.
  *
- * 명조(font-display) 글자 아래에 손으로 쫙 그은 테이퍼 획을 깐다.
+ * 구기(Gugi) 글자 아래에 손으로 쫙 그은 테이퍼 획을 깐다.
  * 획은 왼쪽에서 두껍게 시작해 오른쪽으로 갈수록 얇아지며 끝을 살짝
  * 치켜올린다 — 교사의 결정적인 밑줄 한 획.
  *
@@ -34,11 +34,11 @@ export default function BrandLogo({
       style={{
         position: "relative",
         display: "inline-block",
-        fontFamily: "var(--font-display, serif)",
-        fontWeight: 800,
+        fontFamily: 'var(--font-gugi), "Gugi", sans-serif',
+        fontWeight: 400,
         fontSize: size,
         lineHeight: 1.1,
-        letterSpacing: "-0.02em",
+        letterSpacing: "-0.01em",
         color: c.text,
       }}
     >

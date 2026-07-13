@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Nanum_Myeongjo } from "next/font/google";
+import { Geist_Mono, Gugi, Nanum_Myeongjo } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -14,6 +14,14 @@ const nanumMyeongjo = Nanum_Myeongjo({
   weight: ["700", "800"],
   subsets: ["latin"],
   variable: "--font-nanum-myeongjo",
+  display: "swap",
+});
+
+// 서비스명 워드마크 전용 — 붓의 기운 + 기하 구조 (BrandLogo에서만 사용)
+const gugi = Gugi({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-gugi",
   display: "swap",
 });
 
@@ -46,7 +54,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistMono.variable} ${nanumMyeongjo.variable} ${nanumYetHangul.variable} antialiased`}
+        className={`${geistMono.variable} ${nanumMyeongjo.variable} ${gugi.variable} ${nanumYetHangul.variable} antialiased`}
       >
         {children}
       </body>
