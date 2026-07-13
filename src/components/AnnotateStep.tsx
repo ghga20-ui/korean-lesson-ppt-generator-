@@ -105,18 +105,25 @@ export default function AnnotateStep({
     });
   };
 
+  // AI 추출 주석 검토 확인 — 네이티브 confirm은 브라우저가 "추가 대화상자
+  // 차단"을 켜 두면 소리 없이 false를 돌려줘 내보내기가 조용히 무시된다.
+  // 차단 불가능한 앱 내 모달로 묻는다.
+  const [showAiConfirm, setShowAiConfirm] = useState(false);
+  const aiCount = slides.reduce(
+    (n, s) => n + s.annotations.filter((a) => a.source === "ai").length,
+    0,
+  );
+
   const handleGenerate = async () => {
-    // AI 추출 주석이 남아 있으면 내보내기 직전 1회 검토 확인을 받는다.
-    const aiCount = slides.reduce(
-      (n, s) => n + s.annotations.filter((a) => a.source === "ai").length,
-      0,
-    );
-    if (
-      aiCount > 0 &&
-      !window.confirm("AI가 추출한 주석 " + aiCount + "개가 포함돼 있습니다. 내용을 검토하셨나요?")
-    ) {
+    if (aiCount > 0) {
+      setShowAiConfirm(true);
       return;
     }
+    await onGenerate();
+  };
+
+  const confirmAndGenerate = async () => {
+    setShowAiConfirm(false);
     await onGenerate();
   };
 
@@ -481,6 +488,45 @@ export default function AnnotateStep({
           settings={pptSettings}
           onClose={() => setIsRehearsing(false)}
         />
+      )}
+
+      {showAiConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="AI 주석 검토 확인"
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-[#16202B]/50"
+          onClick={() => setShowAiConfirm(false)}
+        >
+          <div
+            className="w-[380px] rounded-xl border border-[#E4E1DA] bg-white p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-sm font-semibold text-[#16202B]">
+              AI가 추출한 주석 {aiCount}개가 포함돼 있습니다
+            </p>
+            <p className="mt-1.5 text-xs leading-relaxed text-[#5B6470]">
+              잘못 추출된 주석은 수업 화면에 그대로 나갑니다. 목록의{" "}
+              <span className="rounded border border-[#5B6470] px-1 text-[10px]">AI</span>{" "}
+              칩이 붙은 주석을 확인해 주세요.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setShowAiConfirm(false)}
+                className="rounded-lg border border-[#E4E1DA] px-3 py-1.5 text-xs text-[#5B6470] transition-colors hover:border-[#294C67]/30"
+              >
+                다시 볼게요
+              </button>
+              <button
+                autoFocus
+                onClick={confirmAndGenerate}
+                className="rounded-lg bg-[#294C67] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#21405A]"
+              >
+                검토했어요 — 내보내기
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
