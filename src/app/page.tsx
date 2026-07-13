@@ -8,12 +8,12 @@ const FLOW_STEPS = [
   {
     n: "1",
     title: "본문 입력",
-    desc: "시·소설을 붙여넣거나 PDF에서 가져오기 — 연·문장 단위로 자동 분할",
+    desc: "시·소설을 붙여넣거나 교사용 교과서 PDF 업로드 — 연·문장 단위로 자동 분할",
   },
   {
     n: "2",
     title: "주석 달기",
-    desc: "밑줄·원·네모·세모·꺾쇠·요약, 편집 화면이 곧 실제 슬라이드",
+    desc: "교사용 PDF에서 AI가 추출하거나 직접 달기 — 편집 화면이 곧 실제 슬라이드",
   },
   {
     n: "3",
@@ -62,8 +62,10 @@ export default function Home() {
               <span className="text-[#F0DC9E]">한 번만 만들어 두세요.</span>
             </h1>
             <p className="mb-[30px] max-w-[40ch] break-keep text-base text-[#C9CDBF]">
-              교과서 본문을 붙여넣고 주석을 달면, 수업에서 클릭할 때마다{" "}
-              <b className="font-bold text-[#F4F1E8]">하나씩 나타나는 PPT</b>가 됩니다.
+              교과서 본문을 붙여넣으면 슬라이드가 되고, 교사용 교과서 PDF를
+              올리면 <b className="font-bold text-[#F4F1E8]">AI가 주석까지 대신 답니다</b>.
+              수업에서는 클릭마다{" "}
+              <b className="font-bold text-[#F4F1E8]">주석이 하나씩</b>.
               로그인도 설치도 없습니다.
             </p>
             <div className="flex flex-wrap gap-3">
@@ -80,6 +82,9 @@ export default function Home() {
                 산문으로 시작 <span aria-hidden="true">→</span>
               </Link>
             </div>
+            <p className="mt-[14px] text-[13px] text-[#C9CDBF]/80">
+              PDF 주석 추출은 본인 Gemini 키로 — 발급은 무료이고 1분이면 됩니다
+            </p>
           </div>
 
           {/* 우: 칠판 위에 떠 있는 결과물 — 흰 슬라이드 카드 */}
